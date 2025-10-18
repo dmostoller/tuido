@@ -1,0 +1,226 @@
+/* stylelint-disable */
+/* Catppuccin Mocha Theme */
+
+Screen {
+    background: #1e1e2e;
+}
+
+/* Dashboard Panel */
+#dashboard {
+    height: 30%;
+    background: #313244;
+    border: solid #45475a;
+    padding: 1;
+}
+
+#metrics-container {
+    height: auto;
+    layout: horizontal;
+}
+
+MetricCard {
+    width: 1fr;
+    height: 5;
+    background: #45475a;
+    border: solid #89b4fa;
+    margin: 0 1;
+    padding: 1;
+    color: #cdd6f4;
+}
+
+.metric-value {
+    color: #89b4fa;
+    text-style: bold;
+}
+
+.metric-label {
+    color: #a6adc8;
+}
+
+/* Main Content Area */
+#main-content {
+    height: 70%;
+    layout: horizontal;
+}
+
+/* Projects Panel */
+#projects-panel {
+    width: 30%;
+    background: #313244;
+    border: solid #45475a;
+    padding: 1;
+}
+
+#projects-panel:focus-within {
+    border: solid #cba6f7;
+}
+
+.all-tasks {
+    color: #89b4fa;
+}
+
+/* Task List Panel */
+#task-list-panel {
+    width: 35%;
+    background: #313244;
+    border: solid #45475a;
+    padding: 1;
+}
+
+#task-list-panel:focus-within {
+    border: solid #cba6f7;
+}
+
+.task-title {
+    color: #cdd6f4;
+}
+
+.task-title.completed {
+    text-style: strike;
+    color: #6c7086;
+}
+
+/* Task Detail Panel */
+#task-detail-panel {
+    width: 35%;
+    background: #313244;
+    border: solid #45475a;
+    padding: 1;
+}
+
+#task-detail-panel:focus-within {
+    border: solid #cba6f7;
+}
+
+.detail-label {
+    color: #89b4fa;
+    text-style: bold;
+}
+
+.detail-value {
+    color: #cdd6f4;
+}
+
+.subtask-item {
+    color: #cdd6f4;
+    padding: 0 1;
+}
+
+.subtask-item.completed {
+    color: #6c7086;
+    text-style: strike dim;
+}
+
+/* Buttons */
+Button {
+    background: #45475a;
+    color: #cdd6f4;
+    border: solid #89b4fa;
+    margin: 1 0;
+}
+
+Button:hover {
+    background: #585b70;
+    color: #b4befe;
+    border: solid #b4befe;
+}
+
+Button:focus {
+    background: #89b4fa;
+    color: #1e1e2e;
+    text-style: bold;
+}
+
+/* Input fields */
+Input {
+    background: #45475a;
+    color: #cdd6f4;
+    border: solid #585b70;
+}
+
+Input:focus {
+    border: solid #89b4fa;
+    background: #313244;
+}
+
+TextArea {
+    background: #45475a;
+    color: #cdd6f4;
+    border: solid #585b70;
+}
+
+TextArea:focus {
+    border: solid #89b4fa;
+    background: #313244;
+}
+
+/* Labels */
+Label {
+    color: #cdd6f4;
+}
+
+Label.title {
+    color: #b4befe;
+    text-style: bold;
+}
+
+Label.header {
+    color: #89b4fa;
+    text-style: bold;
+}
+
+Label.muted {
+    color: #a6adc8;
+}
+
+.completed {
+    color: #6c7086;
+}
+
+/* Static text */
+Static {
+    color: #cdd6f4;
+}
+
+.muted {
+    color: #a6adc8;
+}
+
+/* Header */
+Header {
+    background: #313244;
+    color: #b4befe;
+    text-style: bold;
+}
+
+/* Footer */
+Footer {
+    background: #313244;
+    color: #a6adc8;
+}
+
+/* ListView */
+ListView {
+    background: #313244;
+    scrollbar-background: #45475a;
+    scrollbar-color: #89b4fa;
+}
+
+ListView:focus {
+    background: #313244;
+}
+
+/* ListItem */
+ListItem {
+    color: #cdd6f4;
+    background: #313244;
+}
+
+ListItem:hover {
+    background: #45475a;
+}
+
+ListItem.--highlight {
+    background: #45475a;
+    color: #b4befe;
+}
