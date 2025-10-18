@@ -9,7 +9,7 @@ from textual.containers import Container
 from textual.message import Message
 from textual.widgets import Label, ListItem, ListView, Static
 
-from ..models import Project
+from ..models import Project, Task
 
 
 class ProjectSelected(Message):
@@ -32,6 +32,7 @@ class ProjectListPanel(Container):
     def __init__(self, id: str = "projects-panel"):
         super().__init__(id=id)
         self.projects: List[Project] = []
+        self.all_tasks: List[Task] = []
         self.selected_project_id: Optional[str] = None
 
     def compose(self) -> ComposeResult:
@@ -44,33 +45,60 @@ class ProjectListPanel(Container):
         self.projects = projects
         self._update_list()
 
+    def update_tasks(self, tasks: List[Task]) -> None:
+        """Update the task list and refresh display."""
+        self.all_tasks = tasks
+        self._update_list()
+
     def _update_list(self) -> None:
         """Update the project list display."""
-        list_view = self.query_one("#project-list", ListView)
+        try:
+            list_view = self.query_one("#project-list", ListView)
+        except Exception:
+            # ListView not yet mounted
+            return
+
         list_view.clear()
 
-        # Add "All Tasks" option
+        # Calculate total task count for "All Tasks"
+        total_count = len(self.all_tasks)
+        total_completed = sum(1 for t in self.all_tasks if t.completed)
+
+        # Add "All Tasks" option with count
+        all_tasks_label = f"📋 All Tasks ({total_completed}/{total_count})"
         list_view.append(
-            ListItem(Static("📋 All Tasks", classes="all-tasks"), id="project-all")
+            ListItem(Static(all_tasks_label))
         )
 
-        # Add projects
+        # Add projects with task counts
         for project in self.projects:
+            # Count tasks for this project
+            project_tasks = [t for t in self.all_tasks if t.project_id == project.id]
+            task_count = len(project_tasks)
+            completed_count = sum(1 for t in project_tasks if t.completed)
+
+            project_label = f"📁 {project.name} ({completed_count}/{task_count})"
             list_view.append(
-                ListItem(Static(f"📁 {project.name}"), id=f"project-{project.id}")
+                ListItem(Static(project_label))
             )
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Handle project selection."""
-        item_id = event.item.id
+        list_view = event.list_view
+        index = list_view.index
 
-        if item_id == "project-all":
+        if index is None:
+            return
+
+        if index == 0:
+            # First item is "All Tasks"
             self.selected_project_id = None
             self.post_message(ProjectSelected(None))
-        elif item_id and item_id.startswith("project-"):
-            project_id = item_id.replace("project-", "")
-            self.selected_project_id = project_id
-            self.post_message(ProjectSelected(project_id))
+        elif 0 < index <= len(self.projects):
+            # Project items (index 1+ maps to projects[0+])
+            project = self.projects[index - 1]
+            self.selected_project_id = project.id
+            self.post_message(ProjectSelected(project.id))
 
     def add_project(self, project: Project) -> None:
         """Add a new project to the list."""

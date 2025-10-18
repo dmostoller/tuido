@@ -7,45 +7,51 @@ Screen {
 
 /* Dashboard Panel */
 #dashboard {
-    height: 30%;
+    height: 45%;
     background: #313244;
-    border: solid #45475a;
     padding: 1;
 }
 
-#metrics-container {
-    height: auto;
-    layout: horizontal;
-}
-
-MetricCard {
-    width: 1fr;
-    height: 5;
+/* Dashboard Quadrants */
+#stats-quadrant {
     background: #45475a;
     border: solid #89b4fa;
-    margin: 0 1;
-    padding: 1;
-    color: #cdd6f4;
 }
 
-.metric-value {
+#clock-quadrant {
+    background: #45475a;
+    border: solid #89b4fa;
+}
+
+#sparkline-quadrant {
+    height: 1fr;
+}
+
+#pomodoro-quadrant {
+    background: #45475a;
+    border: solid #89b4fa;
+}
+
+/* Sparkline specific styles */
+Sparkline {
     color: #89b4fa;
-    text-style: bold;
-}
-
-.metric-label {
-    color: #a6adc8;
 }
 
 /* Main Content Area */
 #main-content {
-    height: 70%;
+    height: 55%;
     layout: horizontal;
+}
+
+/* Left Column (Projects + Tasks) */
+#left-column {
+    width: 33%;
+    height: 100%;
 }
 
 /* Projects Panel */
 #projects-panel {
-    width: 30%;
+    height: 40%;
     background: #313244;
     border: solid #45475a;
     padding: 1;
@@ -61,7 +67,7 @@ MetricCard {
 
 /* Task List Panel */
 #task-list-panel {
-    width: 35%;
+    height: 60%;
     background: #313244;
     border: solid #45475a;
     padding: 1;
@@ -82,7 +88,7 @@ MetricCard {
 
 /* Task Detail Panel */
 #task-detail-panel {
-    width: 35%;
+    width: 67%;
     background: #313244;
     border: solid #45475a;
     padding: 1;

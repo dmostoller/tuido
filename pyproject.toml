@@ -13,3 +13,7 @@ dependencies = [
 dev = [
     "ruff>=0.14.1",
 ]
+
+[project.scripts]
+todo-tui = "todo_tui.app:main"
+todo-tui-dev = "todo_tui.app:dev"

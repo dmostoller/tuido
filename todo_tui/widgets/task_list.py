@@ -73,27 +73,24 @@ class TaskListPanel(Container):
                     Static(
                         f"{checkbox} {task.title}{subtask_info}", classes=title_class
                     ),
-                    id=f"task-{task.id}",
                     classes="completed" if task.completed else "",
                 )
             )
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Handle task selection."""
-        item_id = event.item.id
+        # Get the index of the selected item
+        list_view = self.query_one("#task-list", ListView)
+        index = list_view.index
 
-        if item_id and item_id.startswith("task-"):
-            task_id = item_id.replace("task-", "")
-            # Find the task
-            for task in self.tasks:
-                if task.id == task_id:
-                    self.selected_task = task
-                    self.post_message(TaskSelected(task))
-                    return
-
-        # No valid task selected
-        self.selected_task = None
-        self.post_message(TaskSelected(None))
+        # Check if we have tasks and the index is valid
+        if index is not None and 0 <= index < len(self.tasks):
+            self.selected_task = self.tasks[index]
+            self.post_message(TaskSelected(self.selected_task))
+        else:
+            # No valid task selected (e.g., "No tasks" placeholder)
+            self.selected_task = None
+            self.post_message(TaskSelected(None))
 
     def add_task(self, task: Task) -> None:
         """Add a new task to the list."""

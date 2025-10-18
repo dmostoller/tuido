@@ -2,34 +2,18 @@
 
 from __future__ import annotations
 
+from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import List
 
 from textual.app import ComposeResult
-from textual.containers import Container, Horizontal
-from textual.widget import Widget
-from textual.widgets import Label, Static
+from textual.containers import Container, Grid, Vertical
+from textual.widgets import Sparkline, Static
 
 from ..models import Task
-
-
-class MetricCard(Widget):
-    """A card displaying a single metric."""
-
-    def __init__(self, label: str, value: str, id: str = None):
-        super().__init__(id=id)
-        self.label_text = label
-        self.value_text = value
-
-    def compose(self) -> ComposeResult:
-        """Compose the metric card."""
-        yield Static(self.value_text, classes="metric-value")
-        yield Static(self.label_text, classes="metric-label")
-
-    def update_value(self, value: str) -> None:
-        """Update the metric value."""
-        self.value_text = value
-        self.query_one(".metric-value", Static).update(value)
+from .clock_widget import ClockWidget
+from .pomodoro_widget import PomodoroWidget
+from .stats_card import StatsCard
 
 
 class Dashboard(Container):
@@ -37,7 +21,26 @@ class Dashboard(Container):
 
     DEFAULT_CSS = """
     Dashboard {
-        height: auto;
+        height: 100%;
+    }
+
+    Dashboard Grid {
+        grid-size: 2 2;
+        grid-gutter: 1;
+        height: 100%;
+    }
+
+    Dashboard #sparkline-container {
+        height: 100%;
+        border: solid $accent;
+        background: $surface;
+        padding: 1;
+    }
+
+    Dashboard .sparkline-title {
+        color: $accent;
+        text-style: bold;
+        text-align: center;
     }
     """
 
@@ -46,14 +49,14 @@ class Dashboard(Container):
         self.tasks: List[Task] = []
 
     def compose(self) -> ComposeResult:
-        """Compose the dashboard."""
-        yield Label("📊 Dashboard", classes="header")
-        with Horizontal(id="metrics-container"):
-            yield MetricCard("Total Tasks", "0", id="metric-total")
-            yield MetricCard("Completed", "0", id="metric-completed")
-            yield MetricCard("Completion Rate", "0%", id="metric-rate")
-            yield MetricCard("Today", "0", id="metric-today")
-            yield MetricCard("This Week", "0", id="metric-week")
+        """Compose the dashboard with 2x2 grid layout."""
+        with Grid():
+            yield StatsCard(id="stats-quadrant")
+            yield ClockWidget(id="clock-quadrant")
+            with Vertical(id="sparkline-container"):
+                yield Static("📈 Activity (14d)", classes="sparkline-title")
+                yield Sparkline([], summary_function=max, id="sparkline-quadrant")
+            yield PomodoroWidget(id="pomodoro-quadrant")
 
     def update_metrics(self, tasks: List[Task]) -> None:
         """Update dashboard metrics with current tasks."""
@@ -73,19 +76,36 @@ class Dashboard(Container):
             and datetime.fromisoformat(t.completed_at).date() == today
         )
 
-        # Calculate this week's completions
-        week_start = today - timedelta(days=today.weekday())
-        week_completed = sum(
-            1
-            for t in tasks
-            if t.completed
-            and t.completed_at
-            and datetime.fromisoformat(t.completed_at).date() >= week_start
-        )
+        # Update stats card
+        stats_card = self.query_one("#stats-quadrant", StatsCard)
+        stats_card.update_stats(total, rate, today_completed)
 
-        # Update metric cards
-        self.query_one("#metric-total", MetricCard).update_value(str(total))
-        self.query_one("#metric-completed", MetricCard).update_value(str(completed))
-        self.query_one("#metric-rate", MetricCard).update_value(f"{rate}%")
-        self.query_one("#metric-today", MetricCard).update_value(str(today_completed))
-        self.query_one("#metric-week", MetricCard).update_value(str(week_completed))
+        # Update sparkline with completion data
+        sparkline_data = self._calculate_sparkline_data(tasks)
+        sparkline = self.query_one("#sparkline-quadrant", Sparkline)
+        sparkline.data = sparkline_data
+
+    def _calculate_sparkline_data(self, tasks: List[Task]) -> List[float]:
+        """Calculate daily completion counts for the last 14 days."""
+        today = datetime.now().date()
+        completions_by_day = defaultdict(int)
+
+        # Count completions for each day
+        for task in tasks:
+            if task.completed and task.completed_at:
+                try:
+                    completed_date = datetime.fromisoformat(task.completed_at).date()
+                    completions_by_day[completed_date] += 1
+                except (ValueError, TypeError):
+                    # Skip invalid dates
+                    continue
+
+        # Build list for last 14 days
+        data = []
+        for i in range(13, -1, -1):  # 14 days ago to today
+            day = today - timedelta(days=i)
+            count = completions_by_day.get(day, 0)
+            data.append(float(count))
+
+        # Return at least some data for display
+        return data if data else [0.0] * 14

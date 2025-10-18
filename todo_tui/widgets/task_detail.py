@@ -6,9 +6,19 @@ from typing import Optional
 
 from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical
+from textual.message import Message
 from textual.widgets import Button, Label, ListItem, ListView, Static
 
 from ..models import Task
+
+
+class SubtaskToggled(Message):
+    """Message sent when a subtask is toggled."""
+
+    def __init__(self, task: Task, subtask_id: str):
+        super().__init__()
+        self.task = task
+        self.subtask_id = subtask_id
 
 
 class TaskDetailPanel(Container):
@@ -72,7 +82,8 @@ class TaskDetailPanel(Container):
                     classes="detail-label",
                 )
             )
-            subtask_list = ListView(id="subtask-list")
+            subtask_list = ListView()
+            content.mount(subtask_list)
             for subtask in task.subtasks:
                 checkbox = "☑" if subtask.completed else "☐"
                 item_class = "completed" if subtask.completed else ""
@@ -81,20 +92,33 @@ class TaskDetailPanel(Container):
                         Static(
                             f"{checkbox} {subtask.title}",
                             classes=f"subtask-item {item_class}",
-                        ),
-                        id=f"subtask-{subtask.id}",
+                        )
                     )
                 )
-            content.mount(subtask_list)
 
         # Action buttons
         button_container = Horizontal()
+        content.mount(button_container)
         button_container.mount(Button("Edit", id="btn-edit-task", variant="primary"))
         button_container.mount(
             Button("Toggle Complete", id="btn-toggle-task", variant="success")
         )
         button_container.mount(Button("Delete", id="btn-delete-task", variant="error"))
-        content.mount(button_container)
+
+    def on_list_view_selected(self, event: ListView.Selected) -> None:
+        """Handle subtask selection - toggle completion."""
+        if not self.current_task or not self.current_task.subtasks:
+            return
+
+        # Get the index of the selected subtask
+        list_view = event.list_view
+        index = list_view.index
+
+        # Check if index is valid
+        if index is not None and 0 <= index < len(self.current_task.subtasks):
+            subtask = self.current_task.subtasks[index]
+            # Post message to app to handle the toggle and save
+            self.post_message(SubtaskToggled(self.current_task, subtask.id))
 
     def clear(self) -> None:
         """Clear the task detail display."""
