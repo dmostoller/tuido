@@ -8,8 +8,9 @@ from typing import List
 
 from textual.app import ComposeResult
 from textual.containers import Container, Grid, Vertical
-from textual.widgets import Sparkline, Static
+from textual.widgets import ProgressBar, Sparkline, Static
 
+from ..icons import Icons
 from ..models import Task
 from .clock_widget import ClockWidget
 from .pomodoro_widget import PomodoroWidget
@@ -21,26 +22,49 @@ class Dashboard(Container):
 
     DEFAULT_CSS = """
     Dashboard {
-        height: 100%;
+        width: 100%;
     }
 
     Dashboard Grid {
         grid-size: 2 2;
-        grid-gutter: 1;
+        grid-columns: 1fr 1fr;
+        grid-rows: 1fr 1fr;
+        grid-gutter: 1 1;
         height: 100%;
+        padding: 0;
     }
 
     Dashboard #sparkline-container {
         height: 100%;
         border: solid $accent;
         background: $surface;
-        padding: 1;
+        padding: 1 1 0 1;
+        min-width: 30;
+        min-height: 10;
     }
 
     Dashboard .sparkline-title {
         color: $accent;
         text-style: bold;
         text-align: center;
+    }
+
+    Dashboard .progress-label {
+        color: $text-muted;
+        text-align: center;
+        padding: 1 0 0 0;
+    }
+
+    Dashboard ProgressBar {
+        margin: 0 2;
+    }
+
+    Dashboard ProgressBar > .bar--bar {
+        color: $success;
+    }
+
+    Dashboard ProgressBar > .bar--complete {
+        color: $primary;
     }
     """
 
@@ -51,11 +75,13 @@ class Dashboard(Container):
     def compose(self) -> ComposeResult:
         """Compose the dashboard with 2x2 grid layout."""
         with Grid():
-            yield StatsCard(id="stats-quadrant")
-            yield ClockWidget(id="clock-quadrant")
             with Vertical(id="sparkline-container"):
-                yield Static("📈 Activity (14d)", classes="sparkline-title")
+                yield Static(f"{Icons.CHART_LINE} Activity (14d)", classes="sparkline-title")
                 yield Sparkline([], summary_function=max, id="sparkline-quadrant")
+                yield Static("", id="progress-label", classes="progress-label")
+                yield ProgressBar(total=100, show_eta=False, id="completion-progress")
+            yield ClockWidget(id="clock-quadrant")
+            yield StatsCard(id="stats-quadrant")
             yield PomodoroWidget(id="pomodoro-quadrant")
 
     def update_metrics(self, tasks: List[Task]) -> None:
@@ -84,6 +110,22 @@ class Dashboard(Container):
         sparkline_data = self._calculate_sparkline_data(tasks)
         sparkline = self.query_one("#sparkline-quadrant", Sparkline)
         sparkline.data = sparkline_data
+
+        # Update progress bar
+        progress_bar = self.query_one("#completion-progress", ProgressBar)
+        progress_bar.update(progress=rate)
+
+        # Update progress label with rich markup
+        if rate >= 75:
+            label_text = f"[bold green]{Icons.CHECK_CIRCLE} {rate}% Complete - Excellent![/]"
+        elif rate >= 50:
+            label_text = f"[bold yellow]{Icons.TARGET} {rate}% Complete - Keep Going![/]"
+        elif rate >= 25:
+            label_text = f"[bold bright_magenta]{Icons.TARGET} {rate}% Complete[/]"
+        else:
+            label_text = f"[dim]{Icons.TARGET} {rate}% Complete[/]"
+
+        self.query_one("#progress-label", Static).update(label_text)
 
     def _calculate_sparkline_data(self, tasks: List[Task]) -> List[float]:
         """Calculate daily completion counts for the last 14 days."""

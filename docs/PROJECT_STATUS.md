@@ -1,6 +1,7 @@
 # Todo TUI - Project Status
 
 ## Overview
+
 A Terminal User Interface (TUI) todo application built with Textual Python framework. This document tracks all completed work and remaining tasks.
 
 ---
@@ -8,6 +9,7 @@ A Terminal User Interface (TUI) todo application built with Textual Python frame
 ## ✅ Completed Work
 
 ### Initial Setup & Bug Fixes
+
 Fixed multiple critical errors that prevented the app from running:
 
 1. **DuplicateIds Errors** - Removed IDs from dynamically created widgets in:
@@ -34,14 +36,17 @@ Fixed multiple critical errors that prevented the app from running:
    - Avoids name collision
 
 ### Layout Reorganization
+
 Changed from 3-column to 2-column layout for better space utilization:
 
 **Before:**
+
 ```
 [Projects 30%] [Tasks 35%] [Task Detail 35%]
 ```
 
 **After:**
+
 ```
 [Projects 33%     ] [Task Detail 67%]
 [  (40% height)   ]
@@ -50,10 +55,12 @@ Changed from 3-column to 2-column layout for better space utilization:
 ```
 
 **Files Modified:**
+
 - `app.py:53-57` - Updated compose() with Vertical container for left column
 - `theme.css` - Adjusted widths and heights for new layout
 
 ### Subtask Management
+
 Implemented interactive subtask features:
 
 1. **In Task Detail Panel** (`task_detail.py`):
@@ -73,20 +80,24 @@ Implemented interactive subtask features:
 ## 🚀 Sprint 1: Essential CRUD Operations (COMPLETED)
 
 ### 1. Edit Project Name
+
 **Location:** `dialogs.py:284-341`
 **Trigger:** Press `e` when project is selected in projects panel
 
 **Implementation:**
+
 - Created `EditProjectDialog` with Input field pre-filled with current name
 - Added `action_edit_project()` in `app.py:277-296`
 - Updates storage and refreshes project list
 - Context-aware keybinding via `on_key()` handler
 
 ### 2. Delete Project with Task Migration
+
 **Location:** `app.py:298-350`
 **Trigger:** Press `Delete` when project is selected
 
 **Features:**
+
 - Prevents deleting the last project (requires at least 1)
 - Shows confirmation dialog with migration info
 - Automatically migrates tasks to first remaining project
@@ -94,10 +105,12 @@ Implemented interactive subtask features:
 - Switches to "All Tasks" view after deletion
 
 ### 3. Move Task to Different Project
+
 **Location:** `dialogs.py:387-465`, `app.py:352-383`
 **Trigger:** Press `m` when task is selected in task list
 
 **Implementation:**
+
 - Created `MoveTaskDialog` showing available projects
 - Excludes current project from list
 - Updates task's `project_id` on move
@@ -105,17 +118,21 @@ Implemented interactive subtask features:
 - Context-aware keybinding for 'm' key
 
 ### 4. Context-Aware Keybindings
+
 **Location:** `app.py:385-417`
 
 **Implementation:**
+
 - Added `on_key()` handler that checks focused widget's parent
 - Different actions based on which panel has focus:
 
 **Projects Panel:**
+
 - `e` → Edit project name
 - `Delete` → Delete project
 
 **Task List Panel:**
+
 - `m` → Move task to another project
 - `Enter` → Edit task (global binding)
 - `Space` → Toggle completion (global binding)
@@ -126,9 +143,11 @@ Implemented interactive subtask features:
 ## 🎨 Sprint 2: Enhanced UX (COMPLETED)
 
 ### 1. Project Dropdown in EditTaskDialog
+
 **Location:** `dialogs.py:110-140`, `app.py:204`
 
 **Features:**
+
 - Select widget showing all projects
 - Pre-selects task's current project
 - Updates task's `project_id` when saved
@@ -137,29 +156,35 @@ Implemented interactive subtask features:
   - Otherwise updates detail panel with edited task
 
 **Implementation:**
+
 - Added `projects` parameter to `EditTaskDialog.__init__()`
 - Created Select widget with `(project.name, project.id)` tuples
 - Updated save handler to capture selected project
 
 ### 2. Task Counts in Project List
+
 **Location:** `project_list.py:48-83`
 
 **Features:**
+
 - Shows format: `📁 Project Name (completed/total)`
 - Example: `📁 Personal (2/5)` means 2 of 5 tasks completed
 - "All Tasks" shows aggregate counts
 - Updates automatically when tasks change
 
 **Implementation:**
+
 - Added `all_tasks` attribute to `ProjectListPanel`
 - Created `update_tasks()` method called from `app.py` after task operations
 - Changed to index-based selection (removed IDs to avoid duplicates)
 - `_update_list()` calculates counts for each project
 
 ### 3. Help Dialog with Keyboard Shortcuts
+
 **Location:** `dialogs.py:492-586`, `app.py:439-441`
 
 **Sections:**
+
 - **General:** Ctrl+N, Ctrl+P, ?, q
 - **Tasks:** Enter, Space, Delete, m
 - **Projects:** e, Delete
@@ -167,6 +192,7 @@ Implemented interactive subtask features:
 - **Navigation:** Tab, ↑/↓
 
 **Styling:**
+
 - Catppuccin mocha colors
 - Bold yellow highlighting for keys (`.key` class)
 - Clear sectioned layout
@@ -177,52 +203,66 @@ Implemented interactive subtask features:
 ## 📋 Remaining Work (Sprint 3 - Optional Polish)
 
 ### 1. Selection Indicator Styling
+
 **Suggested Implementation:**
+
 - Add visual highlight for selected project in project list
 - Add visual highlight for selected task in task list
 - Use background color or border to indicate focus
 - Update CSS with focused item styles
 
 **Files to Modify:**
+
 - `theme.css` - Add styles for selected/focused items
 - Possibly `project_list.py` and `task_list.py` if custom styling needed
 
 ### 2. Empty State Messages
+
 **When to Show:**
+
 - No tasks in current project: "No tasks yet. Press Ctrl+N to add one!"
 - No projects: "No projects yet. Press Ctrl+P to add one!"
 - No subtasks: "No subtasks yet. Add one in the edit dialog."
 
 **Files to Modify:**
+
 - `task_list.py` - Add empty state display
 - `project_list.py` - Add empty state display
 - `task_detail.py` - Add empty state for subtasks
 
 ### 3. Tab Focus Cycling Improvements
+
 **Current Behavior:**
+
 - Tab cycles through all widgets including internal dialog widgets
 
 **Desired Behavior:**
+
 - Tab should cycle only between main panels: Projects → Tasks → Detail
 - Skip internal widgets unless in a dialog
 
 **Implementation:**
+
 - Override focus cycling behavior
 - Define explicit focus order for main panels
 - Possibly use `can_focus` attribute on certain widgets
 
 ### 4. Dashboard Improvements (if needed)
+
 **Current State:**
+
 - Dashboard shows task overview and time
 - May need styling updates or additional metrics
 
 **Potential Enhancements:**
+
 - Add project count
 - Add completion percentage
 - Add today's tasks count
 - Visual progress bars
 
 ### 5. Additional Enhancements (Low Priority)
+
 - **Confirmation for destructive actions:** Already implemented for delete project/task
 - **Keyboard shortcut cheat sheet:** Already implemented as Help dialog
 - **Task sorting options:** By date, priority, completion status
@@ -238,6 +278,7 @@ Implemented interactive subtask features:
 ## 🏗️ Architecture Notes
 
 ### Framework
+
 - **Textual 6.2.1** - Python TUI framework
 - Reactive, event-driven programming model
 - CSS-like styling
@@ -246,6 +287,7 @@ Implemented interactive subtask features:
 ### Key Patterns Used
 
 **1. Callback Pattern (Not Async/Await):**
+
 ```python
 def action_add_task(self) -> None:
     def check_add_task(result: Optional[Task]) -> None:
@@ -256,12 +298,14 @@ def action_add_task(self) -> None:
 ```
 
 **2. Message-Based Communication:**
+
 - `ProjectSelected` - When project is clicked
 - `TaskSelected` - When task is clicked
 - `SubtaskToggled` - When subtask is toggled
 - Messages bubble up from widgets to app
 
 **3. Index-Based Lookup (Avoid Duplicate IDs):**
+
 ```python
 list_view = event.list_view
 index = list_view.index
@@ -270,6 +314,7 @@ if index is not None and 0 <= index < len(items):
 ```
 
 **4. Mount-Then-Populate:**
+
 ```python
 # Wrong - will error
 container = Horizontal()
@@ -283,6 +328,7 @@ container.mount(Button(...))  # Then populate
 ```
 
 ### File Structure
+
 ```
 todo-tui/
 ├── main.py                    # Entry point
@@ -301,6 +347,7 @@ todo-tui/
 ```
 
 ### Storage
+
 - Each project stored as separate JSON file: `projects/{project_id}.json`
 - Project metadata in `projects/index.json`
 - Uses dataclasses with `asdict()` and manual parsing
@@ -310,23 +357,30 @@ todo-tui/
 ## 🐛 Known Issues & Technical Debt
 
 ### 1. Dashboard Empty on Load
+
 The dashboard panels appear empty in the terminal output. May need debugging of:
+
 - `dashboard.py` - Check if widgets are mounting correctly
 - Dashboard data loading in `app.py:on_mount()`
 
 ### 2. Error Handling
+
 Currently uses broad `try/except` blocks. Should be more specific:
+
 - Handle specific storage errors
 - Validate user input more thoroughly
 - Show user-friendly error messages
 
 ### 3. No Persistence of UI State
+
 - Selected project not remembered between sessions
 - Panel focus not restored
 - Could save in a config file
 
 ### 4. TODO Comments in Code
+
 Search for `# TODO:` to find inline notes:
+
 - `app.py:305` - Show error message when trying to delete last project
 - `app.py:359` - Show error message when trying to move task without project
 
@@ -335,6 +389,7 @@ Search for `# TODO:` to find inline notes:
 ## 📝 Development Guidelines
 
 ### Running the App
+
 ```bash
 # Install dependencies
 uv sync
@@ -350,18 +405,22 @@ textual run --dev main.py
 ### Common Errors & Solutions
 
 **DuplicateIds Error:**
+
 - Never add IDs to dynamically created widgets
 - Use index-based lookup instead
 
 **MountError:**
+
 - Mount containers before populating them
 - Check that widgets are mounted before querying them
 
 **AttributeError on ModalScreen.task:**
+
 - Don't use `self.task` - it's reserved by asyncio
 - Use a different name like `self.edit_task`
 
 **NoActiveWorker:**
+
 - Don't use `@work` decorator
 - Don't use `await push_screen(..., wait_for_dismiss=True)`
 - Use callback pattern instead
@@ -369,6 +428,7 @@ textual run --dev main.py
 ### Adding New Features
 
 **1. New Dialog:**
+
 ```python
 class MyDialog(ModalScreen):
     DEFAULT_CSS = """..."""
@@ -389,6 +449,7 @@ class MyDialog(ModalScreen):
 ```
 
 **2. New Action in App:**
+
 ```python
 def action_my_action(self) -> None:
     def check_result(result):
@@ -400,6 +461,7 @@ def action_my_action(self) -> None:
 
 **3. New Keybinding:**
 Add to `BINDINGS` in `app.py`:
+
 ```python
 Binding("key", "action_name", "Description")
 ```
@@ -421,6 +483,7 @@ If continuing development, suggested order:
 ## 📊 Statistics
 
 **Total Files Modified:** 8
+
 - `app.py`
 - `dialogs.py`
 - `project_list.py`
@@ -431,6 +494,7 @@ If continuing development, suggested order:
 - `storage.py` (if updated)
 
 **Total Features Implemented:**
+
 - ✅ 8 Major features (bug fixes, layout, subtasks)
 - ✅ 4 Sprint 1 features (CRUD operations)
 - ✅ 3 Sprint 2 features (enhanced UX)

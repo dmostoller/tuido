@@ -15,7 +15,7 @@ Unlike web applications where fonts can be set programmatically, **Textual appli
 ### Using JetBrains Mono
 
 1. **Install JetBrains Mono Nerd Font**
-   - Download from: https://www.nerdfonts.com/font-downloads
+   - Download from: <https://www.nerdfonts.com/font-downloads>
    - Look for "JetBrainsMono Nerd Font"
    - This includes both the JetBrains Mono typeface AND all Nerd Font icons
 
@@ -24,6 +24,7 @@ Unlike web applications where fonts can be set programmatically, **Textual appli
    - **iTerm2**: Preferences → Profiles → Text → Font
    - **WezTerm**: Already bundles JetBrains Mono by default
    - **Alacritty**: Edit `~/.config/alacritty/alacritty.yml`:
+
      ```yaml
      font:
        normal:
@@ -42,11 +43,13 @@ Unlike web applications where fonts can be set programmatically, **Textual appli
 **What it is**: A collection of 3,600+ icons from Font Awesome, Material Design Icons, Octicons, and more, patched into popular developer fonts.
 
 **How it works**:
+
 - Icons are actual font glyphs in the Unicode Private Use Area (E000-F8FF)
 - Once you install a Nerd Font, you can use icons directly as Unicode characters
 - No library needed - just raw Unicode strings in your Python code
 
 **Usage in Python**:
+
 ```python
 # Direct Unicode usage
 ICON_CLOCK = "\uF017"       #
@@ -61,16 +64,19 @@ ICON_TROPHY = "\uF091"      #
 ```
 
 **Finding Icons**:
-- Cheat Sheet: https://www.nerdfonts.com/cheat-sheet
+
+- Cheat Sheet: <https://www.nerdfonts.com/cheat-sheet>
 - Search by keyword, copy the icon code point
 
 **Pros**:
+
 - No dependencies
 - Huge icon library (3,600+)
 - Perfect terminal rendering
 - Works across all terminal emulators that support the font
 
 **Cons**:
+
 - Requires users to install the Nerd Font
 - Icon codes are not as readable as named constants
 
@@ -130,6 +136,7 @@ class Icons:
 ```
 
 Usage:
+
 ```python
 from todo_tui.icons import Icons
 
@@ -177,10 +184,13 @@ class Icons:
 ## Implementation Strategy
 
 ### Step 1: Create Icons Module
+
 Create `todo_tui/icons.py` with all Nerd Font icon constants needed for your app.
 
 ### Step 2: Replace Emojis
+
 Find all emoji usage in the codebase:
+
 - `clock_widget.py` - Line 50: `"🕐 Time"`
 - `dialogs.py` - Various emojis in UI
 - `pomodoro_widget.py` - Timer emojis
@@ -192,11 +202,13 @@ Find all emoji usage in the codebase:
 Replace with Nerd Font icons using the Icons constants.
 
 ### Step 3: Update Documentation
+
 - Add Nerd Font requirement to README.md
 - Document how to install JetBrains Mono Nerd Font
 - Add note about terminal configuration
 
 ### Step 4: Test
+
 Test with and without Nerd Font to ensure fallbacks work (if implemented).
 
 ## Recommended Icon Mappings
@@ -227,16 +239,17 @@ Based on the current emoji usage in the codebase:
 
 ## Resources
 
-- **Nerd Fonts**: https://www.nerdfonts.com/
-- **Cheat Sheet**: https://www.nerdfonts.com/cheat-sheet
-- **JetBrains Mono**: https://www.jetbrains.com/lp/mono/
-- **Textual Docs**: https://textual.textualize.io/
+- **Nerd Fonts**: <https://www.nerdfonts.com/>
+- **Cheat Sheet**: <https://www.nerdfonts.com/cheat-sheet>
+- **JetBrains Mono**: <https://www.jetbrains.com/lp/mono/>
+- **Textual Docs**: <https://textual.textualize.io/>
 
 ## Technical Notes
 
 ### Why Terminal-Level Fonts?
 
 Textual is a TUI framework that renders within terminal emulators. Unlike GUI frameworks or web browsers that have their own rendering engines, TUIs rely entirely on the terminal emulator for:
+
 - Font rendering
 - Glyph support
 - Color display
@@ -247,6 +260,7 @@ This is why font configuration must happen at the terminal level, not within the
 ### Unicode Private Use Area
 
 Nerd Fonts uses Unicode Private Use Areas (PUA), specifically:
+
 - Range: E000-F8FF (and extended ranges)
 - These code points are guaranteed to never be assigned official Unicode glyphs
 - Perfect for custom icon fonts
@@ -254,6 +268,7 @@ Nerd Fonts uses Unicode Private Use Areas (PUA), specifically:
 ### Performance
 
 Using Nerd Font icons has zero performance impact compared to emojis:
+
 - Both are Unicode characters
 - No additional libraries or dependencies needed
 - No runtime overhead

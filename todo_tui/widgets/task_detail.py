@@ -9,6 +9,7 @@ from textual.containers import Container, Horizontal, Vertical
 from textual.message import Message
 from textual.widgets import Button, Label, ListItem, ListView, Static
 
+from ..icons import Icons
 from ..models import Task
 
 
@@ -27,6 +28,20 @@ class TaskDetailPanel(Container):
     DEFAULT_CSS = """
     TaskDetailPanel {
         width: auto;
+        height: 100%;
+    }
+
+    #task-detail-content {
+        height: 100%;
+        overflow-y: auto;
+    }
+
+    .detail-buttons {
+        dock: bottom;
+        width: 100%;
+        height: auto;
+        padding: 1;
+        border-top: solid $primary;
     }
     """
 
@@ -36,7 +51,7 @@ class TaskDetailPanel(Container):
 
     def compose(self) -> ComposeResult:
         """Compose the task detail panel."""
-        yield Label("📝 Task Details", classes="header")
+        yield Label(f"{Icons.EDIT} Task Details", classes="header")
         with Vertical(id="task-detail-content"):
             yield Static(
                 "Select a task to view details",
@@ -60,7 +75,8 @@ class TaskDetailPanel(Container):
             return
 
         # Task title
-        title_text = f"{'☑' if task.completed else '☐'} {task.title}"
+        checkbox = Icons.CHECK_SQUARE if task.completed else Icons.SQUARE_O
+        title_text = f"{checkbox} {task.title}"
         title_class = "title completed" if task.completed else "title"
         content.mount(Label(title_text, classes=title_class))
 
@@ -85,7 +101,7 @@ class TaskDetailPanel(Container):
             subtask_list = ListView()
             content.mount(subtask_list)
             for subtask in task.subtasks:
-                checkbox = "☑" if subtask.completed else "☐"
+                checkbox = Icons.CHECK_SQUARE if subtask.completed else Icons.SQUARE_O
                 item_class = "completed" if subtask.completed else ""
                 subtask_list.append(
                     ListItem(
@@ -96,8 +112,8 @@ class TaskDetailPanel(Container):
                     )
                 )
 
-        # Action buttons
-        button_container = Horizontal()
+        # Action buttons (docked to bottom like a footer)
+        button_container = Horizontal(classes="detail-buttons")
         content.mount(button_container)
         button_container.mount(Button("Edit", id="btn-edit-task", variant="primary"))
         button_container.mount(

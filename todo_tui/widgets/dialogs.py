@@ -7,6 +7,7 @@ from textual.containers import Container, Horizontal, Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Button, Input, Label, ListItem, ListView, Select, Static, TextArea
 
+from ..icons import Icons
 from ..models import Project, Task
 
 
@@ -21,9 +22,19 @@ class AddTaskDialog(ModalScreen):
     #dialog-container {
         width: 60;
         height: auto;
-        background: #313244;
-        border: thick #89b4fa;
+        background: $surface;
+        border: thick $primary;
         padding: 1;
+    }
+
+    #task-description-input {
+        height: 6;
+        min-height: 6;
+    }
+
+    #task-notes-input {
+        height: 6;
+        min-height: 6;
     }
 
     #dialog-buttons {
@@ -40,7 +51,7 @@ class AddTaskDialog(ModalScreen):
     def compose(self) -> ComposeResult:
         """Compose the add task dialog."""
         with Container(id="dialog-container"):
-            yield Label("➕ Add New Task", classes="header")
+            yield Label(f"{Icons.PLUS} Add New Task", classes="header")
             yield Label("Title:")
             yield Input(placeholder="Enter task title", id="task-title-input")
             yield Label("Description (optional):")
@@ -79,6 +90,12 @@ class AddTaskDialog(ModalScreen):
             # Move to Add button
             self.query_one("#btn-add", Button).focus()
 
+    def on_key(self, event) -> None:
+        """Handle keyboard shortcuts."""
+        if event.key == "escape":
+            self.dismiss(None)
+            event.prevent_default()
+
 
 class EditTaskDialog(ModalScreen):
     """Modal dialog for editing an existing task."""
@@ -91,9 +108,19 @@ class EditTaskDialog(ModalScreen):
     #dialog-container {
         width: 60;
         height: auto;
-        background: #313244;
-        border: thick #89b4fa;
+        background: $surface;
+        border: thick $primary;
         padding: 1;
+    }
+
+    #task-description-input {
+        height: 6;
+        min-height: 6;
+    }
+
+    #task-notes-input {
+        height: 6;
+        min-height: 6;
     }
 
     #dialog-buttons {
@@ -105,6 +132,35 @@ class EditTaskDialog(ModalScreen):
     #subtask-section {
         height: auto;
     }
+
+    #edit-subtask-list {
+        max-height: 10;
+        height: auto;
+    }
+
+    .subtask-row {
+        height: auto;
+        width: 100%;
+    }
+
+    .subtask-text {
+        width: 1fr;
+    }
+
+    .subtask-delete-btn {
+        width: 4;
+        min-width: 4;
+        height: 1;
+        padding: 0;
+        background: transparent;
+        border: none;
+        color: $error;
+    }
+
+    .subtask-delete-btn:hover {
+        color: $error-lighten-1;
+        background: $panel;
+    }
     """
 
     def __init__(self, task: Task, projects: Optional[List[Project]] = None):
@@ -115,7 +171,7 @@ class EditTaskDialog(ModalScreen):
     def compose(self) -> ComposeResult:
         """Compose the edit task dialog."""
         with Container(id="dialog-container"):
-            yield Label("✏️ Edit Task", classes="header")
+            yield Label(f"{Icons.EDIT} Edit Task", classes="header")
             yield Label("Title:")
             yield Input(
                 value=self.edit_task.title,
@@ -141,7 +197,7 @@ class EditTaskDialog(ModalScreen):
 
             # Subtasks section
             with Vertical(id="subtask-section"):
-                yield Label("Subtasks (Space: toggle, Delete: remove):", classes="detail-label")
+                yield Label("Subtasks (Space: toggle, ✗: remove):", classes="detail-label")
                 yield Input(placeholder="Add subtask (press Enter)", id="subtask-input")
                 subtask_list = ListView(id="edit-subtask-list")
                 yield subtask_list
@@ -159,20 +215,40 @@ class EditTaskDialog(ModalScreen):
         subtask_list = self.query_one("#edit-subtask-list", ListView)
         subtask_list.clear()
 
-        for subtask in self.edit_task.subtasks:
-            checkbox = "☑" if subtask.completed else "☐"
+        for idx, subtask in enumerate(self.edit_task.subtasks):
+            checkbox = Icons.CHECK_SQUARE if subtask.completed else Icons.SQUARE_O
             item_class = "completed" if subtask.completed else ""
-            subtask_list.append(
-                ListItem(
-                    Static(
-                        f"{checkbox} {subtask.title}",
-                        classes=f"subtask-item {item_class}",
-                    )
-                )
+
+            # Create widgets for the subtask
+            subtask_text = Static(
+                f"{checkbox} {subtask.title}",
+                classes=f"subtask-item subtask-text {item_class}",
             )
+            delete_btn = Button(
+                Icons.TIMES,
+                name=f"delete-subtask-{idx}",
+                classes="subtask-delete-btn",
+            )
+
+            # Create a horizontal container with the widgets
+            row = Horizontal(subtask_text, delete_btn, classes="subtask-row")
+            subtask_list.append(ListItem(row))
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle button press."""
+        # Check if this is a delete-subtask button
+        if event.button.name and event.button.name.startswith("delete-subtask-"):
+            try:
+                # Extract index from button name (e.g., "delete-subtask-0" -> 0)
+                idx = int(event.button.name.split("-")[-1])
+                if 0 <= idx < len(self.edit_task.subtasks):
+                    subtask = self.edit_task.subtasks[idx]
+                    self.edit_task.remove_subtask(subtask.id)
+                    self._refresh_subtask_list()
+            except (ValueError, IndexError):
+                pass  # Invalid index, ignore
+            return
+
         if event.button.id == "btn-cancel":
             self.dismiss(None)
         elif event.button.id == "btn-save":
@@ -230,6 +306,12 @@ class EditTaskDialog(ModalScreen):
 
     def on_key(self, event) -> None:
         """Handle keyboard shortcuts for subtask operations."""
+        # Handle escape key to close dialog
+        if event.key == "escape":
+            self.dismiss(None)
+            event.prevent_default()
+            return
+
         subtask_list = self.query_one("#edit-subtask-list", ListView)
 
         # Only handle keys when subtask list has focus
@@ -265,8 +347,8 @@ class AddProjectDialog(ModalScreen):
     #dialog-container {
         width: 50;
         height: auto;
-        background: #313244;
-        border: thick #89b4fa;
+        background: $surface;
+        border: thick $primary;
         padding: 1;
     }
 
@@ -280,7 +362,7 @@ class AddProjectDialog(ModalScreen):
     def compose(self) -> ComposeResult:
         """Compose the add project dialog."""
         with Container(id="dialog-container"):
-            yield Label("📁 Add New Project", classes="header")
+            yield Label(f"{Icons.FOLDER} Add New Project", classes="header")
             yield Label("Project Name:")
             yield Input(placeholder="Enter project name", id="project-name-input")
             with Horizontal(id="dialog-buttons"):
@@ -304,6 +386,12 @@ class AddProjectDialog(ModalScreen):
         if event.input.id == "project-name-input":
             self.query_one("#btn-create", Button).focus()
 
+    def on_key(self, event) -> None:
+        """Handle keyboard shortcuts."""
+        if event.key == "escape":
+            self.dismiss(None)
+            event.prevent_default()
+
 
 class EditProjectDialog(ModalScreen):
     """Modal dialog for editing an existing project."""
@@ -316,8 +404,8 @@ class EditProjectDialog(ModalScreen):
     #dialog-container {
         width: 50;
         height: auto;
-        background: #313244;
-        border: thick #89b4fa;
+        background: $surface;
+        border: thick $primary;
         padding: 1;
     }
 
@@ -335,7 +423,7 @@ class EditProjectDialog(ModalScreen):
     def compose(self) -> ComposeResult:
         """Compose the edit project dialog."""
         with Container(id="dialog-container"):
-            yield Label("✏️ Edit Project", classes="header")
+            yield Label(f"{Icons.EDIT} Edit Project", classes="header")
             yield Label("Project Name:")
             yield Input(
                 value=self.edit_project.name,
@@ -363,6 +451,12 @@ class EditProjectDialog(ModalScreen):
         if event.input.id == "project-name-input":
             self.query_one("#btn-save", Button).focus()
 
+    def on_key(self, event) -> None:
+        """Handle keyboard shortcuts."""
+        if event.key == "escape":
+            self.dismiss(None)
+            event.prevent_default()
+
 
 class ConfirmDialog(ModalScreen):
     """Modal dialog for confirmation."""
@@ -375,8 +469,8 @@ class ConfirmDialog(ModalScreen):
     #dialog-container {
         width: 50;
         height: auto;
-        background: #313244;
-        border: thick #f38ba8;
+        background: $surface;
+        border: thick $error;
         padding: 1;
     }
 
@@ -394,7 +488,7 @@ class ConfirmDialog(ModalScreen):
     def compose(self) -> ComposeResult:
         """Compose the confirm dialog."""
         with Container(id="dialog-container"):
-            yield Label("⚠️  Confirm Action", classes="header")
+            yield Label(f"{Icons.WARNING}  Confirm Action", classes="header")
             yield Label(self.message)
             with Horizontal(id="dialog-buttons"):
                 yield Button("Cancel", id="btn-cancel", variant="default")
@@ -406,6 +500,12 @@ class ConfirmDialog(ModalScreen):
             self.dismiss(False)
         elif event.button.id == "btn-confirm":
             self.dismiss(True)
+
+    def on_key(self, event) -> None:
+        """Handle keyboard shortcuts."""
+        if event.key == "escape":
+            self.dismiss(False)
+            event.prevent_default()
 
 
 class MoveTaskDialog(ModalScreen):
@@ -419,8 +519,8 @@ class MoveTaskDialog(ModalScreen):
     #dialog-container {
         width: 60;
         height: auto;
-        background: #313244;
-        border: thick #89b4fa;
+        background: $surface;
+        border: thick $primary;
         padding: 1;
     }
 
@@ -441,7 +541,7 @@ class MoveTaskDialog(ModalScreen):
     def compose(self) -> ComposeResult:
         """Compose the move task dialog."""
         with Container(id="dialog-container"):
-            yield Label("📦 Move Task", classes="header")
+            yield Label(f"{Icons.FOLDER_OPEN} Move Task", classes="header")
             yield Label(f"Moving: {self.move_task.title}")
             yield Label("Select destination project:")
 
@@ -462,7 +562,7 @@ class MoveTaskDialog(ModalScreen):
                 continue
 
             project_list.append(
-                ListItem(Static(f"📁 {project.name}"))
+                ListItem(Static(f"{Icons.FOLDER} {project.name}"))
             )
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
@@ -488,6 +588,12 @@ class MoveTaskDialog(ModalScreen):
                 # No project selected, can't move
                 self.dismiss(None)
 
+    def on_key(self, event) -> None:
+        """Handle keyboard shortcuts."""
+        if event.key == "escape":
+            self.dismiss(None)
+            event.prevent_default()
+
 
 class HelpDialog(ModalScreen):
     """Modal dialog showing keyboard shortcuts and help information."""
@@ -498,35 +604,21 @@ class HelpDialog(ModalScreen):
     }
 
     #dialog-container {
-        width: 70;
+        width: 60;
         height: auto;
-        background: #313244;
-        border: thick #89b4fa;
+        background: $surface;
+        border: thick $primary;
         padding: 1;
-    }
-
-    #help-content {
-        height: auto;
-        padding: 1;
-    }
-
-    .help-section {
-        margin: 1 0;
     }
 
     .help-title {
-        color: #89b4fa;
+        color: $primary;
         text-style: bold;
-        margin-bottom: 1;
+        margin-top: 1;
     }
 
     .help-item {
-        margin-left: 2;
-    }
-
-    .key {
-        color: #f9e2af;
-        text-style: bold;
+        margin-left: 1;
     }
 
     #dialog-buttons {
@@ -539,43 +631,37 @@ class HelpDialog(ModalScreen):
     def compose(self) -> ComposeResult:
         """Compose the help dialog."""
         with Container(id="dialog-container"):
-            yield Label("❓ Help - Keyboard Shortcuts", classes="header")
+            yield Label(f"{Icons.QUESTION} Help - Keyboard Shortcuts", classes="header")
 
-            with Vertical(id="help-content"):
-                # General shortcuts
-                with Vertical(classes="help-section"):
-                    yield Static("General", classes="help-title")
-                    yield Static("  [.key]Ctrl+N[/]  - Add new task", classes="help-item", markup=True)
-                    yield Static("  [.key]Ctrl+P[/]  - Add new project", classes="help-item", markup=True)
-                    yield Static("  [.key]?[/]       - Show this help", classes="help-item", markup=True)
-                    yield Static("  [.key]q[/]       - Quit application", classes="help-item", markup=True)
+            # General shortcuts
+            yield Static("General", classes="help-title")
+            yield Static("[bold yellow]Ctrl+N[/] - Add new task", classes="help-item", markup=True)
+            yield Static("[bold yellow]Ctrl+P[/] - Add new project", classes="help-item", markup=True)
+            yield Static("[bold yellow]?[/] - Show this help", classes="help-item", markup=True)
+            yield Static("[bold yellow]q[/] - Quit application", classes="help-item", markup=True)
 
-                # Task shortcuts
-                with Vertical(classes="help-section"):
-                    yield Static("Tasks (when task selected)", classes="help-title")
-                    yield Static("  [.key]Enter[/]   - Edit task", classes="help-item", markup=True)
-                    yield Static("  [.key]Space[/]   - Toggle completion", classes="help-item", markup=True)
-                    yield Static("  [.key]Delete[/]  - Delete task", classes="help-item", markup=True)
-                    yield Static("  [.key]m[/]       - Move task to another project", classes="help-item", markup=True)
+            # Task shortcuts
+            yield Static("Tasks (when task selected)", classes="help-title")
+            yield Static("[bold yellow]Enter[/] - Edit task", classes="help-item", markup=True)
+            yield Static("[bold yellow]Space[/] - Toggle completion", classes="help-item", markup=True)
+            yield Static("[bold yellow]Delete[/] - Delete task", classes="help-item", markup=True)
+            yield Static("[bold yellow]m[/] - Move task to another project", classes="help-item", markup=True)
 
-                # Project shortcuts
-                with Vertical(classes="help-section"):
-                    yield Static("Projects (when project selected)", classes="help-title")
-                    yield Static("  [.key]e[/]       - Edit project name", classes="help-item", markup=True)
-                    yield Static("  [.key]Delete[/]  - Delete project (migrates tasks)", classes="help-item", markup=True)
+            # Project shortcuts
+            yield Static("Projects (when project selected)", classes="help-title")
+            yield Static("[bold yellow]E[/] - Edit project name", classes="help-item", markup=True)
+            yield Static("[bold yellow]D[/] - Delete project (migrates tasks)", classes="help-item", markup=True)
 
-                # Subtask shortcuts
-                with Vertical(classes="help-section"):
-                    yield Static("Subtasks (in edit dialog)", classes="help-title")
-                    yield Static("  [.key]Enter[/]   - Add subtask (in input field)", classes="help-item", markup=True)
-                    yield Static("  [.key]Space[/]   - Toggle subtask completion", classes="help-item", markup=True)
-                    yield Static("  [.key]Delete[/]  - Remove subtask", classes="help-item", markup=True)
+            # Subtask shortcuts
+            yield Static("Subtasks (in edit dialog)", classes="help-title")
+            yield Static("[bold yellow]Enter[/] - Add subtask (in input field)", classes="help-item", markup=True)
+            yield Static("[bold yellow]Space[/] - Toggle subtask completion", classes="help-item", markup=True)
+            yield Static("[bold yellow]Delete[/] - Remove subtask", classes="help-item", markup=True)
 
-                # Navigation
-                with Vertical(classes="help-section"):
-                    yield Static("Navigation", classes="help-title")
-                    yield Static("  [.key]Tab[/]     - Move focus between panels", classes="help-item", markup=True)
-                    yield Static("  [.key]↑/↓[/]     - Navigate lists", classes="help-item", markup=True)
+            # Navigation
+            yield Static("Navigation", classes="help-title")
+            yield Static("[bold yellow]Tab[/] - Move focus between panels", classes="help-item", markup=True)
+            yield Static("[bold yellow]↑/↓[/] - Navigate lists", classes="help-item", markup=True)
 
             with Horizontal(id="dialog-buttons"):
                 yield Button("Close", id="btn-close", variant="success")
@@ -584,3 +670,9 @@ class HelpDialog(ModalScreen):
         """Handle button press."""
         if event.button.id == "btn-close":
             self.dismiss()
+
+    def on_key(self, event) -> None:
+        """Handle keyboard shortcuts."""
+        if event.key == "escape":
+            self.dismiss()
+            event.prevent_default()

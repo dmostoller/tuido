@@ -5,8 +5,10 @@ from __future__ import annotations
 from enum import Enum
 
 from textual.app import ComposeResult
-from textual.containers import Container, Horizontal, Vertical
-from textual.widgets import Button, Static
+from textual.containers import Container, Horizontal
+from textual.widgets import Button, Digits, Static
+
+from ..icons import Icons
 
 
 class PomodoroState(Enum):
@@ -27,39 +29,48 @@ class PomodoroWidget(Container):
         width: 100%;
         border: solid $accent;
         background: $surface;
-        padding: 1;
+        padding: 1 1 0 1;
+        min-width: 30;
+        min-height: 10;
+    }
+
+    PomodoroWidget .pomo-header {
+        layout: horizontal;
+        height: auto;
+        width: 100%;
     }
 
     PomodoroWidget .pomo-title {
         color: $accent;
         text-style: bold;
-        text-align: center;
+        text-align: left;
+        width: 1fr;
     }
 
     PomodoroWidget .pomo-state {
         color: $text-muted;
         text-align: center;
-        margin-top: 1;
     }
 
-    PomodoroWidget .pomo-timer {
+    PomodoroWidget Digits {
         color: $primary;
+        width: 100%;
+        height: auto;
         text-style: bold;
         text-align: center;
-        margin-top: 1;
     }
 
     PomodoroWidget .pomo-sessions {
-        text-align: center;
+        text-align: right;
         color: $text-muted;
-        margin-top: 1;
+        width: auto;
+        content-align: right middle;
     }
 
     PomodoroWidget .pomo-controls {
         layout: horizontal;
         height: auto;
         align: center middle;
-        margin-top: 1;
     }
 
     PomodoroWidget Button {
@@ -83,14 +94,14 @@ class PomodoroWidget(Container):
 
     def compose(self) -> ComposeResult:
         """Compose the pomodoro widget."""
-        with Vertical():
-            yield Static("🍅 Pomodoro", classes="pomo-title")
-            yield Static("Ready to focus", id="pomo-state", classes="pomo-state")
-            yield Static("25:00", id="pomo-timer", classes="pomo-timer")
+        with Horizontal(classes="pomo-header"):
+            yield Static(f"{Icons.TOMATO}", classes="pomo-title")
             yield Static("●○○○", id="pomo-sessions", classes="pomo-sessions")
-            with Horizontal(classes="pomo-controls"):
-                yield Button("Start", id="btn-pomo-start", variant="primary")
-                yield Button("Reset", id="btn-pomo-reset", variant="default")
+        yield Static("Ready to focus", id="pomo-state", classes="pomo-state")
+        yield Digits("25:00", id="pomo-timer")
+        with Horizontal(classes="pomo-controls"):
+            yield Button("Start", id="btn-pomo-start", variant="primary")
+            yield Button("Reset", id="btn-pomo-reset", variant="default")
 
     def on_mount(self) -> None:
         """Initialize the timer."""
@@ -127,7 +138,7 @@ class PomodoroWidget(Container):
         """Start a work session."""
         self.pomo_state = PomodoroState.WORK
         self.time_remaining = self.WORK_DURATION
-        self.query_one("#pomo-state", Static).update("🎯 Focus Time")
+        self.query_one("#pomo-state", Static).update(f"{Icons.TARGET} Focus Time")
         self.timer_interval = self.set_interval(1.0, self.tick)
 
     def reset_timer(self) -> None:
@@ -165,18 +176,18 @@ class PomodoroWidget(Container):
                 # Long break after 4 sessions
                 self.pomo_state = PomodoroState.LONG_BREAK
                 self.time_remaining = self.LONG_BREAK_DURATION
-                self.query_one("#pomo-state", Static).update("☕ Long Break")
+                self.query_one("#pomo-state", Static).update(f"{Icons.COFFEE} Long Break")
             else:
                 # Short break
                 self.pomo_state = PomodoroState.SHORT_BREAK
                 self.time_remaining = self.SHORT_BREAK_DURATION
-                self.query_one("#pomo-state", Static).update("☕ Short Break")
+                self.query_one("#pomo-state", Static).update(f"{Icons.COFFEE} Short Break")
 
         elif self.pomo_state in (PomodoroState.SHORT_BREAK, PomodoroState.LONG_BREAK):
             # Break complete, back to work
             self.pomo_state = PomodoroState.WORK
             self.time_remaining = self.WORK_DURATION
-            self.query_one("#pomo-state", Static).update("🎯 Focus Time")
+            self.query_one("#pomo-state", Static).update(f"{Icons.TARGET} Focus Time")
 
         self.update_display()
 
@@ -185,7 +196,7 @@ class PomodoroWidget(Container):
         minutes = self.time_remaining // 60
         seconds = self.time_remaining % 60
         time_str = f"{minutes:02d}:{seconds:02d}"
-        self.query_one("#pomo-timer", Static).update(time_str)
+        self.query_one("#pomo-timer", Digits).update(time_str)
 
     def update_sessions_display(self) -> None:
         """Update the session indicator."""

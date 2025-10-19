@@ -8,6 +8,8 @@ from textual.app import ComposeResult
 from textual.containers import Container
 from textual.widgets import Digits, Static
 
+from ..icons import Icons
+
 
 class ClockWidget(Container):
     """A live updating clock display."""
@@ -18,8 +20,10 @@ class ClockWidget(Container):
         width: 100%;
         border: solid $accent;
         background: $surface;
-        padding: 1;
+        padding: 1 1 0 1;
         align: center middle;
+        min-width: 30;
+        min-height: 10;
     }
 
     ClockWidget .clock-title {
@@ -30,15 +34,15 @@ class ClockWidget(Container):
 
     ClockWidget Digits {
         color: $primary;
-        width: auto;
+        width: 100%;
         height: auto;
         text-style: bold;
+        text-align: center;
     }
 
     ClockWidget .clock-date {
         color: $text-muted;
         text-align: center;
-        margin-top: 1;
     }
     """
 
@@ -47,7 +51,7 @@ class ClockWidget(Container):
 
     def compose(self) -> ComposeResult:
         """Compose the clock widget."""
-        yield Static("🕐 Time", classes="clock-title")
+        yield Static(f"{Icons.CLOCK} Time", classes="clock-title")
         yield Digits("", id="clock-time")
         yield Static("", id="clock-date", classes="clock-date")
 

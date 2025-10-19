@@ -9,6 +9,7 @@ from textual.containers import Container
 from textual.message import Message
 from textual.widgets import Label, ListItem, ListView, Static
 
+from ..icons import Icons
 from ..models import Task
 
 
@@ -36,7 +37,7 @@ class TaskListPanel(Container):
 
     def compose(self) -> ComposeResult:
         """Compose the task list panel."""
-        yield Label("✓ Tasks", classes="header")
+        yield Label(f"{Icons.CHECK} Tasks", classes="header")
         yield ListView(id="task-list")
 
     def set_tasks(self, tasks: List[Task]) -> None:
@@ -59,7 +60,7 @@ class TaskListPanel(Container):
 
         # Add tasks
         for task in self.tasks:
-            checkbox = "☑" if task.completed else "☐"
+            checkbox = Icons.CHECK_SQUARE if task.completed else Icons.SQUARE_O
             title_class = "task-title completed" if task.completed else "task-title"
 
             # Show subtask progress if any

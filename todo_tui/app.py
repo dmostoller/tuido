@@ -12,6 +12,7 @@ from textual.widgets import Footer, Header
 
 from .models import Project, Task
 from .storage import StorageManager
+from .themes import ALL_THEMES
 from .widgets.dashboard import Dashboard
 from .widgets.dialogs import (
     AddProjectDialog,
@@ -22,7 +23,12 @@ from .widgets.dialogs import (
     HelpDialog,
     MoveTaskDialog,
 )
-from .widgets.project_list import ProjectListPanel, ProjectSelected
+from .widgets.project_list import (
+    DeleteProjectRequested,
+    EditProjectRequested,
+    ProjectListPanel,
+    ProjectSelected,
+)
 from .widgets.task_detail import SubtaskToggled, TaskDetailPanel
 from .widgets.task_list import TaskListPanel, TaskSelected
 
@@ -34,9 +40,8 @@ class TodoApp(App):
 
     BINDINGS = [
         Binding("ctrl+n", "add_task", "Add Task", priority=True),
-        Binding("ctrl+p", "add_project", "Add Project"),
+        Binding("p", "add_project", "Add Project"),
         Binding("space", "toggle_task", "Toggle Complete"),
-        Binding("delete", "delete_task", "Delete Task"),
         Binding("enter", "edit_task", "Edit Task"),
         Binding("q", "quit", "Quit"),
         Binding("?", "help", "Help"),
@@ -63,8 +68,15 @@ class TodoApp(App):
 
     def on_mount(self) -> None:
         """Initialize the application on mount."""
-        self.title = "Todo TUI"
-        self.sub_title = "Terminal Todo Manager"
+        self.title = "Tuido"
+        self.sub_title = "Terminal Task Manager"
+
+        # Register custom themes with official color palettes
+        for theme in ALL_THEMES:
+            self.register_theme(theme)
+
+        # Set default theme to Catppuccin Mocha
+        self.theme = "catppuccin-mocha"
 
         # Load projects
         self.projects = self.storage.load_projects()
@@ -137,6 +149,14 @@ class TodoApp(App):
         self.current_task = message.task
         detail_panel = self.query_one("#task-detail-panel", TaskDetailPanel)
         detail_panel.show_task(message.task)
+
+    def on_edit_project_requested(self, message: EditProjectRequested) -> None:
+        """Handle edit project request from project panel."""
+        self.action_edit_project()
+
+    def on_delete_project_requested(self, message: DeleteProjectRequested) -> None:
+        """Handle delete project request from project panel."""
+        self.action_delete_project()
 
     def on_subtask_toggled(self, message: SubtaskToggled) -> None:
         """Handle subtask toggle."""
@@ -415,20 +435,6 @@ class TodoApp(App):
         if not focused:
             return
 
-        # Check if we're in the projects panel
-        try:
-            projects_panel = self.query_one("#projects-panel", ProjectListPanel)
-            if focused.has_ancestor(projects_panel):
-                if event.key == "e":
-                    self.action_edit_project()
-                    event.prevent_default()
-                elif event.key == "delete":
-                    self.action_delete_project()
-                    event.prevent_default()
-                return
-        except Exception:
-            pass
-
         # Check if we're in the task list panel
         try:
             task_panel = self.query_one("#task-list-panel", TaskListPanel)
@@ -448,6 +454,7 @@ class TodoApp(App):
 
     def on_button_pressed(self, event) -> None:
         """Handle button presses in task detail panel."""
+        # Task detail panel buttons
         if event.button.id == "btn-edit-task":
             self.action_edit_task()
         elif event.button.id == "btn-toggle-task":

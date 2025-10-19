@@ -1,17 +1,20 @@
 # TUI Todo Application - Implementation Plan
 
 ## Project Vision
+
 A beautiful, btop-inspired terminal UI todo application with Catppuccin Mocha theming, featuring a dashboard with metrics, project organization, and both keyboard and mouse support.
 
 ## Architecture Overview
 
 ### Core Components
+
 1. **Data Layer** - JSON-based storage with one file per project
 2. **UI Layer** - Textual widgets with custom styling
 3. **State Management** - Reactive data models using Textual's reactivity
 4. **Theme System** - Catppuccin Mocha color palette
 
 ### Layout Structure (Option A)
+
 ```
 ┌─────────────────────────────────────────────────┐
 │  Dashboard Panel (Top 30%)                      │
@@ -31,6 +34,7 @@ A beautiful, btop-inspired terminal UI todo application with Catppuccin Mocha th
 ## Implementation Phases
 
 ### Phase 1: Foundation & Data Layer ✅ COMPLETE
+
 - [x] Set up project structure
 - [x] Create data models (Task, Project, TodoList)
 - [x] Implement JSON storage manager
@@ -38,6 +42,7 @@ A beautiful, btop-inspired terminal UI todo application with Catppuccin Mocha th
 - [x] Create sample data for testing
 
 ### Phase 2: Basic UI Framework ✅ COMPLETE
+
 - [x] Create main App class with layout
 - [x] Implement Catppuccin Mocha CSS theme
 - [x] Build project sidebar widget
@@ -46,6 +51,7 @@ A beautiful, btop-inspired terminal UI todo application with Catppuccin Mocha th
 - [x] Add basic keyboard navigation (arrow keys, tab)
 
 ### Phase 3: Core Task Operations 🚧 IN PROGRESS
+
 - [x] Quick add dialog (global hotkey: Ctrl+N)
 - [x] Create task functionality
 - [x] Edit task functionality
@@ -55,6 +61,7 @@ A beautiful, btop-inspired terminal UI todo application with Catppuccin Mocha th
 - [ ] Test all task operations work correctly
 
 ### Phase 4: Subtasks & Projects
+
 - [x] Subtask checklist UI (basic structure)
 - [ ] Add/remove subtasks (needs testing)
 - [ ] Auto-complete parent when all subtasks done
@@ -63,6 +70,7 @@ A beautiful, btop-inspired terminal UI todo application with Catppuccin Mocha th
 - [x] Switch between projects
 
 ### Phase 5: Dashboard & Metrics ✅ COMPLETE
+
 - [x] Metrics cards widget (total, completed, completion %)
 - [x] Tasks per project breakdown
 - [x] Tasks completed over time chart
@@ -70,6 +78,7 @@ A beautiful, btop-inspired terminal UI todo application with Catppuccin Mocha th
 - [x] "All Tasks" view across projects
 
 ### Phase 6: Enhanced UX
+
 - [ ] Mouse click support for all actions
 - [ ] Keyboard shortcuts help screen (F1 or ?)
 - [ ] Confirmation dialogs for destructive actions
@@ -78,6 +87,7 @@ A beautiful, btop-inspired terminal UI todo application with Catppuccin Mocha th
 - [ ] Visual states (hover, selected, completed)
 
 ### Phase 7: Polish & Optimization
+
 - [ ] Smooth animations and transitions
 - [ ] Performance optimization for large task lists
 - [ ] Error handling and validation
@@ -88,6 +98,7 @@ A beautiful, btop-inspired terminal UI todo application with Catppuccin Mocha th
 ## Technical Decisions
 
 ### Data Storage
+
 - **Format**: JSON (optimal for structured data, easy to parse)
 - **Structure**:
   - `data/projects.json` - Project metadata
@@ -95,6 +106,7 @@ A beautiful, btop-inspired terminal UI todo application with Catppuccin Mocha th
   - Auto-create data directory if missing
 
 ### Key Bindings
+
 - `Ctrl+N` - Quick add task
 - `Enter` - Edit selected task
 - `Space` - Toggle task completion
@@ -106,6 +118,7 @@ A beautiful, btop-inspired terminal UI todo application with Catppuccin Mocha th
 - `q` - Quit application
 
 ### Catppuccin Mocha Colors
+
 - Background: #1e1e2e
 - Surface0: #313244
 - Surface1: #45475a
@@ -122,6 +135,7 @@ A beautiful, btop-inspired terminal UI todo application with Catppuccin Mocha th
 - Lavender: #b4befe
 
 ## File Structure
+
 ```
 todo-tui/
 ├── main.py                 # Entry point
@@ -146,6 +160,7 @@ todo-tui/
 ## Current Status
 
 ### What's Working
+
 - ✅ Beautiful Catppuccin Mocha themed UI
 - ✅ Dashboard showing task metrics (total, completed, completion rate, today, this week)
 - ✅ Project list with "All Tasks" view
@@ -160,6 +175,7 @@ todo-tui/
 - ✅ Toggle task completion
 
 ### What Needs Work
+
 - ⏳ Subtask management (add/remove/toggle)
 - ⏳ Mouse click support
 - ⏳ Help screen (?)
@@ -184,6 +200,7 @@ textual run --dev main.py
 ```
 
 ## Success Criteria
+
 - ✅ Beautiful, cohesive Catppuccin Mocha UI
 - ✅ Fast and responsive (keyboard + mouse)
 - ✅ All CRUD operations work smoothly
@@ -192,6 +209,7 @@ textual run --dev main.py
 - ⏳ Intuitive UX that speeds up daily workflow
 
 ## Next Steps
+
 1. Test all existing functionality thoroughly
 2. Implement subtask add/remove functionality
 3. Add mouse click support throughout the app

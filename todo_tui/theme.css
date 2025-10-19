@@ -1,26 +1,27 @@
 /* stylelint-disable */
-/* Catppuccin Mocha Theme */
+/* Theme-aware styles using Textual theme variables */
 
 Screen {
-    background: #1e1e2e;
+    layout: vertical;
+    background: $background;
 }
 
 /* Dashboard Panel */
 #dashboard {
     height: 45%;
-    background: #313244;
+    background: $surface;
     padding: 1;
 }
 
 /* Dashboard Quadrants */
 #stats-quadrant {
-    background: #45475a;
-    border: solid #89b4fa;
+    background: $panel;
+    border: solid $primary;
 }
 
 #clock-quadrant {
-    background: #45475a;
-    border: solid #89b4fa;
+    background: $panel;
+    border: solid $primary;
 }
 
 #sparkline-quadrant {
@@ -28,13 +29,13 @@ Screen {
 }
 
 #pomodoro-quadrant {
-    background: #45475a;
-    border: solid #89b4fa;
+    background: $panel;
+    border: solid $primary;
 }
 
 /* Sparkline specific styles */
 Sparkline {
-    color: #89b4fa;
+    color: $primary;
 }
 
 /* Main Content Area */
@@ -45,188 +46,189 @@ Sparkline {
 
 /* Left Column (Projects + Tasks) */
 #left-column {
+    layout: vertical;
     width: 33%;
     height: 100%;
 }
 
 /* Projects Panel */
 #projects-panel {
-    height: 40%;
-    background: #313244;
-    border: solid #45475a;
+    height: 1fr;
+    background: $surface;
+    border: solid $panel;
     padding: 1;
 }
 
 #projects-panel:focus-within {
-    border: solid #cba6f7;
+    border: solid $secondary;
 }
 
 .all-tasks {
-    color: #89b4fa;
+    color: $primary;
 }
 
 /* Task List Panel */
 #task-list-panel {
-    height: 60%;
-    background: #313244;
-    border: solid #45475a;
+    height: 2fr;
+    background: $surface;
+    border: solid $panel;
     padding: 1;
 }
 
 #task-list-panel:focus-within {
-    border: solid #cba6f7;
+    border: solid $secondary;
 }
 
 .task-title {
-    color: #cdd6f4;
+    color: $foreground;
 }
 
 .task-title.completed {
     text-style: strike;
-    color: #6c7086;
+    color: $text-disabled;
 }
 
 /* Task Detail Panel */
 #task-detail-panel {
     width: 67%;
-    background: #313244;
-    border: solid #45475a;
+    background: $surface;
+    border: solid $panel;
     padding: 1;
 }
 
 #task-detail-panel:focus-within {
-    border: solid #cba6f7;
+    border: solid $secondary;
 }
 
 .detail-label {
-    color: #89b4fa;
+    color: $primary;
     text-style: bold;
 }
 
 .detail-value {
-    color: #cdd6f4;
+    color: $foreground;
 }
 
 .subtask-item {
-    color: #cdd6f4;
+    color: $foreground;
     padding: 0 1;
 }
 
 .subtask-item.completed {
-    color: #6c7086;
+    color: $text-disabled;
     text-style: strike dim;
 }
 
 /* Buttons */
 Button {
-    background: #45475a;
-    color: #cdd6f4;
-    border: solid #89b4fa;
+    background: $panel;
+    color: $foreground;
+    border: solid $primary;
     margin: 1 0;
 }
 
 Button:hover {
-    background: #585b70;
-    color: #b4befe;
-    border: solid #b4befe;
+    background: $panel-lighten-1;
+    color: $primary-lighten-1;
+    border: solid $primary-lighten-1;
 }
 
 Button:focus {
-    background: #89b4fa;
-    color: #1e1e2e;
+    background: $primary;
+    color: $background;
     text-style: bold;
 }
 
 /* Input fields */
 Input {
-    background: #45475a;
-    color: #cdd6f4;
-    border: solid #585b70;
+    background: $panel;
+    color: $foreground;
+    border: solid $panel-darken-1;
 }
 
 Input:focus {
-    border: solid #89b4fa;
-    background: #313244;
+    border: solid $primary;
+    background: $surface;
 }
 
 TextArea {
-    background: #45475a;
-    color: #cdd6f4;
-    border: solid #585b70;
+    background: $panel;
+    color: $foreground;
+    border: solid $panel-darken-1;
 }
 
 TextArea:focus {
-    border: solid #89b4fa;
-    background: #313244;
+    border: solid $primary;
+    background: $surface;
 }
 
 /* Labels */
 Label {
-    color: #cdd6f4;
+    color: $foreground;
 }
 
 Label.title {
-    color: #b4befe;
+    color: $primary-lighten-1;
     text-style: bold;
 }
 
 Label.header {
-    color: #89b4fa;
+    color: $primary;
     text-style: bold;
 }
 
 Label.muted {
-    color: #a6adc8;
+    color: $text-muted;
 }
 
 .completed {
-    color: #6c7086;
+    color: $text-disabled;
 }
 
 /* Static text */
 Static {
-    color: #cdd6f4;
+    color: $foreground;
 }
 
 .muted {
-    color: #a6adc8;
+    color: $text-muted;
 }
 
 /* Header */
 Header {
-    background: #313244;
-    color: #b4befe;
+    background: $surface;
+    color: $primary-lighten-1;
     text-style: bold;
 }
 
 /* Footer */
 Footer {
-    background: #313244;
-    color: #a6adc8;
+    background: $surface;
+    color: $text-muted;
 }
 
 /* ListView */
 ListView {
-    background: #313244;
-    scrollbar-background: #45475a;
-    scrollbar-color: #89b4fa;
+    background: $surface;
+    scrollbar-background: $panel;
+    scrollbar-color: $primary;
 }
 
 ListView:focus {
-    background: #313244;
+    background: $surface;
 }
 
 /* ListItem */
 ListItem {
-    color: #cdd6f4;
-    background: #313244;
+    color: $foreground;
+    background: $surface;
 }
 
 ListItem:hover {
-    background: #45475a;
+    background: $panel;
 }
 
 ListItem.--highlight {
-    background: #45475a;
-    color: #b4befe;
+    background: $panel;
+    color: $primary-lighten-1;
 }
