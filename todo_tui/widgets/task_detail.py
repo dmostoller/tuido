@@ -76,9 +76,27 @@ class TaskDetailPanel(Container):
 
         # Task title
         checkbox = Icons.CHECK_SQUARE if task.completed else Icons.SQUARE_O
-        title_text = f"{checkbox} {task.title}"
+        priority_icon, _ = task.get_priority_display()
+        priority_str = f"{priority_icon} " if priority_icon else ""
+        title_text = f"{priority_str}{checkbox} {task.title}"
         title_class = "title completed" if task.completed else "title"
         content.mount(Label(title_text, classes=title_class))
+
+        # Priority (show label if not none)
+        if task.priority != "none":
+            priority_labels = {
+                "high": "High Priority",
+                "medium": "Medium Priority",
+                "low": "Low Priority",
+            }
+            priority_display = priority_labels.get(task.priority, "")
+            if priority_display:
+                content.mount(Label("Priority:", classes="detail-label"))
+                content.mount(
+                    Static(
+                        f"{priority_icon} {priority_display}", classes="detail-value"
+                    )
+                )
 
         # Description
         if task.description:

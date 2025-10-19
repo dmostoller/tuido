@@ -126,7 +126,7 @@ Sparkline {
 
 /* Buttons */
 Button {
-    background: $panel;
+    background: $surface;
     color: $foreground;
     border: solid $primary;
     margin: 0 0;
@@ -145,7 +145,7 @@ Button:focus {
 
 /* Input fields */
 Input {
-    background: $panel;
+    background: $surface;
     color: $foreground;
     border: solid $panel-darken-1;
 }
@@ -234,6 +234,8 @@ ListItem:hover {
 }
 
 ListItem.--highlight {
-    background: $panel;
-    color: $primary-lighten-1;
+    background: $accent;
+    color: $text;
+    text-style: bold;
+    border-left: heavy $primary;
 }

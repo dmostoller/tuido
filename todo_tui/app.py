@@ -20,10 +20,13 @@ from .widgets.dialogs import (
     ConfirmDialog,
     EditProjectDialog,
     EditTaskDialog,
+    ErrorDialog,
     HelpDialog,
+    InfoDialog,
     MoveTaskDialog,
     SettingsDialog,
 )
+from .widgets.pomodoro_widget import PomodoroWidget
 from .widgets.project_list import (
     DeleteProjectRequested,
     EditProjectRequested,
@@ -72,7 +75,7 @@ class TodoApp(App):
     def on_mount(self) -> None:
         """Initialize the application on mount."""
         self.title = "Tuido"
-        self.sub_title = "Terminal Task Manager"
+        self.sub_title = "TUI To-Do List"
 
         # Load settings
         self.settings = self.storage.load_settings()
@@ -83,10 +86,6 @@ class TodoApp(App):
 
         # Apply saved theme
         self.theme = self.settings.theme
-
-        # Apply Nerd Fonts setting to Icons module
-        import todo_tui.icons as icons
-        icons.NERD_FONTS_ENABLED = self.settings.nerd_fonts_enabled
 
         # Load projects
         self.projects = self.storage.load_projects()
@@ -108,7 +107,9 @@ class TodoApp(App):
         """Load and display all tasks across all projects."""
         all_tasks = self.storage.load_all_tasks()
         task_panel = self.query_one("#task-list-panel", TaskListPanel)
-        task_panel.set_tasks(all_tasks, self.settings.show_completed_tasks if self.settings else True)
+        task_panel.set_tasks(
+            all_tasks, self.settings.show_completed_tasks if self.settings else True
+        )
 
         # Update dashboard
         dashboard = self.query_one("#dashboard", Dashboard)
@@ -124,7 +125,9 @@ class TodoApp(App):
         """Load and display tasks for a specific project."""
         tasks = self.storage.load_tasks(project_id)
         task_panel = self.query_one("#task-list-panel", TaskListPanel)
-        task_panel.set_tasks(tasks, self.settings.show_completed_tasks if self.settings else True)
+        task_panel.set_tasks(
+            tasks, self.settings.show_completed_tasks if self.settings else True
+        )
 
         # Update dashboard with all tasks for global metrics
         all_tasks = self.storage.load_all_tasks()
@@ -297,9 +300,20 @@ class TodoApp(App):
         self.current_task.toggle_complete()
         self.storage.update_task(self.current_task)
 
-        # Refresh display
+        # Refresh display with pulse animation
         task_panel = self.query_one("#task-list-panel", TaskListPanel)
         task_panel.refresh_display()
+
+        # Pulse animation on task panel
+        task_panel.styles.animate(
+            "opacity",
+            value=0.7,
+            duration=0.2,
+            easing="in_out_cubic",
+            on_complete=lambda: task_panel.styles.animate(
+                "opacity", value=1.0, duration=0.2, easing="in_out_cubic"
+            ),
+        )
 
         # Update detail panel
         detail_panel = self.query_one("#task-detail-panel", TaskDetailPanel)
@@ -358,7 +372,12 @@ class TodoApp(App):
 
         # Don't allow deleting if it's the only project
         if len(self.projects) <= 1:
-            # TODO: Show error message - need at least one project
+            self.push_screen(
+                ErrorDialog(
+                    "Cannot delete the only project. You must have at least one project.",
+                    "Cannot Delete Project",
+                )
+            )
             return
 
         # Store reference since self.current_project might change
@@ -412,7 +431,12 @@ class TodoApp(App):
 
         # Can't move if not viewing a specific project
         if not self.current_project_id:
-            # TODO: Show error message - select a project first
+            self.push_screen(
+                InfoDialog(
+                    "Please select a specific project first. You cannot move tasks from the 'All Tasks' view.",
+                    "Select a Project",
+                )
+            )
             return
 
         # Store reference since self.current_task might change
@@ -473,23 +497,29 @@ class TodoApp(App):
                 # Apply theme change
                 self.theme = result.theme
 
-                # Apply Nerd Fonts change
-                import todo_tui.icons as icons
-                icons.NERD_FONTS_ENABLED = result.nerd_fonts_enabled
-
-                # Refresh UI to apply icon changes
-                self.refresh()
-
                 # Reload task list if show_completed_tasks changed
                 if self.current_project_id is None:
                     self._load_all_tasks()
                 else:
                     self._load_project_tasks(self.current_project_id)
 
-        self.push_screen(
-            SettingsDialog(self.settings, theme_names),
-            check_settings
-        )
+                # Reset pomodoro timer to apply new durations
+                try:
+                    pomo_widget = self.query_one(PomodoroWidget)
+                    pomo_widget.reset_timer()
+                except Exception:
+                    pass  # Widget might not be mounted yet
+
+                # Refresh weather widget with new settings
+                try:
+                    from .widgets.weather_widget import WeatherWidget
+
+                    weather_widget = self.query_one(WeatherWidget)
+                    weather_widget.refresh_weather_settings()
+                except Exception:
+                    pass  # Widget might not be mounted yet
+
+        self.push_screen(SettingsDialog(self.settings, theme_names), check_settings)
 
     def action_help(self) -> None:
         """Show help information."""

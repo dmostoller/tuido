@@ -5,7 +5,17 @@ from typing import List, Optional
 from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.screen import ModalScreen
-from textual.widgets import Button, Input, Label, ListItem, ListView, Select, Static, Switch, TextArea
+from textual.widgets import (
+    Button,
+    Input,
+    Label,
+    ListItem,
+    ListView,
+    Select,
+    Static,
+    Switch,
+    TextArea,
+)
 
 from ..icons import Icons
 from ..models import Project, Settings, Task
@@ -19,7 +29,7 @@ class AddTaskDialog(ModalScreen):
         align: center middle;
     }
 
-    #dialog-container {
+    AddTaskDialog > #dialog-container {
         width: 60;
         height: auto;
         background: $surface;
@@ -54,6 +64,14 @@ class AddTaskDialog(ModalScreen):
             yield Label(f"{Icons.PLUS} Add New Task", classes="header")
             yield Label("Title:")
             yield Input(placeholder="Enter task title", id="task-title-input")
+            yield Label("Priority:")
+            priority_options = [
+                ("None", "none"),
+                (f"[#89b4fa]{Icons.BOOKMARK}[/] Low", "low"),
+                (f"[#f9e2af]{Icons.BOOKMARK}[/] Medium", "medium"),
+                (f"[#f38ba8]{Icons.BOOKMARK}[/] High", "high"),
+            ]
+            yield Select(options=priority_options, value="none", id="priority-select")
             yield Label("Description (optional):")
             yield TextArea(id="task-description-input")
             yield Label("Notes (optional):")
@@ -71,6 +89,12 @@ class AddTaskDialog(ModalScreen):
             if not title:
                 return
 
+            priority_select = self.query_one("#priority-select", Select)
+            priority = (
+                priority_select.value
+                if priority_select.value != Select.BLANK
+                else "none"
+            )
             description = self.query_one(
                 "#task-description-input", TextArea
             ).text.strip()
@@ -81,6 +105,7 @@ class AddTaskDialog(ModalScreen):
                 description=description,
                 notes=notes,
                 project_id=self.project_id,
+                priority=priority,
             )
             self.dismiss(task)
 
@@ -105,7 +130,7 @@ class EditTaskDialog(ModalScreen):
         align: center middle;
     }
 
-    #dialog-container {
+    EditTaskDialog > #dialog-container {
         width: 60;
         height: auto;
         background: $surface;
@@ -179,6 +204,20 @@ class EditTaskDialog(ModalScreen):
                 id="task-title-input",
             )
 
+            # Priority selector
+            yield Label("Priority:")
+            priority_options = [
+                ("None", "none"),
+                (f"[#89b4fa]{Icons.BOOKMARK}[/] Low", "low"),
+                (f"[#f9e2af]{Icons.BOOKMARK}[/] Medium", "medium"),
+                (f"[#f38ba8]{Icons.BOOKMARK}[/] High", "high"),
+            ]
+            yield Select(
+                options=priority_options,
+                value=self.edit_task.priority,
+                id="priority-select-edit",
+            )
+
             # Project selector (only show if projects are provided)
             if self.projects:
                 yield Label("Project:")
@@ -197,7 +236,9 @@ class EditTaskDialog(ModalScreen):
 
             # Subtasks section
             with Vertical(id="subtask-section"):
-                yield Label("Subtasks (Space: toggle, ✗: remove):", classes="detail-label")
+                yield Label(
+                    "Subtasks (Space: toggle, ✗: remove):", classes="detail-label"
+                )
                 yield Input(placeholder="Add subtask (press Enter)", id="subtask-input")
                 subtask_list = ListView(id="edit-subtask-list")
                 yield subtask_list
@@ -214,6 +255,18 @@ class EditTaskDialog(ModalScreen):
         """Refresh the subtask list display."""
         subtask_list = self.query_one("#edit-subtask-list", ListView)
         subtask_list.clear()
+
+        # Show empty state if no subtasks
+        if not self.edit_task.subtasks:
+            subtask_list.append(
+                ListItem(
+                    Static(
+                        "No subtasks yet. Type above and press Enter to add one!",
+                        classes="muted",
+                    )
+                )
+            )
+            return
 
         for idx, subtask in enumerate(self.edit_task.subtasks):
             checkbox = Icons.CHECK_SQUARE if subtask.completed else Icons.SQUARE_O
@@ -256,12 +309,19 @@ class EditTaskDialog(ModalScreen):
             if not title:
                 return
 
+            priority_select = self.query_one("#priority-select-edit", Select)
+            priority = (
+                priority_select.value
+                if priority_select.value != Select.BLANK
+                else "none"
+            )
             description = self.query_one(
                 "#task-description-input", TextArea
             ).text.strip()
             notes = self.query_one("#task-notes-input", TextArea).text.strip()
 
             self.edit_task.title = title
+            self.edit_task.priority = priority
             self.edit_task.description = description
             self.edit_task.notes = notes
 
@@ -561,9 +621,7 @@ class MoveTaskDialog(ModalScreen):
             if project.id == self.current_project_id:
                 continue
 
-            project_list.append(
-                ListItem(Static(f"{Icons.FOLDER} {project.name}"))
-            )
+            project_list.append(ListItem(Static(f"{Icons.FOLDER} {project.name}")))
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Handle project selection."""
@@ -572,7 +630,9 @@ class MoveTaskDialog(ModalScreen):
 
         index = event.list_view.index
         # Filter out current project from list
-        available_projects = [p for p in self.projects if p.id != self.current_project_id]
+        available_projects = [
+            p for p in self.projects if p.id != self.current_project_id
+        ]
 
         if index is not None and 0 <= index < len(available_projects):
             self.selected_project_id = available_projects[index].id
@@ -621,6 +681,12 @@ class SettingsDialog(ModalScreen):
         height: auto;
         margin: 1 0;
     }
+
+    .setting-hint {
+        color: $text-muted;
+        text-style: italic;
+        margin-left: 2;
+    }
     """
 
     def __init__(self, current_settings: Settings, available_themes: List[str]):
@@ -637,18 +703,59 @@ class SettingsDialog(ModalScreen):
             yield Label("Default Theme:")
             theme_options = [(name, name) for name in self.available_themes]
             yield Select(
-                options=theme_options,
-                value=self.settings.theme,
-                id="theme-select"
+                options=theme_options, value=self.settings.theme, id="theme-select"
             )
-
-            # Nerd Fonts toggle
-            yield Label("Enable Nerd Font Icons:")
-            yield Switch(value=self.settings.nerd_fonts_enabled, id="nerd-fonts-switch")
 
             # Show completed tasks toggle
             yield Label("Show Completed Tasks:")
-            yield Switch(value=self.settings.show_completed_tasks, id="show-completed-switch")
+            yield Switch(
+                value=self.settings.show_completed_tasks, id="show-completed-switch"
+            )
+
+            # Weather configuration
+            yield Label("Weather Location:")
+            yield Input(
+                value=self.settings.weather_location,
+                placeholder="San Francisco  or  London,UK",
+                id="weather-location-input",
+            )
+
+            yield Label("Temperature Unit:")
+            yield Switch(
+                value=self.settings.weather_use_fahrenheit, id="weather-unit-switch"
+            )
+            yield Static(
+                "Fahrenheit (°F)"
+                if self.settings.weather_use_fahrenheit
+                else "Celsius (°C)",
+                id="weather-unit-label",
+                classes="setting-hint",
+            )
+
+            # Pomodoro duration settings
+            yield Label("Pomodoro Work Duration (minutes):")
+            yield Input(
+                value=str(self.settings.pomodoro_work_minutes),
+                placeholder="25",
+                id="pomodoro-work-input",
+                type="integer",
+            )
+
+            yield Label("Pomodoro Short Break (minutes):")
+            yield Input(
+                value=str(self.settings.pomodoro_short_break_minutes),
+                placeholder="5",
+                id="pomodoro-short-break-input",
+                type="integer",
+            )
+
+            yield Label("Pomodoro Long Break (minutes):")
+            yield Input(
+                value=str(self.settings.pomodoro_long_break_minutes),
+                placeholder="15",
+                id="pomodoro-long-break-input",
+                type="integer",
+            )
 
             with Horizontal(id="dialog-buttons"):
                 yield Button("Cancel", id="btn-cancel", variant="default")
@@ -661,13 +768,47 @@ class SettingsDialog(ModalScreen):
         elif event.button.id == "btn-save":
             # Read current values
             theme_select = self.query_one("#theme-select", Select)
-            nerd_fonts_switch = self.query_one("#nerd-fonts-switch", Switch)
             show_completed_switch = self.query_one("#show-completed-switch", Switch)
+
+            # Read weather settings
+            weather_location_input = self.query_one("#weather-location-input", Input)
+            weather_unit_switch = self.query_one("#weather-unit-switch", Switch)
+
+            # Read and validate pomodoro durations
+            work_input = self.query_one("#pomodoro-work-input", Input)
+            short_break_input = self.query_one("#pomodoro-short-break-input", Input)
+            long_break_input = self.query_one("#pomodoro-long-break-input", Input)
+
+            # Validate and parse durations with bounds checking
+            try:
+                work_minutes = int(work_input.value)
+                if not (1 <= work_minutes <= 120):
+                    work_minutes = self.settings.pomodoro_work_minutes
+            except ValueError:
+                work_minutes = self.settings.pomodoro_work_minutes
+
+            try:
+                short_break_minutes = int(short_break_input.value)
+                if not (1 <= short_break_minutes <= 60):
+                    short_break_minutes = self.settings.pomodoro_short_break_minutes
+            except ValueError:
+                short_break_minutes = self.settings.pomodoro_short_break_minutes
+
+            try:
+                long_break_minutes = int(long_break_input.value)
+                if not (1 <= long_break_minutes <= 60):
+                    long_break_minutes = self.settings.pomodoro_long_break_minutes
+            except ValueError:
+                long_break_minutes = self.settings.pomodoro_long_break_minutes
 
             # Update settings
             self.settings.theme = theme_select.value
-            self.settings.nerd_fonts_enabled = nerd_fonts_switch.value
             self.settings.show_completed_tasks = show_completed_switch.value
+            self.settings.weather_location = weather_location_input.value.strip()
+            self.settings.weather_use_fahrenheit = weather_unit_switch.value
+            self.settings.pomodoro_work_minutes = work_minutes
+            self.settings.pomodoro_short_break_minutes = short_break_minutes
+            self.settings.pomodoro_long_break_minutes = long_break_minutes
 
             self.dismiss(self.settings)
 
@@ -675,6 +816,102 @@ class SettingsDialog(ModalScreen):
         """Handle keyboard shortcuts."""
         if event.key == "escape":
             self.dismiss(None)
+            event.prevent_default()
+
+
+class ErrorDialog(ModalScreen):
+    """Modal dialog for displaying error messages."""
+
+    DEFAULT_CSS = """
+    ErrorDialog {
+        align: center middle;
+    }
+
+    ErrorDialog > #dialog-container {
+        width: 50;
+        height: auto;
+        background: $surface;
+        border: thick $error;
+        padding: 1;
+    }
+
+    #dialog-buttons {
+        height: auto;
+        layout: horizontal;
+        align: center middle;
+    }
+    """
+
+    def __init__(self, message: str, title: str = "Error"):
+        super().__init__()
+        self.message = message
+        self.title = title
+
+    def compose(self) -> ComposeResult:
+        """Compose the error dialog."""
+        with Container(id="dialog-container"):
+            yield Label(f"{Icons.WARNING}  {self.title}", classes="header")
+            yield Label(self.message)
+            with Horizontal(id="dialog-buttons"):
+                yield Button("OK", id="btn-ok", variant="error")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button press."""
+        if event.button.id == "btn-ok":
+            self.dismiss()
+
+    def on_key(self, event) -> None:
+        """Handle keyboard shortcuts."""
+        if event.key == "escape" or event.key == "enter":
+            self.dismiss()
+            event.prevent_default()
+
+
+class InfoDialog(ModalScreen):
+    """Modal dialog for displaying informational messages."""
+
+    DEFAULT_CSS = """
+    InfoDialog {
+        align: center middle;
+    }
+
+    InfoDialog > #dialog-container {
+        width: 50;
+        height: auto;
+        background: $surface;
+        border: thick $primary;
+        padding: 1;
+    }
+
+    #dialog-buttons {
+        height: auto;
+        layout: horizontal;
+        align: center middle;
+    }
+    """
+
+    def __init__(self, message: str, title: str = "Information"):
+        super().__init__()
+        self.message = message
+        self.title = title
+
+    def compose(self) -> ComposeResult:
+        """Compose the info dialog."""
+        with Container(id="dialog-container"):
+            yield Label(f"{Icons.INFO}  {self.title}", classes="header")
+            yield Label(self.message)
+            with Horizontal(id="dialog-buttons"):
+                yield Button("OK", id="btn-ok", variant="primary")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button press."""
+        if event.button.id == "btn-ok":
+            self.dismiss()
+
+    def on_key(self, event) -> None:
+        """Handle keyboard shortcuts."""
+        if event.key == "escape" or event.key == "enter":
+            self.dismiss()
             event.prevent_default()
 
 
@@ -718,33 +955,79 @@ class HelpDialog(ModalScreen):
 
             # General shortcuts
             yield Static("General", classes="help-title")
-            yield Static("[bold yellow]n[/] - Add new task", classes="help-item", markup=True)
-            yield Static("[bold yellow]p[/] - Add new project", classes="help-item", markup=True)
-            yield Static("[bold yellow]?[/] - Show this help", classes="help-item", markup=True)
-            yield Static("[bold yellow]q[/] - Quit application", classes="help-item", markup=True)
+            yield Static(
+                "[bold yellow]n[/] - Add new task", classes="help-item", markup=True
+            )
+            yield Static(
+                "[bold yellow]p[/] - Add new project", classes="help-item", markup=True
+            )
+            yield Static(
+                "[bold yellow]?[/] - Show this help", classes="help-item", markup=True
+            )
+            yield Static(
+                "[bold yellow]q[/] - Quit application", classes="help-item", markup=True
+            )
 
             # Task shortcuts
             yield Static("Tasks (when task selected)", classes="help-title")
-            yield Static("[bold yellow]Enter[/] - Edit task", classes="help-item", markup=True)
-            yield Static("[bold yellow]Space[/] - Toggle completion", classes="help-item", markup=True)
-            yield Static("[bold yellow]Delete[/] - Delete task", classes="help-item", markup=True)
-            yield Static("[bold yellow]m[/] - Move task to another project", classes="help-item", markup=True)
+            yield Static(
+                "[bold yellow]Enter[/] - Edit task", classes="help-item", markup=True
+            )
+            yield Static(
+                "[bold yellow]Space[/] - Toggle completion",
+                classes="help-item",
+                markup=True,
+            )
+            yield Static(
+                "[bold yellow]Delete[/] - Delete task", classes="help-item", markup=True
+            )
+            yield Static(
+                "[bold yellow]m[/] - Move task to another project",
+                classes="help-item",
+                markup=True,
+            )
 
             # Project shortcuts
             yield Static("Projects (when project selected)", classes="help-title")
-            yield Static("[bold yellow]E[/] - Edit project name", classes="help-item", markup=True)
-            yield Static("[bold yellow]D[/] - Delete project (migrates tasks)", classes="help-item", markup=True)
+            yield Static(
+                "[bold yellow]E[/] - Edit project name",
+                classes="help-item",
+                markup=True,
+            )
+            yield Static(
+                "[bold yellow]D[/] - Delete project (migrates tasks)",
+                classes="help-item",
+                markup=True,
+            )
 
             # Subtask shortcuts
             yield Static("Subtasks (in edit dialog)", classes="help-title")
-            yield Static("[bold yellow]Enter[/] - Add subtask (in input field)", classes="help-item", markup=True)
-            yield Static("[bold yellow]Space[/] - Toggle subtask completion", classes="help-item", markup=True)
-            yield Static("[bold yellow]Delete[/] - Remove subtask", classes="help-item", markup=True)
+            yield Static(
+                "[bold yellow]Enter[/] - Add subtask (in input field)",
+                classes="help-item",
+                markup=True,
+            )
+            yield Static(
+                "[bold yellow]Space[/] - Toggle subtask completion",
+                classes="help-item",
+                markup=True,
+            )
+            yield Static(
+                "[bold yellow]Delete[/] - Remove subtask",
+                classes="help-item",
+                markup=True,
+            )
 
             # Navigation
             yield Static("Navigation", classes="help-title")
-            yield Static("[bold yellow]Tab[/] - Move focus between panels", classes="help-item", markup=True)
-            yield Static("[bold yellow]↑/↓[/] - Navigate lists", classes="help-item", markup=True)
+            yield Static(
+                "[bold yellow]Tab[/] - Move focus between panels",
+                classes="help-item",
+                markup=True,
+            )
+            yield Static(
+                "[bold yellow]↑/↓[/] - Navigate lists", classes="help-item", markup=True
+            )
 
             with Horizontal(id="dialog-buttons"):
                 yield Button("Close", id="btn-close", variant="success")

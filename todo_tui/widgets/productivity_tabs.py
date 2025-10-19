@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from textual.app import ComposeResult
 from textual.containers import Container
-from textual.widgets import TabPane, TabbedContent
+from textual.widgets import TabbedContent, TabPane
 
 from ..icons import Icons
 from .pomodoro_widget import PomodoroWidget
@@ -79,4 +79,3 @@ class ProductivityTabs(Container):
                 yield WeatherWidget()
             with TabPane(f"{Icons.TOMATO} Pomodoro", id="pomodoro-tab"):
                 yield PomodoroWidget()
-            

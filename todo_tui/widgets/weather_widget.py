@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Optional
 
 from textual.app import ComposeResult
@@ -96,8 +96,9 @@ class WeatherWidget(Container):
         self.last_updated: Optional[datetime] = None
         self.update_interval = None
         self.api_key = os.getenv("OPENWEATHER_API_KEY", "")
-        self.location = os.getenv("WEATHER_LOCATION", "")
-        self.use_fahrenheit = os.getenv("WEATHER_UNIT", "F") == "F"
+        # Location and unit will be loaded from settings
+        self.location = "Philadelphia, US"
+        self.use_fahrenheit = True
 
     def compose(self) -> ComposeResult:
         """Compose the weather widget."""
@@ -108,18 +109,44 @@ class WeatherWidget(Container):
         # Main display: Large temperature Digits + Large weather icon
         with Horizontal(classes="weather-main-display"):
             yield Digits("--°", id="weather-temp")
-            yield Static(Icons.CLOUD, id="weather-icon-large", classes="weather-icon-large")
+            yield Static(
+                Icons.CLOUD, id="weather-icon-large", classes="weather-icon-large"
+            )
 
         # Footer: Condition (left) + Details (right)
         with Horizontal(classes="weather-footer"):
-            yield Static("Loading...", id="weather-condition", classes="weather-condition")
+            yield Static(
+                "Loading...", id="weather-condition", classes="weather-condition"
+            )
             yield Static("", id="weather-details", classes="weather-details")
+
+    def _load_settings(self) -> None:
+        """Load location and temperature unit from app settings."""
+        try:
+            settings = self.app.settings
+            if settings:
+                self.location = settings.weather_location
+                self.use_fahrenheit = settings.weather_use_fahrenheit
+        except AttributeError:
+            # Fallback to environment variables for migration/backwards compatibility
+            self.location = os.getenv("WEATHER_LOCATION", "Philadelphia, US")
+            self.use_fahrenheit = os.getenv("WEATHER_UNIT", "F") == "F"
 
     def on_mount(self) -> None:
         """Initialize the weather widget."""
+        # Load settings before fetching weather
+        self._load_settings()
         # Set up automatic updates every 30 minutes
         self.update_interval = self.set_interval(1800.0, self.fetch_weather)
         # Fetch weather immediately
+        self.fetch_weather()
+
+    def refresh_weather_settings(self) -> None:
+        """Refresh weather settings and re-fetch data.
+
+        Call this method when settings change to immediately apply new location/unit.
+        """
+        self._load_settings()
         self.fetch_weather()
 
     def fetch_weather(self) -> None:
@@ -138,7 +165,7 @@ class WeatherWidget(Container):
             temp_symbol = "°F" if self.use_fahrenheit else "°C"
 
             # Build API URL
-            url = f"https://api.openweathermap.org/data/2.5/weather"
+            url = "https://api.openweathermap.org/data/2.5/weather"
             params = {
                 "q": self.location,
                 "appid": self.api_key,
@@ -212,9 +239,7 @@ class WeatherWidget(Container):
         self.query_one("#weather-icon-large", Static).update(Icons.QUESTION)
         self.query_one("#weather-temp", Digits).update("--°")
         self.query_one("#weather-condition", Static).update("Not Configured")
-        self.query_one("#weather-details", Static).update(
-            "Set API Key"
-        )
+        self.query_one("#weather-details", Static).update("Set API Key")
 
     def _display_error(self, error_msg: str) -> None:
         """Display error message."""

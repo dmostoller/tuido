@@ -30,6 +30,7 @@ class Task:
     completed_at: Optional[str] = None
     subtasks: List[Subtask] = field(default_factory=list)
     project_id: str = ""
+    priority: str = "none"  # Options: "high", "medium", "low", "none"
 
     def toggle_complete(self) -> None:
         """Toggle task completion status."""
@@ -83,6 +84,7 @@ class Task:
                 for s in self.subtasks
             ],
             "project_id": self.project_id,
+            "priority": self.priority,
         }
 
     @classmethod
@@ -102,7 +104,24 @@ class Task:
             completed_at=data.get("completed_at"),
             subtasks=subtasks,
             project_id=data.get("project_id", ""),
+            priority=data.get("priority", "none"),
         )
+
+    def get_priority_display(self) -> tuple[str, str]:
+        """Get priority icon and color for display.
+
+        Returns:
+            tuple: (icon, color_class) for the priority level
+        """
+        from .icons import Icons
+
+        priority_map = {
+            "high": (f"[#f38ba8]{Icons.BOOKMARK}[/]", "error"),
+            "medium": (f"[#f9e2af]{Icons.BOOKMARK}[/]", "warning"),
+            "low": (f"[#89b4fa]{Icons.BOOKMARK}[/]", "success"),
+            "none": ("", ""),
+        }
+        return priority_map.get(self.priority, ("", ""))
 
 
 @dataclass
@@ -129,20 +148,32 @@ class Settings:
 
     Attributes:
         theme: The default theme to use on startup (e.g., 'catppuccin-mocha')
-        nerd_fonts_enabled: Whether to display Nerd Font icons (True) or ASCII fallbacks (False)
         show_completed_tasks: Whether to show completed tasks in the task list (True) or hide them (False)
+        pomodoro_work_minutes: Duration of work sessions in minutes (default: 25)
+        pomodoro_short_break_minutes: Duration of short breaks in minutes (default: 5)
+        pomodoro_long_break_minutes: Duration of long breaks in minutes (default: 15)
+        weather_location: Location for weather widget (e.g., 'San Francisco' or 'London,UK')
+        weather_use_fahrenheit: Whether to use Fahrenheit (True) or Celsius (False) for temperature
     """
 
     theme: str = "catppuccin-mocha"  # Default startup theme
-    nerd_fonts_enabled: bool = True
     show_completed_tasks: bool = True
+    pomodoro_work_minutes: int = 25
+    pomodoro_short_break_minutes: int = 5
+    pomodoro_long_break_minutes: int = 15
+    weather_location: str = ""  # Empty means not configured
+    weather_use_fahrenheit: bool = True  # Default to Fahrenheit
 
     def to_dict(self) -> dict:
         """Convert settings to dictionary for JSON serialization."""
         return {
             "theme": self.theme,
-            "nerd_fonts_enabled": self.nerd_fonts_enabled,
             "show_completed_tasks": self.show_completed_tasks,
+            "pomodoro_work_minutes": self.pomodoro_work_minutes,
+            "pomodoro_short_break_minutes": self.pomodoro_short_break_minutes,
+            "pomodoro_long_break_minutes": self.pomodoro_long_break_minutes,
+            "weather_location": self.weather_location,
+            "weather_use_fahrenheit": self.weather_use_fahrenheit,
         }
 
     @classmethod
@@ -150,6 +181,10 @@ class Settings:
         """Create settings from dictionary."""
         return cls(
             theme=data.get("theme", "catppuccin-mocha"),
-            nerd_fonts_enabled=data.get("nerd_fonts_enabled", True),
             show_completed_tasks=data.get("show_completed_tasks", True),
+            pomodoro_work_minutes=data.get("pomodoro_work_minutes", 25),
+            pomodoro_short_break_minutes=data.get("pomodoro_short_break_minutes", 5),
+            pomodoro_long_break_minutes=data.get("pomodoro_long_break_minutes", 15),
+            weather_location=data.get("weather_location", ""),
+            weather_use_fahrenheit=data.get("weather_use_fahrenheit", True),
         )

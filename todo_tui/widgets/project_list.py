@@ -60,7 +60,9 @@ class ProjectListPanel(Container):
 
     def compose(self) -> ComposeResult:
         """Compose the project list panel."""
-        yield Label(f"{Icons.FOLDER} Projects", classes="header", id="project-header-title")
+        yield Label(
+            f"{Icons.FOLDER} Projects", classes="header", id="project-header-title"
+        )
         yield ListView(id="project-list")
 
     def set_projects(self, projects: List[Project]) -> None:
@@ -83,15 +85,22 @@ class ProjectListPanel(Container):
 
         list_view.clear()
 
+        # Check if there are no projects (shouldn't happen, but good fallback)
+        if not self.projects:
+            list_view.append(
+                ListItem(
+                    Static("No projects yet. Press 'p' to add one!", classes="muted")
+                )
+            )
+            return
+
         # Calculate total task count for "All Tasks"
         total_count = len(self.all_tasks)
         total_completed = sum(1 for t in self.all_tasks if t.completed)
 
         # Add "All Tasks" option with count
         all_tasks_label = f"{Icons.LIST} All Tasks ({total_completed}/{total_count})"
-        list_view.append(
-            ListItem(Static(all_tasks_label))
-        )
+        list_view.append(ListItem(Static(all_tasks_label)))
 
         # Add projects with task counts
         for project in self.projects:
@@ -100,10 +109,10 @@ class ProjectListPanel(Container):
             task_count = len(project_tasks)
             completed_count = sum(1 for t in project_tasks if t.completed)
 
-            project_label = f"{Icons.FOLDER} {project.name} ({completed_count}/{task_count})"
-            list_view.append(
-                ListItem(Static(project_label))
+            project_label = (
+                f"{Icons.FOLDER} {project.name} ({completed_count}/{task_count})"
             )
+            list_view.append(ListItem(Static(project_label)))
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         """Handle project selection."""

@@ -76,14 +76,15 @@ class Dashboard(Container):
         """Compose the dashboard with 2x2 grid layout."""
         with Grid():
             with Vertical(id="sparkline-container"):
-                yield Static(f"{Icons.CHART_LINE} Activity (14d)", classes="sparkline-title")
+                yield Static(
+                    f"{Icons.CHART_LINE} Activity (14d)", classes="sparkline-title"
+                )
                 yield Sparkline([], summary_function=max, id="sparkline-quadrant")
                 yield Static("", id="progress-label", classes="progress-label")
                 yield ProgressBar(total=100, show_eta=False, id="completion-progress")
             yield ClockWidget(id="clock-quadrant")
             yield ProductivityTabs(id="productivity-quadrant")
             yield StatsCard(id="stats-quadrant")
-            
 
     def update_metrics(self, tasks: List[Task]) -> None:
         """Update dashboard metrics with current tasks."""
@@ -107,20 +108,46 @@ class Dashboard(Container):
         stats_card = self.query_one("#stats-quadrant", StatsCard)
         stats_card.update_stats(total, rate, today_completed)
 
-        # Update sparkline with completion data
+        # Update sparkline with completion data and subtle animation
         sparkline_data = self._calculate_sparkline_data(tasks)
         sparkline = self.query_one("#sparkline-quadrant", Sparkline)
         sparkline.data = sparkline_data
 
-        # Update progress bar
+        # Subtle fade animation on sparkline update
+        sparkline.styles.animate(
+            "opacity",
+            value=0.85,
+            duration=0.2,
+            easing="out_cubic",
+            on_complete=lambda: sparkline.styles.animate(
+                "opacity", value=1.0, duration=0.2, easing="in_cubic"
+            ),
+        )
+
+        # Update progress bar with animation
         progress_bar = self.query_one("#completion-progress", ProgressBar)
         progress_bar.update(progress=rate)
 
+        # Animate progress bar container for visual feedback
+        progress_bar.styles.animate(
+            "opacity",
+            value=0.8,
+            duration=0.3,
+            easing="in_out_cubic",
+            on_complete=lambda: progress_bar.styles.animate(
+                "opacity", value=1.0, duration=0.3, easing="in_out_cubic"
+            ),
+        )
+
         # Update progress label with rich markup
         if rate >= 75:
-            label_text = f"[bold green]{Icons.CHECK_CIRCLE} {rate}% Complete - Excellent![/]"
+            label_text = (
+                f"[bold green]{Icons.CHECK_CIRCLE} {rate}% Complete - Excellent![/]"
+            )
         elif rate >= 50:
-            label_text = f"[bold yellow]{Icons.TARGET} {rate}% Complete - Keep Going![/]"
+            label_text = (
+                f"[bold yellow]{Icons.TARGET} {rate}% Complete - Keep Going![/]"
+            )
         elif rate >= 25:
             label_text = f"[bold bright_magenta]{Icons.TARGET} {rate}% Complete[/]"
         else:

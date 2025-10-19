@@ -5,9 +5,10 @@ from __future__ import annotations
 from typing import List, Optional
 
 from textual.app import ComposeResult
+from textual.binding import Binding
 from textual.containers import Container
 from textual.message import Message
-from textual.widgets import Label, ListItem, ListView, Static
+from textual.widgets import Input, Label, ListItem, ListView, Static
 
 from ..icons import Icons
 from ..models import Task
@@ -28,16 +29,29 @@ class TaskListPanel(Container):
     TaskListPanel {
         width: auto;
     }
+
+    TaskListPanel #task-search-input {
+        margin: 0;
+    }
     """
+
+    BINDINGS = [
+        Binding("/", "focus_search", "Search", show=False),
+        Binding("ctrl+f", "focus_search", "Search", show=False),
+    ]
 
     def __init__(self, id: str = "task-list-panel"):
         super().__init__(id=id)
         self.tasks: List[Task] = []
         self.selected_task: Optional[Task] = None
+        self.search_query: str = ""
 
     def compose(self) -> ComposeResult:
         """Compose the task list panel."""
         yield Label(f"{Icons.CHECK} Tasks", classes="header")
+        yield Input(
+            placeholder=f"{Icons.SEARCH} Search tasks...", id="task-search-input"
+        )
         yield ListView(id="task-list")
 
     def set_tasks(self, tasks: List[Task], show_completed: bool = True) -> None:
@@ -62,10 +76,34 @@ class TaskListPanel(Container):
             )
             return
 
+        # Filter tasks based on search query
+        filtered_tasks = self.tasks
+        if self.search_query:
+            query_lower = self.search_query.lower()
+            filtered_tasks = [
+                t
+                for t in self.tasks
+                if query_lower in t.title.lower()
+                or query_lower in t.description.lower()
+            ]
+
+        # Show message if no matches
+        if not filtered_tasks:
+            list_view.append(
+                ListItem(
+                    Static(f"No tasks match '{self.search_query}'", classes="muted")
+                )
+            )
+            return
+
         # Add tasks
-        for task in self.tasks:
+        for task in filtered_tasks:
             checkbox = Icons.CHECK_SQUARE if task.completed else Icons.SQUARE_O
             title_class = "task-title completed" if task.completed else "task-title"
+
+            # Get priority indicator
+            priority_icon, _ = task.get_priority_display()
+            priority_str = f"{priority_icon} " if priority_icon else ""
 
             # Show subtask progress if any
             subtask_info = ""
@@ -76,7 +114,8 @@ class TaskListPanel(Container):
             list_view.append(
                 ListItem(
                     Static(
-                        f"{checkbox} {task.title}{subtask_info}", classes=title_class
+                        f"{priority_str}{checkbox} {task.title}{subtask_info}",
+                        classes=title_class,
                     ),
                     classes="completed" if task.completed else "",
                 )
@@ -123,3 +162,28 @@ class TaskListPanel(Container):
     def refresh_display(self) -> None:
         """Refresh the task list display."""
         self._update_list()
+
+    def on_input_changed(self, event: Input.Changed) -> None:
+        """Handle search input changes."""
+        if event.input.id == "task-search-input":
+            self.search_query = event.value
+            self._update_list()
+
+    def action_focus_search(self) -> None:
+        """Focus the search input."""
+        search_input = self.query_one("#task-search-input", Input)
+        search_input.focus()
+
+    def on_key(self, event) -> None:
+        """Handle keyboard shortcuts."""
+        search_input = self.query_one("#task-search-input", Input)
+
+        # Clear search with Escape when search has focus
+        if event.key == "escape" and search_input.has_focus:
+            search_input.value = ""
+            self.search_query = ""
+            self._update_list()
+            # Return focus to the list
+            list_view = self.query_one("#task-list", ListView)
+            list_view.focus()
+            event.prevent_default()
