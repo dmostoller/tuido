@@ -40,8 +40,12 @@ class TaskListPanel(Container):
         yield Label(f"{Icons.CHECK} Tasks", classes="header")
         yield ListView(id="task-list")
 
-    def set_tasks(self, tasks: List[Task]) -> None:
+    def set_tasks(self, tasks: List[Task], show_completed: bool = True) -> None:
         """Set the list of tasks."""
+        # Filter out completed tasks if setting is disabled
+        if not show_completed:
+            tasks = [t for t in tasks if not t.completed]
+
         self.tasks = tasks
         self._update_list()
 

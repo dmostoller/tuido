@@ -138,7 +138,7 @@ Button:hover {
 }
 
 Button:focus {
-    background: $primary;
+    background: $panel;
     color: $background;
     text-style: bold;
 }

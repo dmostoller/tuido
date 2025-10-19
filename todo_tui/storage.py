@@ -7,7 +7,7 @@ import shutil
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
-from .models import Project, Task
+from .models import Project, Settings, Task
 
 
 class StorageManager:
@@ -20,6 +20,7 @@ class StorageManager:
             data_dir = Path.home() / ".local" / "share" / "tuido"
         self.data_dir = Path(data_dir)
         self.projects_file = self.data_dir / "projects.json"
+        self.settings_file = self.data_dir / "settings.json"
         self._ensure_data_dir()
         self._migrate_old_data_if_needed()
 
@@ -169,3 +170,17 @@ class StorageManager:
             tasks = self.load_tasks(project.id)
             all_tasks.extend(tasks)
         return all_tasks
+
+    # Settings operations
+    def load_settings(self) -> Settings:
+        """Load application settings."""
+        if not self.settings_file.exists():
+            # Return defaults if no settings file
+            return Settings()
+
+        data = self._load_json(self.settings_file)
+        return Settings.from_dict(data)
+
+    def save_settings(self, settings: Settings) -> None:
+        """Save application settings."""
+        self._save_json(self.settings_file, settings.to_dict())

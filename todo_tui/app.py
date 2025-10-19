@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import List, Optional
 
 from dotenv import load_dotenv
@@ -11,7 +10,7 @@ from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
 from textual.widgets import Footer, Header
 
-from .models import Project, Task
+from .models import Project, Settings, Task
 from .storage import StorageManager
 from .themes import ALL_THEMES
 from .widgets.dashboard import Dashboard
@@ -23,6 +22,7 @@ from .widgets.dialogs import (
     EditTaskDialog,
     HelpDialog,
     MoveTaskDialog,
+    SettingsDialog,
 )
 from .widgets.project_list import (
     DeleteProjectRequested,
@@ -44,6 +44,7 @@ class TodoApp(App):
         Binding("p", "add_project", "Add Project"),
         Binding("space", "toggle_task", "Toggle Complete"),
         Binding("enter", "edit_task", "Edit Task"),
+        Binding("s", "settings", "Settings"),
         Binding("q", "quit", "Quit"),
         Binding("?", "help", "Help"),
     ]
@@ -51,6 +52,7 @@ class TodoApp(App):
     def __init__(self):
         super().__init__()
         self.storage = StorageManager()
+        self.settings = None  # Will be loaded in on_mount
         self.projects: List[Project] = []
         self.current_project_id: Optional[str] = None
         self.current_project: Optional[Project] = None
@@ -72,12 +74,19 @@ class TodoApp(App):
         self.title = "Tuido"
         self.sub_title = "Terminal Task Manager"
 
+        # Load settings
+        self.settings = self.storage.load_settings()
+
         # Register custom themes with official color palettes
         for theme in ALL_THEMES:
             self.register_theme(theme)
 
-        # Set default theme to Catppuccin Mocha
-        self.theme = "catppuccin-mocha"
+        # Apply saved theme
+        self.theme = self.settings.theme
+
+        # Apply Nerd Fonts setting to Icons module
+        import todo_tui.icons as icons
+        icons.NERD_FONTS_ENABLED = self.settings.nerd_fonts_enabled
 
         # Load projects
         self.projects = self.storage.load_projects()
@@ -99,7 +108,7 @@ class TodoApp(App):
         """Load and display all tasks across all projects."""
         all_tasks = self.storage.load_all_tasks()
         task_panel = self.query_one("#task-list-panel", TaskListPanel)
-        task_panel.set_tasks(all_tasks)
+        task_panel.set_tasks(all_tasks, self.settings.show_completed_tasks if self.settings else True)
 
         # Update dashboard
         dashboard = self.query_one("#dashboard", Dashboard)
@@ -115,7 +124,7 @@ class TodoApp(App):
         """Load and display tasks for a specific project."""
         tasks = self.storage.load_tasks(project_id)
         task_panel = self.query_one("#task-list-panel", TaskListPanel)
-        task_panel.set_tasks(tasks)
+        task_panel.set_tasks(tasks, self.settings.show_completed_tasks if self.settings else True)
 
         # Update dashboard with all tasks for global metrics
         all_tasks = self.storage.load_all_tasks()
@@ -448,6 +457,39 @@ class TodoApp(App):
                 return
         except Exception:
             pass
+
+    def action_settings(self) -> None:
+        """Show settings dialog."""
+        # Get list of available theme names
+        theme_names = [theme.name for theme in ALL_THEMES]
+
+        def check_settings(result: Optional[Settings]) -> None:
+            """Callback when dialog is dismissed."""
+            if result:
+                # Save settings
+                self.storage.save_settings(result)
+                self.settings = result
+
+                # Apply theme change
+                self.theme = result.theme
+
+                # Apply Nerd Fonts change
+                import todo_tui.icons as icons
+                icons.NERD_FONTS_ENABLED = result.nerd_fonts_enabled
+
+                # Refresh UI to apply icon changes
+                self.refresh()
+
+                # Reload task list if show_completed_tasks changed
+                if self.current_project_id is None:
+                    self._load_all_tasks()
+                else:
+                    self._load_project_tasks(self.current_project_id)
+
+        self.push_screen(
+            SettingsDialog(self.settings, theme_names),
+            check_settings
+        )
 
     def action_help(self) -> None:
         """Show help information."""

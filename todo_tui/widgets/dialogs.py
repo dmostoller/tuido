@@ -5,10 +5,10 @@ from typing import List, Optional
 from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.screen import ModalScreen
-from textual.widgets import Button, Input, Label, ListItem, ListView, Select, Static, TextArea
+from textual.widgets import Button, Input, Label, ListItem, ListView, Select, Static, Switch, TextArea
 
 from ..icons import Icons
-from ..models import Project, Task
+from ..models import Project, Settings, Task
 
 
 class AddTaskDialog(ModalScreen):
@@ -587,6 +587,89 @@ class MoveTaskDialog(ModalScreen):
             else:
                 # No project selected, can't move
                 self.dismiss(None)
+
+    def on_key(self, event) -> None:
+        """Handle keyboard shortcuts."""
+        if event.key == "escape":
+            self.dismiss(None)
+            event.prevent_default()
+
+
+class SettingsDialog(ModalScreen):
+    """Modal dialog for application settings."""
+
+    DEFAULT_CSS = """
+    SettingsDialog {
+        align: center middle;
+    }
+
+    #dialog-container {
+        width: 60;
+        height: auto;
+        background: $surface;
+        border: thick $primary;
+        padding: 1;
+    }
+
+    #dialog-buttons {
+        height: auto;
+        layout: horizontal;
+        align: center middle;
+    }
+
+    .setting-row {
+        height: auto;
+        margin: 1 0;
+    }
+    """
+
+    def __init__(self, current_settings: Settings, available_themes: List[str]):
+        super().__init__()
+        self.settings = current_settings
+        self.available_themes = available_themes
+
+    def compose(self) -> ComposeResult:
+        """Compose the settings dialog."""
+        with Container(id="dialog-container"):
+            yield Label(f"{Icons.COG} Settings", classes="header")
+
+            # Theme selection
+            yield Label("Default Theme:")
+            theme_options = [(name, name) for name in self.available_themes]
+            yield Select(
+                options=theme_options,
+                value=self.settings.theme,
+                id="theme-select"
+            )
+
+            # Nerd Fonts toggle
+            yield Label("Enable Nerd Font Icons:")
+            yield Switch(value=self.settings.nerd_fonts_enabled, id="nerd-fonts-switch")
+
+            # Show completed tasks toggle
+            yield Label("Show Completed Tasks:")
+            yield Switch(value=self.settings.show_completed_tasks, id="show-completed-switch")
+
+            with Horizontal(id="dialog-buttons"):
+                yield Button("Cancel", id="btn-cancel", variant="default")
+                yield Button("Save", id="btn-save", variant="success")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button press."""
+        if event.button.id == "btn-cancel":
+            self.dismiss(None)
+        elif event.button.id == "btn-save":
+            # Read current values
+            theme_select = self.query_one("#theme-select", Select)
+            nerd_fonts_switch = self.query_one("#nerd-fonts-switch", Switch)
+            show_completed_switch = self.query_one("#show-completed-switch", Switch)
+
+            # Update settings
+            self.settings.theme = theme_select.value
+            self.settings.nerd_fonts_enabled = nerd_fonts_switch.value
+            self.settings.show_completed_tasks = show_completed_switch.value
+
+            self.dismiss(self.settings)
 
     def on_key(self, event) -> None:
         """Handle keyboard shortcuts."""

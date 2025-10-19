@@ -121,3 +121,35 @@ class Project:
     def from_dict(cls, data: dict) -> "Project":
         """Create project from dictionary."""
         return cls(id=data["id"], name=data["name"], created_at=data["created_at"])
+
+
+@dataclass
+class Settings:
+    """Application settings.
+
+    Attributes:
+        theme: The default theme to use on startup (e.g., 'catppuccin-mocha')
+        nerd_fonts_enabled: Whether to display Nerd Font icons (True) or ASCII fallbacks (False)
+        show_completed_tasks: Whether to show completed tasks in the task list (True) or hide them (False)
+    """
+
+    theme: str = "catppuccin-mocha"  # Default startup theme
+    nerd_fonts_enabled: bool = True
+    show_completed_tasks: bool = True
+
+    def to_dict(self) -> dict:
+        """Convert settings to dictionary for JSON serialization."""
+        return {
+            "theme": self.theme,
+            "nerd_fonts_enabled": self.nerd_fonts_enabled,
+            "show_completed_tasks": self.show_completed_tasks,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "Settings":
+        """Create settings from dictionary."""
+        return cls(
+            theme=data.get("theme", "catppuccin-mocha"),
+            nerd_fonts_enabled=data.get("nerd_fonts_enabled", True),
+            show_completed_tasks=data.get("show_completed_tasks", True),
+        )
