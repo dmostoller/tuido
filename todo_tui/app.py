@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import List, Optional
 
+from dotenv import load_dotenv
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
@@ -34,7 +35,7 @@ from .widgets.task_list import TaskListPanel, TaskSelected
 
 
 class TodoApp(App):
-    """A Terminal User Interface for managing todos."""
+    """A Terminal User Interface for managing tasks."""
 
     CSS_PATH = "theme.css"
 
@@ -75,8 +76,8 @@ class TodoApp(App):
         for theme in ALL_THEMES:
             self.register_theme(theme)
 
-        # Set default theme to Catppuccin Mocha
-        self.theme = "catppuccin-mocha"
+        # Set default theme to Tailwind Dark
+        self.theme = "tailwind-dark"
 
         # Load projects
         self.projects = self.storage.load_projects()
@@ -461,6 +462,15 @@ class TodoApp(App):
             self.action_toggle_task()
         elif event.button.id == "btn-delete-task":
             self.action_delete_task()
+
+
+def main():
+    """Run the Todo TUI application."""
+    # Load environment variables from .env file
+    load_dotenv()
+
+    app = TodoApp()
+    app.run()
 
 
 def dev():

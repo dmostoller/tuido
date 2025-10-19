@@ -192,6 +192,82 @@ solarized_light = Theme(
     },
 )
 
+# Tailwind CSS Dark (Enhanced) - Official Colors
+# https://github.com/tailwindlabs/tailwindcss-vscode-theme
+tailwind_dark = Theme(
+    name="tailwind-dark",
+    primary="#00a6f4",  # Bright Blue
+    secondary="#00bcff",  # Cyan
+    accent="#c27aff",  # Purple
+    foreground="#f9fafb",  # Bright White
+    background="#101828",  # Deep Navy
+    success="#00d492",  # Cyan Green
+    warning="#ffb900",  # Yellow
+    error="#ff637e",  # Pink Red
+    surface="#1e2939",  # Dark Navy
+    panel="#364153",  # Medium Navy
+    dark=True,
+    variables={
+        # Text colors
+        "foreground-muted": "#99a1af",  # Subdued gray
+        "foreground-disabled": "#6a7282",  # Dimmed gray
+
+        # Border colors
+        "border": "#00a6f4",  # Bright Blue
+        "border-blurred": "#364153",  # Medium Navy
+
+        # Scrollbar
+        "scrollbar": "#364153",  # Medium Navy
+        "scrollbar-hover": "#4a5565",  # Lighter Navy
+        "scrollbar-background": "#1e2939",  # Dark Navy
+
+        # Input selection
+        "input-selection-background": "#00a6f4 35%",  # Blue with transparency
+
+        # Block cursor
+        "block-cursor-background": "#00a6f4",  # Bright Blue
+        "block-cursor-foreground": "#101828",  # Deep Navy
+    },
+)
+
+# Tailwind CSS Light (Enhanced) - Official Colors
+# https://github.com/tailwindlabs/tailwindcss-vscode-theme
+tailwind_light = Theme(
+    name="tailwind-light",
+    primary="#00a6f4",  # Bright Blue
+    secondary="#0084d1",  # Darker Blue
+    accent="#ad46ff",  # Purple
+    foreground="#1d293d",  # Dark Navy
+    background="#ffffff",  # White
+    success="#009966",  # Green
+    warning="#e17100",  # Orange
+    error="#ec003f",  # Red
+    surface="#f8fafc",  # Light Gray
+    panel="#f1f5f9",  # Slightly Darker Gray
+    dark=False,
+    variables={
+        # Text colors
+        "foreground-muted": "#62748e",  # Subdued blue-gray
+        "foreground-disabled": "#90a1b9",  # Lighter gray
+
+        # Border colors
+        "border": "#00a6f4",  # Bright Blue
+        "border-blurred": "#cad5e2",  # Light border
+
+        # Scrollbar
+        "scrollbar": "#cad5e2",  # Light border
+        "scrollbar-hover": "#90a1b9",  # Gray
+        "scrollbar-background": "#f8fafc",  # Light Gray
+
+        # Input selection
+        "input-selection-background": "#2b7fff 40%",  # Blue with transparency
+
+        # Block cursor
+        "block-cursor-background": "#00a6f4",  # Bright Blue
+        "block-cursor-foreground": "#ffffff",  # White
+    },
+)
+
 # Export all themes
 ALL_THEMES = [
     catppuccin_mocha,
@@ -199,4 +275,6 @@ ALL_THEMES = [
     gruvbox,
     tokyo_night,
     solarized_light,
+    tailwind_dark,
+    tailwind_light,
 ]

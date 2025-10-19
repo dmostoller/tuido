@@ -13,7 +13,7 @@ from textual.widgets import ProgressBar, Sparkline, Static
 from ..icons import Icons
 from ..models import Task
 from .clock_widget import ClockWidget
-from .pomodoro_widget import PomodoroWidget
+from .productivity_tabs import ProductivityTabs
 from .stats_card import StatsCard
 
 
@@ -81,8 +81,9 @@ class Dashboard(Container):
                 yield Static("", id="progress-label", classes="progress-label")
                 yield ProgressBar(total=100, show_eta=False, id="completion-progress")
             yield ClockWidget(id="clock-quadrant")
+            yield ProductivityTabs(id="productivity-quadrant")
             yield StatsCard(id="stats-quadrant")
-            yield PomodoroWidget(id="pomodoro-quadrant")
+            
 
     def update_metrics(self, tasks: List[Task]) -> None:
         """Update dashboard metrics with current tasks."""

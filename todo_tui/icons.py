@@ -93,6 +93,17 @@ class Icons:
         LIGHTBULB = "\uF0EB"      #
         MUSCLE = "\uF2C5"         #
 
+        # Weather Icons
+        SUN = "\uE30D"            # ☀
+        MOON = "\uE32A"           # ☾
+        CLOUD = "\uE312"          # ☁
+        CLOUD_SUN = "\uE302"      # ⛅
+        RAIN = "\uE318"           # 🌧
+        SNOW = "\uE31A"           # ❄
+        THUNDERSTORM = "\uE31D"   # ⛈
+        WIND = "\uE34B"           # 💨
+        THERMOMETER = "\uF2C7"    # 🌡
+
     else:
         # ASCII fallbacks for terminals without Nerd Font support
         # Time & Clock
@@ -158,3 +169,14 @@ class Icons:
         ROCKET = "[R]"
         LIGHTBULB = "[i]"
         MUSCLE = "[M]"
+
+        # Weather Icons
+        SUN = "[O]"
+        MOON = "[)]"
+        CLOUD = "[~]"
+        CLOUD_SUN = "[O~]"
+        RAIN = "[||]"
+        SNOW = "[*]"
+        THUNDERSTORM = "[~!]"
+        WIND = "[>>]"
+        THERMOMETER = "[T]"

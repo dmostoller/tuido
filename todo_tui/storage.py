@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
@@ -12,11 +13,15 @@ from .models import Project, Task
 class StorageManager:
     """Manages JSON file storage for projects and tasks."""
 
-    def __init__(self, data_dir: str = "data"):
+    def __init__(self, data_dir: Optional[Path] = None):
         """Initialize storage manager with data directory."""
+        if data_dir is None:
+            # Use XDG standard location for user data
+            data_dir = Path.home() / ".local" / "share" / "tuido"
         self.data_dir = Path(data_dir)
         self.projects_file = self.data_dir / "projects.json"
         self._ensure_data_dir()
+        self._migrate_old_data_if_needed()
 
     def _ensure_data_dir(self) -> None:
         """Create data directory if it doesn't exist."""
@@ -25,6 +30,30 @@ class StorageManager:
         # Initialize projects file if it doesn't exist
         if not self.projects_file.exists():
             self._save_json(self.projects_file, [])
+
+    def _migrate_old_data_if_needed(self) -> None:
+        """Migrate data from old relative 'data/' directory to new location."""
+        # Only migrate if new location is empty (just initialized)
+        json_files = list(self.data_dir.glob("*.json"))
+        if len(json_files) > 1:  # More than just empty projects.json
+            return  # Already has data, skip migration
+
+        # Check for old data in project directory
+        # Get the project root (where the package is installed)
+        package_dir = Path(__file__).parent.parent  # Go up from todo_tui/storage.py
+        old_data_dir = package_dir / "data"
+
+        if old_data_dir.exists() and old_data_dir.is_dir():
+            old_files = list(old_data_dir.glob("*.json"))
+            if old_files:
+                print(f"📦 Migrating data from {old_data_dir} to {self.data_dir}")
+                for file in old_files:
+                    dest = self.data_dir / file.name
+                    shutil.copy2(file, dest)
+                    print(f"   ✓ Copied {file.name}")
+                print(f"✅ Migration complete! Your data is now in {self.data_dir}")
+                print(f"   (You can safely delete the old '{old_data_dir}' folder)")
+                print()
 
     def _save_json(self, file_path: Path, data: Union[List, Dict]) -> None:
         """Save data to JSON file."""

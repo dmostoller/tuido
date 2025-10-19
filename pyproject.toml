@@ -6,6 +6,8 @@ readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
     "plotext>=5.3.2",
+    "python-dotenv>=1.0.0",
+    "requests>=2.31.0",
     "textual>=0.73.0",
     "textual-dev>=1.6.1",
 ]
@@ -16,5 +18,10 @@ dev = [
 ]
 
 [project.scripts]
-todo-tui = "todo_tui.app:main"
-todo-tui-dev = "todo_tui.app:dev"
+tuido = "todo_tui.app:main"
+tuido-dev = "todo_tui.app:dev"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["todo_tui*"]
+exclude = ["data*", "docs*"]

@@ -15,12 +15,12 @@ Screen {
 
 /* Dashboard Quadrants */
 #stats-quadrant {
-    background: $panel;
+    background: $surface;
     border: solid $primary;
 }
 
 #clock-quadrant {
-    background: $panel;
+    background: $surface;
     border: solid $primary;
 }
 
@@ -29,7 +29,12 @@ Screen {
 }
 
 #pomodoro-quadrant {
-    background: $panel;
+    background: $surface;
+    border: solid $primary;
+}
+
+#productivity-quadrant {
+    background: $surface;
     border: solid $primary;
 }
 
@@ -124,11 +129,10 @@ Button {
     background: $panel;
     color: $foreground;
     border: solid $primary;
-    margin: 1 0;
+    margin: 0 0;
 }
 
 Button:hover {
-    background: $panel-lighten-1;
     color: $primary-lighten-1;
     border: solid $primary-lighten-1;
 }

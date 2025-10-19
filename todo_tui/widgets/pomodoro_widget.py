@@ -29,14 +29,14 @@ class PomodoroWidget(Container):
         width: 100%;
         border: solid $accent;
         background: $surface;
-        padding: 1 1 0 1;
+        padding: 0 1 1 1;
         min-width: 30;
-        min-height: 10;
+        min-height: 8;
     }
 
     PomodoroWidget .pomo-header {
         layout: horizontal;
-        height: auto;
+        height: 1;
         width: 100%;
     }
 
@@ -44,18 +44,20 @@ class PomodoroWidget(Container):
         color: $accent;
         text-style: bold;
         text-align: left;
-        width: 1fr;
+        width: auto;
     }
 
     PomodoroWidget .pomo-state {
         color: $text-muted;
-        text-align: center;
+        text-align: left;
+        width: 1fr;
+        margin-left: 1;
     }
 
     PomodoroWidget Digits {
         color: $primary;
         width: 100%;
-        height: auto;
+        height: 3;
         text-style: bold;
         text-align: center;
     }
@@ -96,8 +98,8 @@ class PomodoroWidget(Container):
         """Compose the pomodoro widget."""
         with Horizontal(classes="pomo-header"):
             yield Static(f"{Icons.TOMATO}", classes="pomo-title")
+            yield Static("Ready to focus", id="pomo-state", classes="pomo-state")
             yield Static("●○○○", id="pomo-sessions", classes="pomo-sessions")
-        yield Static("Ready to focus", id="pomo-state", classes="pomo-state")
         yield Digits("25:00", id="pomo-timer")
         with Horizontal(classes="pomo-controls"):
             yield Button("Start", id="btn-pomo-start", variant="primary")
