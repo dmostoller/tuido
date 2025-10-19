@@ -216,6 +216,7 @@ ListView {
     background: $surface;
     scrollbar-background: $panel;
     scrollbar-color: $primary;
+    scrollbar-size-vertical: 1;
 }
 
 ListView:focus {
