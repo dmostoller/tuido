@@ -71,24 +71,22 @@ class WeatherWidget(Container):
         padding: 0 2;
     }
 
+    WeatherWidget .weather-footer {
+        layout: horizontal;
+        height: auto;
+        width: 100%;
+    }
+
     WeatherWidget .weather-condition {
         color: $text-muted;
-        text-align: center;
-        width: 100%;
+        text-align: left;
+        width: 1fr;
     }
 
     WeatherWidget .weather-details {
         color: $text-muted;
-        text-align: center;
-        width: 100%;
-        padding: 0 1;
-    }
-
-    WeatherWidget .weather-updated {
-        color: $text-disabled;
-        text-align: center;
-        height: 1;
-        padding: 0;
+        text-align: right;
+        width: auto;
     }
     """
 
@@ -112,9 +110,10 @@ class WeatherWidget(Container):
             yield Digits("--°", id="weather-temp")
             yield Static(Icons.CLOUD, id="weather-icon-large", classes="weather-icon-large")
 
-        yield Static("Loading...", id="weather-condition", classes="weather-condition")
-        yield Static("", id="weather-details", classes="weather-details")
-        yield Static("", id="weather-updated", classes="weather-updated")
+        # Footer: Condition (left) + Details (right)
+        with Horizontal(classes="weather-footer"):
+            yield Static("Loading...", id="weather-condition", classes="weather-condition")
+            yield Static("", id="weather-details", classes="weather-details")
 
     def on_mount(self) -> None:
         """Initialize the weather widget."""
@@ -207,11 +206,6 @@ class WeatherWidget(Container):
         details = f"{Icons.WIND} {wind_speed}mph • 💧{humidity}%"
         self.query_one("#weather-details", Static).update(details)
 
-        # Update timestamp
-        now = datetime.now()
-        time_str = now.strftime("%I:%M %p")
-        self.query_one("#weather-updated", Static).update(f"Updated {time_str}")
-
     def _display_no_config(self) -> None:
         """Display message when API key or location is not configured."""
         self.query_one("#weather-location", Static).update("Not Set")
@@ -219,9 +213,8 @@ class WeatherWidget(Container):
         self.query_one("#weather-temp", Digits).update("--°")
         self.query_one("#weather-condition", Static).update("Not Configured")
         self.query_one("#weather-details", Static).update(
-            "Set OPENWEATHER_API_KEY & WEATHER_LOCATION"
+            "Set API Key"
         )
-        self.query_one("#weather-updated", Static).update("")
 
     def _display_error(self, error_msg: str) -> None:
         """Display error message."""
@@ -229,10 +222,14 @@ class WeatherWidget(Container):
         self.query_one("#weather-details", Static).update("")
 
     def _get_weather_icon(self, condition: str) -> str:
-        """Get the appropriate icon for the weather condition."""
+        """Get the appropriate icon for the weather condition.
+
+        Returns:
+            Unicode icon from Icons class
+        """
         condition_lower = condition.lower()
 
-        # Map conditions to icons
+        # Map conditions to Icons
         if "clear" in condition_lower or "sun" in condition_lower:
             return Icons.SUN
         elif "cloud" in condition_lower:

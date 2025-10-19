@@ -40,7 +40,7 @@ class TodoApp(App):
     CSS_PATH = "theme.css"
 
     BINDINGS = [
-        Binding("ctrl+n", "add_task", "Add Task", priority=True),
+        Binding("n", "add_task", "Add Task", priority=True),
         Binding("p", "add_project", "Add Project"),
         Binding("space", "toggle_task", "Toggle Complete"),
         Binding("enter", "edit_task", "Edit Task"),
@@ -76,8 +76,8 @@ class TodoApp(App):
         for theme in ALL_THEMES:
             self.register_theme(theme)
 
-        # Set default theme to Tailwind Dark
-        self.theme = "tailwind-dark"
+        # Set default theme to Catppuccin Mocha
+        self.theme = "catppuccin-mocha"
 
         # Load projects
         self.projects = self.storage.load_projects()

@@ -21,6 +21,9 @@ dev = [
 tuido = "todo_tui.app:main"
 tuido-dev = "todo_tui.app:dev"
 
+[tool.uv]
+package = true
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["todo_tui*"]

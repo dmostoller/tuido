@@ -635,8 +635,8 @@ class HelpDialog(ModalScreen):
 
             # General shortcuts
             yield Static("General", classes="help-title")
-            yield Static("[bold yellow]Ctrl+N[/] - Add new task", classes="help-item", markup=True)
-            yield Static("[bold yellow]Ctrl+P[/] - Add new project", classes="help-item", markup=True)
+            yield Static("[bold yellow]n[/] - Add new task", classes="help-item", markup=True)
+            yield Static("[bold yellow]p[/] - Add new project", classes="help-item", markup=True)
             yield Static("[bold yellow]?[/] - Show this help", classes="help-item", markup=True)
             yield Static("[bold yellow]q[/] - Quit application", classes="help-item", markup=True)
 
