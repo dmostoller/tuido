@@ -18,7 +18,7 @@ from textual.widgets import (
 )
 
 from ..icons import Icons
-from ..models import Project, Settings, Task
+from ..models import Note, Project, Settings, Task
 
 
 class AddTaskDialog(ModalScreen):
@@ -1041,4 +1041,143 @@ class HelpDialog(ModalScreen):
         """Handle keyboard shortcuts."""
         if event.key == "escape":
             self.dismiss()
+            event.prevent_default()
+
+
+class AddNoteDialog(ModalScreen):
+    """Modal dialog for adding a new note."""
+
+    DEFAULT_CSS = """
+    AddNoteDialog {
+        align: center middle;
+    }
+
+    #dialog-container {
+        width: 50;
+        height: auto;
+        background: $surface;
+        border: thick $primary;
+        padding: 1;
+    }
+
+    #dialog-buttons {
+        height: auto;
+        layout: horizontal;
+        align: center middle;
+    }
+    """
+
+    def compose(self) -> ComposeResult:
+        """Compose the add note dialog."""
+        with Container(id="dialog-container"):
+            yield Label(f"{Icons.PLUS} Add New Note", classes="header")
+            yield Label("Note Title:")
+            yield Input(placeholder="Enter note title", id="note-title-input")
+            with Horizontal(id="dialog-buttons"):
+                yield Button("Cancel", id="btn-cancel", variant="default")
+                yield Button("Create", id="btn-create", variant="success")
+
+    def on_mount(self) -> None:
+        """Focus the input field when dialog opens."""
+        self.query_one("#note-title-input", Input).focus()
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button press."""
+        if event.button.id == "btn-cancel":
+            self.dismiss(None)
+        elif event.button.id == "btn-create":
+            title = self.query_one("#note-title-input", Input).value.strip()
+            if not title:
+                return
+
+            # Create new note
+            note = Note(title=title, content="")
+            self.dismiss(note)
+
+    def on_key(self, event) -> None:
+        """Handle keyboard shortcuts."""
+        if event.key == "escape":
+            self.dismiss(None)
+            event.prevent_default()
+        elif event.key == "enter":
+            # Trigger create button
+            title = self.query_one("#note-title-input", Input).value.strip()
+            if title:
+                note = Note(title=title, content="")
+                self.dismiss(note)
+            event.prevent_default()
+
+
+class RenameNoteDialog(ModalScreen):
+    """Modal dialog for renaming a note."""
+
+    DEFAULT_CSS = """
+    RenameNoteDialog {
+        align: center middle;
+    }
+
+    #dialog-container {
+        width: 50;
+        height: auto;
+        background: $surface;
+        border: thick $primary;
+        padding: 1;
+    }
+
+    #dialog-buttons {
+        height: auto;
+        layout: horizontal;
+        align: center middle;
+    }
+    """
+
+    def __init__(self, note: Note):
+        super().__init__()
+        self.note = note
+
+    def compose(self) -> ComposeResult:
+        """Compose the rename note dialog."""
+        with Container(id="dialog-container"):
+            yield Label(f"{Icons.PENCIL} Rename Note", classes="header")
+            yield Label("Note Title:")
+            yield Input(
+                value=self.note.title,
+                placeholder="Enter note title",
+                id="note-title-input",
+            )
+            with Horizontal(id="dialog-buttons"):
+                yield Button("Cancel", id="btn-cancel", variant="default")
+                yield Button("Rename", id="btn-rename", variant="success")
+
+    def on_mount(self) -> None:
+        """Focus and select text in the input field when dialog opens."""
+        input_widget = self.query_one("#note-title-input", Input)
+        input_widget.focus()
+        # Select all text for easy editing
+        input_widget.action_select_all()
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button press."""
+        if event.button.id == "btn-cancel":
+            self.dismiss(None)
+        elif event.button.id == "btn-rename":
+            title = self.query_one("#note-title-input", Input).value.strip()
+            if not title:
+                return
+
+            # Update note title
+            self.note.title = title
+            self.dismiss(self.note)
+
+    def on_key(self, event) -> None:
+        """Handle keyboard shortcuts."""
+        if event.key == "escape":
+            self.dismiss(None)
+            event.prevent_default()
+        elif event.key == "enter":
+            # Trigger rename button
+            title = self.query_one("#note-title-input", Input).value.strip()
+            if title:
+                self.note.title = title
+                self.dismiss(self.note)
             event.prevent_default()

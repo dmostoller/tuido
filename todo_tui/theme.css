@@ -43,16 +43,58 @@ Sparkline {
     color: $primary;
 }
 
+/* Main Tabs Container */
+#main-tabs {
+    height: 55%;
+    width: 100%;
+    background: $surface;
+    border: none;
+}
+
+#main-tabs > Tabs {
+    background: $surface;
+    border-bottom: solid $panel;
+}
+
+#main-tabs > ContentSwitcher {
+    height: 1fr;
+    width: 100%;
+}
+
+#main-tabs Tab {
+    background: $surface;
+    color: $text-muted;
+    border: none;
+    text-style: none;
+}
+
+#main-tabs Tab:hover {
+    background: $panel;
+    color: $foreground;
+}
+
+#main-tabs Tab.-active {
+    background: $panel;
+    color: $primary;
+    text-style: bold;
+}
+
+#main-tabs TabPane {
+    padding: 0;
+    background: $surface;
+    height: 100%;
+}
+
 /* Main Content Area */
 #main-content {
-    height: 55%;
+    height: 100%;
     layout: horizontal;
 }
 
 /* Left Column (Projects + Tasks) */
 #left-column {
     layout: vertical;
-    width: 33%;
+    width: 40%;
     height: 100%;
 }
 
@@ -95,7 +137,7 @@ Sparkline {
 
 /* Task Detail Panel */
 #task-detail-panel {
-    width: 67%;
+    width: 60%;
     background: $surface;
     border: solid $panel;
     padding: 1;
@@ -159,11 +201,23 @@ TextArea {
     background: $panel;
     color: $foreground;
     border: solid $panel-darken-1;
+    scrollbar-background: $panel;
+    scrollbar-color: $primary;
+    scrollbar-size-vertical: 1;
 }
 
 TextArea:focus {
     border: solid $primary;
     background: $surface;
+}
+
+/* Markdown */
+Markdown {
+    background: $surface;
+    color: $foreground;
+    scrollbar-background: $panel;
+    scrollbar-color: $primary;
+    scrollbar-size-vertical: 1;
 }
 
 /* Labels */

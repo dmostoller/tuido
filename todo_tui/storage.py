@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import json
 import shutil
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
-from .models import Project, Settings, Task
+from .models import Note, Project, Settings, Task
 
 
 class StorageManager:
@@ -21,8 +22,11 @@ class StorageManager:
         self.data_dir = Path(data_dir)
         self.projects_file = self.data_dir / "projects.json"
         self.settings_file = self.data_dir / "settings.json"
+        self.scratchpad_file = self.data_dir / "scratchpad.md"
+        self.notes_file = self.data_dir / "notes.json"
         self._ensure_data_dir()
         self._migrate_old_data_if_needed()
+        self._migrate_scratchpad_to_notes()
 
     def _ensure_data_dir(self) -> None:
         """Create data directory if it doesn't exist."""
@@ -31,6 +35,16 @@ class StorageManager:
         # Initialize projects file if it doesn't exist
         if not self.projects_file.exists():
             self._save_json(self.projects_file, [])
+
+        # Initialize notes file if it doesn't exist
+        if not self.notes_file.exists():
+            self._save_json(self.notes_file, [])
+
+        # Initialize scratchpad file if it doesn't exist (for backwards compatibility)
+        if not self.scratchpad_file.exists():
+            self.scratchpad_file.write_text(
+                "# Scratchpad\n\nStart writing your notes here...\n"
+            )
 
     def _migrate_old_data_if_needed(self) -> None:
         """Migrate data from old relative 'data/' directory to new location."""
@@ -184,3 +198,103 @@ class StorageManager:
     def save_settings(self, settings: Settings) -> None:
         """Save application settings."""
         self._save_json(self.settings_file, settings.to_dict())
+
+    # Scratchpad operations (deprecated, kept for backwards compatibility)
+    def load_scratchpad(self) -> str:
+        """Load scratchpad content.
+
+        Returns:
+            str: The markdown content from the scratchpad file.
+        """
+        if not self.scratchpad_file.exists():
+            return "# Scratchpad\n\nStart writing your notes here...\n"
+        return self.scratchpad_file.read_text()
+
+    def save_scratchpad(self, content: str) -> None:
+        """Save scratchpad content.
+
+        Args:
+            content: The markdown content to save.
+        """
+        self.scratchpad_file.write_text(content)
+
+    def _migrate_scratchpad_to_notes(self) -> None:
+        """Migrate old scratchpad.md to new notes system."""
+        # Check if we've already migrated (notes.json has content)
+        notes = self.load_notes()
+        if notes:
+            return  # Already have notes, skip migration
+
+        # Check if old scratchpad exists and has non-default content
+        if self.scratchpad_file.exists():
+            content = self.scratchpad_file.read_text()
+            default_content = "# Scratchpad\n\nStart writing your notes here...\n"
+
+            # Only migrate if content is different from default
+            if content.strip() and content != default_content:
+                # Create a note from the scratchpad content
+                note = Note(
+                    title="Quick Notes",
+                    content=content,
+                    created_at=datetime.now().isoformat(),
+                    updated_at=datetime.now().isoformat(),
+                )
+                self.add_note(note)
+
+                # Rename old scratchpad file as backup
+                backup_file = self.data_dir / "scratchpad.md.backup"
+                self.scratchpad_file.rename(backup_file)
+
+        # If no notes exist after migration, create a default note
+        notes = self.load_notes()
+        if not notes:
+            default_note = Note(
+                title="Quick Notes",
+                content="# Quick Notes\n\nStart writing your notes here...\n",
+                created_at=datetime.now().isoformat(),
+                updated_at=datetime.now().isoformat(),
+            )
+            self.add_note(default_note)
+
+    # Note operations
+    def load_notes(self) -> List[Note]:
+        """Load all notes."""
+        data = self._load_json(self.notes_file)
+        return [Note.from_dict(n) for n in data]
+
+    def save_notes(self, notes: List[Note]) -> None:
+        """Save all notes."""
+        data = [n.to_dict() for n in notes]
+        self._save_json(self.notes_file, data)
+
+    def add_note(self, note: Note) -> None:
+        """Add a new note."""
+        notes = self.load_notes()
+        notes.append(note)
+        self.save_notes(notes)
+
+    def update_note(self, note: Note) -> None:
+        """Update an existing note."""
+        # Update the updated_at timestamp
+        note.updated_at = datetime.now().isoformat()
+
+        notes = self.load_notes()
+        for i, n in enumerate(notes):
+            if n.id == note.id:
+                notes[i] = note
+                break
+        self.save_notes(notes)
+
+    def delete_note(self, note_id: str) -> None:
+        """Delete a note."""
+        notes = self.load_notes()
+        notes = [n for n in notes if n.id != note_id]
+        self.save_notes(notes)
+
+    def get_note(self, note_id: str) -> Optional[Note]:
+        """Get a specific note by ID."""
+        notes = self.load_notes()
+        for n in notes:
+            if n.id == note_id:
+                return n
+        return None

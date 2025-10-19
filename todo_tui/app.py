@@ -8,8 +8,9 @@ from dotenv import load_dotenv
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
-from textual.widgets import Footer, Header
+from textual.widgets import Footer, Header, TabbedContent, TabPane
 
+from .icons import Icons
 from .models import Project, Settings, Task
 from .storage import StorageManager
 from .themes import ALL_THEMES
@@ -33,6 +34,7 @@ from .widgets.project_list import (
     ProjectListPanel,
     ProjectSelected,
 )
+from .widgets.scratchpad import ScratchpadPanel
 from .widgets.task_detail import SubtaskToggled, TaskDetailPanel
 from .widgets.task_list import TaskListPanel, TaskSelected
 
@@ -46,7 +48,6 @@ class TodoApp(App):
         Binding("n", "add_task", "Add Task", priority=True),
         Binding("p", "add_project", "Add Project"),
         Binding("space", "toggle_task", "Toggle Complete"),
-        Binding("enter", "edit_task", "Edit Task"),
         Binding("s", "settings", "Settings"),
         Binding("q", "quit", "Quit"),
         Binding("?", "help", "Help"),
@@ -65,11 +66,15 @@ class TodoApp(App):
         """Compose the application layout."""
         yield Header()
         yield Dashboard(id="dashboard")
-        with Horizontal(id="main-content"):
-            with Vertical(id="left-column"):
-                yield ProjectListPanel(id="projects-panel")
-                yield TaskListPanel(id="task-list-panel")
-            yield TaskDetailPanel(id="task-detail-panel")
+        with TabbedContent(initial="tasks-tab", id="main-tabs"):
+            with TabPane(f"{Icons.LIST} Tasks", id="tasks-tab"):
+                with Horizontal(id="main-content"):
+                    with Vertical(id="left-column"):
+                        yield ProjectListPanel(id="projects-panel")
+                        yield TaskListPanel(id="task-list-panel")
+                    yield TaskDetailPanel(id="task-detail-panel")
+            with TabPane(f"{Icons.PENCIL} Scratchpad", id="scratchpad-tab"):
+                yield ScratchpadPanel(self.storage, id="scratchpad-panel")
         yield Footer()
 
     def on_mount(self) -> None:
