@@ -143,6 +143,38 @@ class Project:
 
 
 @dataclass
+class Note:
+    """A markdown note in the scratchpad."""
+
+    id: str = field(default_factory=lambda: str(uuid4()))
+    title: str = "Untitled Note"
+    content: str = ""
+    created_at: str = field(default_factory=lambda: datetime.now().isoformat())
+    updated_at: str = field(default_factory=lambda: datetime.now().isoformat())
+
+    def to_dict(self) -> dict:
+        """Convert note to dictionary for JSON serialization."""
+        return {
+            "id": self.id,
+            "title": self.title,
+            "content": self.content,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "Note":
+        """Create note from dictionary."""
+        return cls(
+            id=data["id"],
+            title=data["title"],
+            content=data.get("content", ""),
+            created_at=data["created_at"],
+            updated_at=data.get("updated_at", data["created_at"]),
+        )
+
+
+@dataclass
 class Settings:
     """Application settings.
 
