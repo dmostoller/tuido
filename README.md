@@ -1,6 +1,7 @@
-# Todo TUI
+# Tuido
 
-A beautiful Terminal User Interface (TUI) todo application built with Textual and styled with the Catppuccin Mocha theme. Manage your tasks efficiently from the comfort of your terminal!
+A Terminal User Interface (TUI) todo application built with Textual.
+Manage your tasks efficiently from the comfort of your terminal!
 
 ## Features
 
@@ -12,13 +13,15 @@ A beautiful Terminal User Interface (TUI) todo application built with Textual an
 - **Project Organization**: Group tasks into projects for better organization
 - **Full CRUD Operations**: Create, Read, Update, and Delete tasks with ease
 - **Subtask Support**: Break down complex tasks into manageable subtasks
-- **Persistent Storage**: JSON-based local storage - your data stays on your machine
+- **Persistent Storage**: JSON-based local storage - your data stays on your machine in `~/.local/share/tuido/`
+- **Notes & Scratchpad**: Quick note-taking with markdown support for ideas and meeting notes
 - **Keyboard & Mouse Support**: Navigate efficiently with keyboard shortcuts or mouse clicks
-- **Quick Actions**: Fast task creation with Ctrl+N hotkey
+- **Quick Actions**: Fast task creation with a hotkey
+- **Run from Anywhere**: Works from any directory - set up an alias for instant access
 
 ## Themes
 
-Todo TUI comes with **5 carefully crafted themes** using official color palettes from popular color schemes. Switch between themes instantly with `Ctrl+P` → "Change theme".
+Tuido comes with **5 carefully crafted themes** using official color palettes from popular color schemes. Switch between themes instantly with `Ctrl+P` → "Change theme".
 
 ### Available Themes
 
@@ -69,7 +72,7 @@ The app features a three-panel layout:
 
 ### Prerequisites
 
-- Python 3.8 or higher
+- Python 3.12 or higher
 - [uv](https://github.com/astral-sh/uv) package manager (recommended) or pip
 - **JetBrains Mono Nerd Font** (required for proper icon display)
 
@@ -115,8 +118,8 @@ The app features a three-panel layout:
 2. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/todo-tui.git
-   cd todo-tui
+   git clone https://github.com/dmostoller/tuido.git
+   cd tuido
    ```
 
    > **Note**: Replace `yourusername` with the actual repository owner when the repo is published.
@@ -147,12 +150,40 @@ uv run python main.py
 python main.py
 ```
 
+### Running from Anywhere
+
+Since data is stored in `~/.local/share/tuido/`, you can run the app from any directory. Set up a shell alias for quick access:
+
+**Bash/Zsh** (add to `~/.bashrc` or `~/.zshrc`):
+
+```bash
+alias todo='cd /path/to/tuido && uv run python main.py'
+```
+
+**Or with a function for better path handling:**
+
+```bash
+todo() {
+    (cd /path/to/tuido && uv run python main.py)
+}
+```
+
+After adding the alias, reload your shell configuration:
+
+```bash
+source ~/.bashrc  # or source ~/.zshrc
+```
+
+Now you can simply type `todo` from any directory to launch the app!
+
 ### Keyboard Shortcuts
 
 | Shortcut | Action |
 |----------|--------|
 | `Ctrl+N` | Create new task |
 | `Ctrl+P` | Create new project |
+| `n` | Open notes/scratchpad |
+| `s` | Open settings |
 | `Enter` | Edit selected task |
 | `Space` | Toggle task completion |
 | `Delete` | Delete selected task |
@@ -203,25 +234,44 @@ The weather widget will update automatically every 30 minutes.
 
 **Without configuration**, the weather widget displays "Not Configured" - the app works perfectly fine without it!
 
+### Notes & Scratchpad
+
+The app includes a built-in notes feature for quick note-taking, meeting notes, or brainstorming:
+
+1. **Open Notes**: Press `n` from anywhere in the app
+2. **Create Notes**: Click "New Note" button or use the keyboard shortcut
+3. **Markdown Support**: Full markdown formatting for rich text
+4. **Multiple Notes**: Organize different topics into separate notes
+5. **Quick Access**: Your notes are always one keypress away
+
+Notes are stored in `~/.local/share/tuido/notes.json` and sync automatically as you type.
+
+**Use Cases:**
+
+- Quick capture during standups
+- Meeting notes with tasks
+- Brainstorming ideas
+- Code snippets or commands
+- Project planning drafts
+
 ## Development
 
 ### Project Structure
 
 ```
-todo-tui/
+tuido/
 ├── main.py                 # Entry point
 ├── todo_tui/
 │   ├── app.py             # Main Textual application
 │   ├── models.py          # Data models (Task, Project, Subtask)
 │   ├── storage.py         # JSON storage manager
-│   ├── theme.css          # Catppuccin Mocha styling
+│   ├── theme.css          # Theme definitions
 │   └── widgets/           # UI components
 │       ├── dashboard.py   # Metrics dashboard
 │       ├── project_list.py
 │       ├── task_list.py
 │       ├── task_detail.py
 │       └── dialogs.py     # Modal dialogs
-├── data/                  # Local task storage (auto-created)
 └── pyproject.toml         # Project dependencies
 ```
 
@@ -239,38 +289,22 @@ textual run --dev main.py
 
 ### Data Storage
 
-Tasks are stored locally in the `data/` directory:
+All data is stored locally on your machine following the **XDG Base Directory Specification**:
 
-- `data/projects.json` - Project metadata
-- `data/{project-id}.json` - Tasks for each project
+**Storage Location:** `~/.local/share/tuido/`
+
+This means your data persists in a central location regardless of where you run the app from. The storage includes:
+
+- `projects.json` - Project metadata
+- `{project-id}.json` - Tasks for each project
+- `notes.json` - Your notes and scratchpad content
+- `settings.json` - App preferences (theme, weather location, etc.)
 
 All data is stored in human-readable JSON format.
 
-## Roadmap
+**Migration from Old Location:**
 
-### ✅ Completed Features
-
-- [x] Core UI framework with multiple theme support
-- [x] 5 beautiful themes (Catppuccin Mocha, Nord, Gruvbox, Tokyo Night, Solarized Light)
-- [x] Dashboard with real-time metrics and activity charts
-- [x] Pomodoro timer for productivity tracking
-- [x] Weather widget integration (optional)
-- [x] Scratchpad with markdown notes editor
-- [x] Project and task management
-- [x] Full CRUD operations for tasks
-- [x] Subtask support
-- [x] JSON-based local storage
-- [x] Comprehensive keyboard navigation
-
-### 🎯 Future Enhancements
-
-- [ ] Task search and advanced filtering
-- [ ] Custom task tags and labels
-- [ ] Task sorting options (by date, priority, etc.)
-- [ ] Import/Export functionality (JSON, Markdown)
-- [ ] Task templates
-- [ ] Recurring tasks
-- [ ] Command palette for quick actions
+If you previously used this app with data stored in the relative `data/` directory, the app will automatically migrate your data to the new location on first run. The old directory can be safely deleted after migration.
 
 ## Troubleshooting
 
