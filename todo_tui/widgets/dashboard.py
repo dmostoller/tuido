@@ -28,8 +28,8 @@ class Dashboard(Container):
     Dashboard Grid {
         grid-size: 2 2;
         grid-columns: 1fr 1fr;
-        grid-rows: 1fr 1fr;
-        grid-gutter: 1 1;
+        grid-rows: 8fr 12fr;
+        grid-gutter: 0;
         height: 100%;
         padding: 0;
     }
@@ -38,7 +38,7 @@ class Dashboard(Container):
         height: 100%;
         border: solid $accent;
         background: $surface;
-        padding: 1 1 0 1;
+        padding: 0 1 0 1;
         min-width: 30;
         min-height: 10;
     }

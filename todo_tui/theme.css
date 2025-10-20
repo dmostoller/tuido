@@ -2,294 +2,294 @@
 /* Theme-aware styles using Textual theme variables */
 
 Screen {
-    layout: vertical;
-    background: $background;
+  layout: vertical;
+  background: $background;
 }
 
 /* Dashboard Panel */
 #dashboard {
-    height: 45%;
-    background: $surface;
-    padding: 1;
+  height: 38%;
+  background: $surface;
+  padding: 1;
 }
 
 /* Dashboard Quadrants */
 #stats-quadrant {
-    background: $surface;
-    border: solid $primary;
+  background: $surface;
+  border: solid $primary;
 }
 
 #clock-quadrant {
-    background: $surface;
-    border: solid $primary;
+  background: $surface;
+  border: solid $primary;
 }
 
 #sparkline-quadrant {
-    height: 1fr;
+  height: 1fr;
 }
 
 #pomodoro-quadrant {
-    background: $surface;
-    border: solid $primary;
+  background: $surface;
+  border: solid $primary;
 }
 
 #productivity-quadrant {
-    background: $surface;
-    border: solid $primary;
+  background: $surface;
+  border: solid $primary;
 }
 
 /* Sparkline specific styles */
 Sparkline {
-    color: $primary;
+  color: $primary;
 }
 
 /* Main Tabs Container */
 #main-tabs {
-    height: 55%;
-    width: 100%;
-    background: $surface;
-    border: none;
+  height: 62%;
+  width: 100%;
+  background: $surface;
+  border: none;
 }
 
 #main-tabs > Tabs {
-    background: $surface;
-    border-bottom: solid $panel;
+  background: $surface;
+  border-bottom: solid $panel;
 }
 
 #main-tabs > ContentSwitcher {
-    height: 1fr;
-    width: 100%;
+  height: 1fr;
+  width: 100%;
 }
 
 #main-tabs Tab {
-    background: $surface;
-    color: $text-muted;
-    border: none;
-    text-style: none;
+  background: $surface;
+  color: $text-muted;
+  border: none;
+  text-style: none;
 }
 
 #main-tabs Tab:hover {
-    background: $panel;
-    color: $foreground;
+  background: $panel;
+  color: $foreground;
 }
 
 #main-tabs Tab.-active {
-    background: $panel;
-    color: $primary;
-    text-style: bold;
+  background: $panel;
+  color: $primary;
+  text-style: bold;
 }
 
 #main-tabs TabPane {
-    padding: 0;
-    background: $surface;
-    height: 100%;
+  padding: 0;
+  background: $surface;
+  height: 100%;
 }
 
 /* Main Content Area */
 #main-content {
-    height: 100%;
-    layout: horizontal;
+  height: 100%;
+  layout: horizontal;
 }
 
 /* Left Column (Projects + Tasks) */
 #left-column {
-    layout: vertical;
-    width: 40%;
-    height: 100%;
+  layout: vertical;
+  width: 40%;
+  height: 100%;
 }
 
 /* Projects Panel */
 #projects-panel {
-    height: 1fr;
-    background: $surface;
-    border: solid $panel;
-    padding: 1;
+  height: 1fr;
+  background: $surface;
+  border: solid $panel;
+  padding: 1;
 }
 
 #projects-panel:focus-within {
-    border: solid $secondary;
+  border: solid $secondary;
 }
 
 .all-tasks {
-    color: $primary;
+  color: $primary;
 }
 
 /* Task List Panel */
 #task-list-panel {
-    height: 2fr;
-    background: $surface;
-    border: solid $panel;
-    padding: 1;
+  height: 2fr;
+  background: $surface;
+  border: solid $panel;
+  padding: 1;
 }
 
 #task-list-panel:focus-within {
-    border: solid $secondary;
+  border: solid $secondary;
 }
 
 .task-title {
-    color: $foreground;
+  color: $foreground;
 }
 
 .task-title.completed {
-    text-style: strike;
-    color: $text-disabled;
+  text-style: strike;
+  color: $text-disabled;
 }
 
 /* Task Detail Panel */
 #task-detail-panel {
-    width: 60%;
-    background: $surface;
-    border: solid $panel;
-    padding: 1;
+  width: 60%;
+  background: $surface;
+  border: solid $panel;
+  padding: 1;
 }
 
 #task-detail-panel:focus-within {
-    border: solid $secondary;
+  border: solid $secondary;
 }
 
 .detail-label {
-    color: $primary;
-    text-style: bold;
+  color: $primary;
+  text-style: bold;
 }
 
 .detail-value {
-    color: $foreground;
+  color: $foreground;
 }
 
 .subtask-item {
-    color: $foreground;
-    padding: 0 1;
+  color: $foreground;
+  padding: 0 1;
 }
 
 .subtask-item.completed {
-    color: $text-disabled;
-    text-style: strike dim;
+  color: $text-disabled;
+  text-style: strike dim;
 }
 
 /* Buttons */
 Button {
-    background: $surface;
-    color: $foreground;
-    border: solid $primary;
-    margin: 0 0;
+  background: $surface;
+  color: $foreground;
+  border: solid $primary;
+  margin: 0 0;
 }
 
 Button:hover {
-    color: $primary-lighten-1;
-    border: solid $primary-lighten-1;
+  color: $primary-lighten-1;
+  border: solid $primary-lighten-1;
 }
 
 Button:focus {
-    background: $panel;
-    color: $background;
-    text-style: bold;
+  background: $panel;
+  color: $background;
+  text-style: bold;
 }
 
 /* Input fields */
 Input {
-    background: $surface;
-    color: $foreground;
-    border: solid $panel-darken-1;
+  background: $surface;
+  color: $foreground;
+  border: solid $panel-darken-1;
 }
 
 Input:focus {
-    border: solid $primary;
-    background: $surface;
+  border: solid $primary;
+  background: $surface;
 }
 
 TextArea {
-    background: $panel;
-    color: $foreground;
-    border: solid $panel-darken-1;
-    scrollbar-background: $panel;
-    scrollbar-color: $primary;
-    scrollbar-size-vertical: 1;
+  background: $panel;
+  color: $foreground;
+  border: solid $panel-darken-1;
+  scrollbar-background: $panel;
+  scrollbar-color: $primary;
+  scrollbar-size-vertical: 1;
 }
 
 TextArea:focus {
-    border: solid $primary;
-    background: $surface;
+  border: solid $primary;
+  background: $surface;
 }
 
 /* Markdown */
 Markdown {
-    background: $surface;
-    color: $foreground;
-    scrollbar-background: $panel;
-    scrollbar-color: $primary;
-    scrollbar-size-vertical: 1;
+  background: $surface;
+  color: $foreground;
+  scrollbar-background: $panel;
+  scrollbar-color: $primary;
+  scrollbar-size-vertical: 1;
 }
 
 /* Labels */
 Label {
-    color: $foreground;
+  color: $foreground;
 }
 
 Label.title {
-    color: $primary-lighten-1;
-    text-style: bold;
+  color: $primary-lighten-1;
+  text-style: bold;
 }
 
 Label.header {
-    color: $primary;
-    text-style: bold;
+  color: $primary;
+  text-style: bold;
 }
 
 Label.muted {
-    color: $text-muted;
+  color: $text-muted;
 }
 
 .completed {
-    color: $text-disabled;
+  color: $text-disabled;
 }
 
 /* Static text */
 Static {
-    color: $foreground;
+  color: $foreground;
 }
 
 .muted {
-    color: $text-muted;
+  color: $text-muted;
 }
 
 /* Header */
 Header {
-    background: $surface;
-    color: $primary-lighten-1;
-    text-style: bold;
+  background: $surface;
+  color: $primary-lighten-1;
+  text-style: bold;
 }
 
 /* Footer */
 Footer {
-    background: $surface;
-    color: $text-muted;
+  background: $surface;
+  color: $text-muted;
 }
 
 /* ListView */
 ListView {
-    background: $surface;
-    scrollbar-background: $panel;
-    scrollbar-color: $primary;
-    scrollbar-size-vertical: 1;
+  background: $surface;
+  scrollbar-background: $panel;
+  scrollbar-color: $primary;
+  scrollbar-size-vertical: 1;
 }
 
 ListView:focus {
-    background: $surface;
+  background: $surface;
 }
 
 /* ListItem */
 ListItem {
-    color: $foreground;
-    background: $surface;
+  color: $foreground;
+  background: $surface;
 }
 
 ListItem:hover {
-    background: $panel;
+  background: $panel;
 }
 
 ListItem.--highlight {
-    background: $accent;
-    color: $text;
-    text-style: bold;
-    border-left: heavy $primary;
+  background: $accent;
+  color: $text;
+  text-style: bold;
+  border-left: heavy $primary;
 }

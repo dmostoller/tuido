@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional
 
+import pyperclip
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal, Vertical
@@ -130,7 +131,7 @@ class ScratchpadPanel(Container):
     }
 
     #scratchpad-textarea {
-        height: 100%;
+        height: 1fr;
         width: 100%;
         background: $surface;
         border: none;
@@ -141,12 +142,37 @@ class ScratchpadPanel(Container):
         border: none;
     }
 
+    #editor-hint {
+        dock: bottom;
+        height: 1;
+        width: 100%;
+        background: $surface;
+        color: $text-muted;
+        text-align: right;
+        padding: 0 1;
+        text-style: italic;
+    }
+
     #scratchpad-markdown-viewer {
-        height: 100%;
+        height: 1fr;
         width: 100%;
         background: $surface;
         padding: 1;
         overflow-y: auto;
+    }
+
+    #preview-actions {
+        dock: bottom;
+        height: 3;
+        layout: horizontal;
+        align: center middle;
+        background: $surface;
+        padding: 0 1;
+    }
+
+    #btn-copy-all {
+        min-width: 15;
+        margin: 0 1;
     }
 
     .note-list-item {
@@ -167,6 +193,7 @@ class ScratchpadPanel(Container):
         Binding("ctrl+n", "add_note", "New Note", show=False),
         Binding("f2", "rename_note", "Rename Note", show=False),
         Binding("delete", "delete_note", "Delete Note", show=False),
+        Binding("ctrl+shift+c", "copy_selected", "Copy Selected", show=False),
     ]
 
     def __init__(self, storage: StorageManager, id: str = "scratchpad-panel") -> None:
@@ -217,9 +244,18 @@ class ScratchpadPanel(Container):
                         show_line_numbers=True,
                         id="scratchpad-textarea",
                     )
+                    yield Static(
+                        "Tip: Ctrl+Shift+C to copy selected text", id="editor-hint"
+                    )
             with TabPane(f"{Icons.FILE} Preview", id="preview-tab"):
                 with Vertical(id="preview-container"):
                     yield Markdown("", id="scratchpad-markdown-viewer")
+                    with Horizontal(id="preview-actions"):
+                        yield Button(
+                            f"{Icons.COPY} Copy All",
+                            id="btn-copy-all",
+                            variant="primary",
+                        )
 
     def on_mount(self) -> None:
         """Load notes when widget is mounted."""
@@ -440,6 +476,45 @@ class ScratchpadPanel(Container):
             check_delete_note,
         )
 
+    def action_copy_selected(self) -> None:
+        """Copy selected text from the editor to clipboard."""
+
+        textarea = self.query_one("#scratchpad-textarea", TextArea)
+        selected_text = textarea.selected_text
+
+        if not selected_text:
+            self.app.notify("No text selected", severity="warning")
+            return
+
+        try:
+            pyperclip.copy(selected_text)
+            self.app.notify("✓ Selected text copied to clipboard", severity="success")
+        except Exception as e:
+            # Fallback to Textual's native clipboard (OSC 52)
+            try:
+                self.app.copy_to_clipboard(selected_text)
+                self.app.notify("✓ Text copied (via OSC 52)", severity="success")
+            except Exception:
+                self.app.notify(f"Failed to copy: {str(e)}", severity="error")
+
+    def action_copy_all(self) -> None:
+        """Copy entire note content to clipboard."""
+
+        if not self.current_note:
+            self.app.notify("No note selected", severity="warning")
+            return
+
+        try:
+            pyperclip.copy(self.current_note.content)
+            self.app.notify("✓ Note copied to clipboard", severity="success")
+        except Exception as e:
+            # Fallback to Textual's native clipboard (OSC 52)
+            try:
+                self.app.copy_to_clipboard(self.current_note.content)
+                self.app.notify("✓ Note copied (via OSC 52)", severity="success")
+            except Exception:
+                self.app.notify(f"Failed to copy: {str(e)}", severity="error")
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle button presses.
 
@@ -452,3 +527,5 @@ class ScratchpadPanel(Container):
             self.action_rename_note()
         elif event.button.id == "btn-delete-note":
             self.action_delete_note()
+        elif event.button.id == "btn-copy-all":
+            self.action_copy_all()

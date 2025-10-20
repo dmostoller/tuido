@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from textual.app import ComposeResult
-from textual.containers import Container
+from textual.containers import Container, Vertical
 from textual.widgets import Digits, Static
 
 from ..icons import Icons
@@ -20,10 +20,14 @@ class ClockWidget(Container):
         width: 100%;
         border: solid $accent;
         background: $surface;
-        padding: 1 1 0 1;
+        padding: 0;
+        layout: vertical;
         align: center middle;
-        min-width: 30;
-        min-height: 10;
+    }
+
+    ClockWidget .clock-content {
+        height: auto;
+        width: auto;
     }
 
     ClockWidget .clock-title {
@@ -34,7 +38,6 @@ class ClockWidget(Container):
 
     ClockWidget Digits {
         color: $primary;
-        width: 100%;
         height: auto;
         text-style: bold;
         text-align: center;
@@ -51,9 +54,10 @@ class ClockWidget(Container):
 
     def compose(self) -> ComposeResult:
         """Compose the clock widget."""
-        yield Static(f"{Icons.CLOCK} Time", classes="clock-title")
-        yield Digits("", id="clock-time")
-        yield Static("", id="clock-date", classes="clock-date")
+        with Vertical(classes="clock-content"):
+            yield Static(f"{Icons.CLOCK} Time", classes="clock-title")
+            yield Digits("", id="clock-time")
+            yield Static("", id="clock-date", classes="clock-date")
 
     def on_mount(self) -> None:
         """Set up live clock updates."""

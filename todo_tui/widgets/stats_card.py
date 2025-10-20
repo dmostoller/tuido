@@ -115,6 +115,8 @@ class StatsCard(Container):
         border: solid $accent;
         background: $surface;
         padding: 1 2;
+        layout: vertical;
+        content-align: center middle;
         min-width: 30;
         min-height: 10;
     }
@@ -122,6 +124,7 @@ class StatsCard(Container):
     StatsCard Vertical {
         height: 100%;
         width: 100%;
+        content-align: center middle;
     }
 
     StatsCard .stats-line {
@@ -141,8 +144,9 @@ class StatsCard(Container):
     StatsCard .quote-container {
         height: 1fr;
         width: 100%;
-        padding: 1 1;
-        align: center middle;
+        padding: 1 1 0 1;
+        layout: vertical;
+        content-align: center middle;
     }
 
     StatsCard .quote-text {

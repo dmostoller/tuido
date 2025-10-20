@@ -65,6 +65,7 @@ _ICONS_NERD = {
     "TRASH": "\uf1f8",
     "SEARCH": "\uf002",
     "COG": "\uf013",
+    "COPY": "\uf0c5",
     # Calendar & Date
     "CALENDAR": "\uf073",
     "CALENDAR_CHECK": "\uf274",
@@ -134,6 +135,7 @@ _ICONS_ASCII = {
     "TRASH": "[D]",
     "SEARCH": "[?]",
     "COG": "[*]",
+    "COPY": "[C]",
     # Calendar & Date
     "CALENDAR": "[C]",
     "CALENDAR_CHECK": "[C✓]",

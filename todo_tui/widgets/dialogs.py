@@ -576,9 +576,9 @@ class SyncDirectionDialog(ModalScreen):
         align: center middle;
     }
 
-    #dialog-container {
+    SyncDirectionDialog > #dialog-container {
         width: 60;
-        height: auto;
+        height: 20;
         background: $surface;
         border: thick $primary;
         padding: 1;
@@ -647,9 +647,9 @@ class StartupSyncDialog(ModalScreen):
         align: center middle;
     }
 
-    #dialog-container {
+    StartupSyncDialog > #dialog-container {
         width: 60;
-        height: auto;
+        height: 18;
         background: $surface;
         border: thick $primary;
         padding: 1;
