@@ -8,20 +8,63 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
+from platformdirs import user_config_dir, user_data_dir
+
 from .models import Note, Project, Settings, Task
 
 
 class StorageManager:
     """Manages JSON file storage for projects and tasks."""
 
-    def __init__(self, data_dir: Optional[Path] = None):
-        """Initialize storage manager with data directory."""
-        if data_dir is None:
-            # Use XDG standard location for user data
-            data_dir = Path.home() / ".local" / "share" / "tuido"
-        self.data_dir = Path(data_dir)
+    @staticmethod
+    def get_config_dir() -> Path:
+        """Get the configuration directory path (platform-specific).
+
+        Settings are stored here in a fixed location separate from user data.
+        Returns: Path like ~/.config/tuido/ on Linux, ~/Library/Application Support/tuido/ on macOS
+        """
+        return Path(user_config_dir("tuido", appauthor=False))
+
+    @staticmethod
+    def get_default_data_dir() -> Path:
+        """Get the default data directory path (platform-specific).
+
+        Returns: Path like ~/.local/share/tuido/ on Linux, ~/Library/Application Support/tuido/ on macOS
+        """
+        return Path(user_data_dir("tuido", appauthor=False))
+
+    @staticmethod
+    def load_settings() -> Settings:
+        """Load application settings from fixed config location.
+
+        This is a static method because settings must be loaded before
+        initializing StorageManager (to know which data directory to use).
+        """
+        config_dir = StorageManager.get_config_dir()
+        config_dir.mkdir(parents=True, exist_ok=True)
+        settings_file = config_dir / "settings.json"
+
+        if not settings_file.exists():
+            return Settings()
+
+        with open(settings_file, "r") as f:
+            data = json.load(f)
+        return Settings.from_dict(data)
+
+    @staticmethod
+    def save_settings(settings: Settings) -> None:
+        """Save application settings to fixed config location."""
+        config_dir = StorageManager.get_config_dir()
+        config_dir.mkdir(parents=True, exist_ok=True)
+        settings_file = config_dir / "settings.json"
+
+        with open(settings_file, "w") as f:
+            json.dump(settings.to_dict(), f, indent=2)
+
+    def __init__(self):
+        """Initialize storage manager with default data directory."""
+        self.data_dir = self.get_default_data_dir()
         self.projects_file = self.data_dir / "projects.json"
-        self.settings_file = self.data_dir / "settings.json"
         self.scratchpad_file = self.data_dir / "scratchpad.md"
         self.notes_file = self.data_dir / "notes.json"
         self._ensure_data_dir()
@@ -184,20 +227,6 @@ class StorageManager:
             tasks = self.load_tasks(project.id)
             all_tasks.extend(tasks)
         return all_tasks
-
-    # Settings operations
-    def load_settings(self) -> Settings:
-        """Load application settings."""
-        if not self.settings_file.exists():
-            # Return defaults if no settings file
-            return Settings()
-
-        data = self._load_json(self.settings_file)
-        return Settings.from_dict(data)
-
-    def save_settings(self, settings: Settings) -> None:
-        """Save application settings."""
-        self._save_json(self.settings_file, settings.to_dict())
 
     # Scratchpad operations (deprecated, kept for backwards compatibility)
     def load_scratchpad(self) -> str:

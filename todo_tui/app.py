@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import List, Optional
 
 from dotenv import load_dotenv
@@ -49,14 +50,18 @@ class TodoApp(App):
         Binding("p", "add_project", "Add Project"),
         Binding("space", "toggle_task", "Toggle Complete"),
         Binding("s", "settings", "Settings"),
+        Binding("ctrl+shift+s", "cloud_sync", "Cloud Sync"),
         Binding("q", "quit", "Quit"),
         Binding("?", "help", "Help"),
     ]
 
     def __init__(self):
         super().__init__()
+        # Load settings from fixed config location
+        self.settings = StorageManager.load_settings()
+        # Initialize storage with default data directory
         self.storage = StorageManager()
-        self.settings = None  # Will be loaded in on_mount
+
         self.projects: List[Project] = []
         self.current_project_id: Optional[str] = None
         self.current_project: Optional[Project] = None
@@ -82,14 +87,11 @@ class TodoApp(App):
         self.title = "Tuido"
         self.sub_title = "TUI To-Do List"
 
-        # Load settings
-        self.settings = self.storage.load_settings()
-
         # Register custom themes with official color palettes
         for theme in ALL_THEMES:
             self.register_theme(theme)
 
-        # Apply saved theme
+        # Apply saved theme (loaded in __init__)
         self.theme = self.settings.theme
 
         # Load projects
@@ -107,6 +109,10 @@ class TodoApp(App):
 
         # Load all tasks initially
         self._load_all_tasks()
+
+        # Startup cloud sync (if enabled)
+        if self.settings.cloud_sync_enabled and self.settings.cloud_sync_token:
+            self.run_worker(self._startup_sync(), exclusive=True)
 
     def _load_all_tasks(self) -> None:
         """Load and display all tasks across all projects."""
@@ -495,8 +501,8 @@ class TodoApp(App):
         def check_settings(result: Optional[Settings]) -> None:
             """Callback when dialog is dismissed."""
             if result:
-                # Save settings
-                self.storage.save_settings(result)
+                # Save settings (using static method)
+                StorageManager.save_settings(result)
                 self.settings = result
 
                 # Apply theme change
@@ -529,6 +535,120 @@ class TodoApp(App):
     def action_help(self) -> None:
         """Show help information."""
         self.push_screen(HelpDialog())
+
+    async def action_quit(self) -> None:
+        """Quit the application with cloud sync on exit."""
+        # If cloud sync enabled, upload on exit
+        if self.settings.cloud_sync_enabled and self.settings.cloud_sync_token:
+            # Await sync before exit
+            await self._exit_sync()
+
+        # Exit the app
+        self.exit()
+
+    def action_cloud_sync(self) -> None:
+        """Manually trigger cloud sync."""
+        if not self.settings.cloud_sync_enabled:
+            self.notify(
+                "Cloud sync is disabled. Enable it in Settings.", severity="warning"
+            )
+            return
+
+        if not self.settings.cloud_sync_token:
+            self.notify(
+                "No API token set. Configure cloud sync in Settings.", severity="error"
+            )
+            return
+
+        # Run sync in background worker
+        self.run_worker(self._manual_sync(), exclusive=True)
+
+    async def _startup_sync(self) -> None:
+        """Sync on app startup (download from cloud)."""
+        from .cloud_sync import CloudSyncClient
+
+        try:
+            client = CloudSyncClient(
+                api_url=self.settings.cloud_sync_url,
+                api_token=self.settings.cloud_sync_token,
+            )
+
+            # Download latest from cloud
+            success, message = await client.download(self.storage)
+
+            if success:
+                # Update last sync time
+                self.settings.last_cloud_sync = datetime.now().isoformat()
+                StorageManager.save_settings(self.settings)
+
+                # Reload UI with synced data
+                self.projects = self.storage.load_projects()
+                self._load_all_tasks()
+
+                self.notify(f"☁️  {message}", severity="information")
+            else:
+                # Don't show error on startup if no cloud data exists yet
+                if "No cloud data found" not in message:
+                    self.notify(f"Cloud sync: {message}", severity="warning")
+
+        except Exception as e:
+            self.notify(f"Startup sync failed: {str(e)}", severity="error")
+
+    async def _manual_sync(self) -> None:
+        """Manual sync triggered by user."""
+        from .cloud_sync import CloudSyncClient
+
+        try:
+            self.notify("☁️  Syncing...", severity="information")
+
+            client = CloudSyncClient(
+                api_url=self.settings.cloud_sync_url,
+                api_token=self.settings.cloud_sync_token,
+            )
+
+            # Smart sync (compares timestamps)
+            success, message = await client.sync(self.storage)
+
+            if success:
+                # Update last sync time
+                self.settings.last_cloud_sync = datetime.now().isoformat()
+                StorageManager.save_settings(self.settings)
+
+                # Reload UI
+                self.projects = self.storage.load_projects()
+                self._load_all_tasks()
+
+                self.notify(f"☁️  {message}", severity="success")
+            else:
+                self.notify(f"❌ {message}", severity="error")
+
+        except Exception as e:
+            self.notify(f"Sync failed: {str(e)}", severity="error")
+
+    async def _exit_sync(self) -> None:
+        """Sync on app exit (upload to cloud)."""
+        from .cloud_sync import CloudSyncClient
+        import sys
+
+        try:
+            client = CloudSyncClient(
+                api_url=self.settings.cloud_sync_url,
+                api_token=self.settings.cloud_sync_token,
+            )
+
+            # Upload to cloud
+            success, message = await client.upload(self.storage)
+
+            if success:
+                # Update last sync time
+                self.settings.last_cloud_sync = datetime.now().isoformat()
+                StorageManager.save_settings(self.settings)
+
+        except Exception as e:
+            # Log error but don't block app closing
+            # Error is written to stderr for debugging without interrupting user
+            print(f"Cloud sync on exit failed: {type(e).__name__}: {e}", file=sys.stderr)
+            pass
 
     def on_button_pressed(self, event) -> None:
         """Handle button presses in task detail panel."""
