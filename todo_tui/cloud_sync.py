@@ -8,7 +8,7 @@ from typing import Optional
 
 import httpx
 
-from .models import Note, Project, Task
+from .models import Note, Project, Snippet, Task
 from .storage import StorageManager
 
 
@@ -50,7 +50,7 @@ class CloudSyncClient:
             storage: StorageManager instance
 
         Returns:
-            Dictionary containing all projects, tasks, and notes
+            Dictionary containing all projects, tasks, notes, and snippets
         """
         # Load all projects
         projects = storage.load_projects()
@@ -64,11 +64,15 @@ class CloudSyncClient:
         # Load all notes
         notes = storage.load_notes()
 
+        # Load all snippets
+        snippets = storage.load_snippets()
+
         return {
             "timestamp": datetime.now().isoformat(),
             "projects": [p.to_dict() for p in projects],
             "tasks": tasks_by_project,
             "notes": [n.to_dict() for n in notes],
+            "snippets": [s.to_dict() for s in snippets],
         }
 
     def _save_local_data(self, storage: StorageManager, cloud_data: dict) -> None:
@@ -88,10 +92,16 @@ class CloudSyncClient:
         projects_list = cloud_data.get("projects", [])
         tasks_dict = cloud_data.get("tasks", {})
         notes_list = cloud_data.get("notes", [])
+        snippets_list = cloud_data.get("snippets", [])
 
         # Warning: Check if we're about to overwrite with completely empty data
         # This could indicate a parsing error or API issue
-        if len(projects_list) == 0 and len(tasks_dict) == 0 and len(notes_list) == 0:
+        if (
+            len(projects_list) == 0
+            and len(tasks_dict) == 0
+            and len(notes_list) == 0
+            and len(snippets_list) == 0
+        ):
             # Check if local storage has data
             existing_projects = storage.load_projects()
             if len(existing_projects) > 0:
@@ -115,6 +125,10 @@ class CloudSyncClient:
         # Save notes
         notes = [Note.from_dict(n) for n in notes_list]
         storage.save_notes(notes)
+
+        # Save snippets
+        snippets = [Snippet.from_dict(s) for s in snippets_list]
+        storage.save_snippets(snippets)
 
     async def upload(self, storage: StorageManager) -> tuple[bool, str]:
         """Upload local data to cloud.

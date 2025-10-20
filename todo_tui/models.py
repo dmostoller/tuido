@@ -175,6 +175,44 @@ class Note:
 
 
 @dataclass
+class Snippet:
+    """A code snippet for quick copying."""
+
+    id: str = field(default_factory=lambda: str(uuid4()))
+    name: str = ""
+    command: str = ""
+    tags: List[str] = field(default_factory=list)
+    uses: int = 0
+    last_used: Optional[str] = None
+    created_at: str = field(default_factory=lambda: datetime.now().isoformat())
+
+    def to_dict(self) -> dict:
+        """Convert snippet to dictionary for JSON serialization."""
+        return {
+            "id": self.id,
+            "name": self.name,
+            "command": self.command,
+            "tags": self.tags,
+            "uses": self.uses,
+            "last_used": self.last_used,
+            "created_at": self.created_at,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "Snippet":
+        """Create snippet from dictionary."""
+        return cls(
+            id=data["id"],
+            name=data["name"],
+            command=data.get("command", ""),
+            tags=data.get("tags", []),
+            uses=data.get("uses", 0),
+            last_used=data.get("last_used"),
+            created_at=data["created_at"],
+        )
+
+
+@dataclass
 class Settings:
     """Application settings.
 

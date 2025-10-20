@@ -80,7 +80,7 @@ class ScratchpadPanel(Container):
         dock: bottom;
         height: 3;
         layout: horizontal;
-        align: center middle;
+        align: left middle;
         background: $surface;
         padding: 0 1;
     }
@@ -165,7 +165,7 @@ class ScratchpadPanel(Container):
         dock: bottom;
         height: 3;
         layout: horizontal;
-        align: center middle;
+        align: right middle;
         background: $surface;
         padding: 0 1;
     }

@@ -18,7 +18,7 @@ from textual.widgets import (
 )
 
 from ..icons import Icons
-from ..models import Note, Project, Settings, Task
+from ..models import Note, Project, Settings, Snippet, Task
 
 
 class AddTaskDialog(ModalScreen):
@@ -1393,4 +1393,168 @@ class RenameNoteDialog(ModalScreen):
             if title:
                 self.note.title = title
                 self.dismiss(self.note)
+            event.prevent_default()
+
+
+class AddSnippetDialog(ModalScreen):
+    """Modal dialog for adding a new code snippet."""
+
+    DEFAULT_CSS = """
+    AddSnippetDialog {
+        align: center middle;
+    }
+
+    #dialog-container {
+        width: 70;
+        height: auto;
+        background: $surface;
+        border: thick $primary;
+        padding: 1;
+    }
+
+    #snippet-command-input {
+        height: 8;
+        min-height: 8;
+    }
+
+    #dialog-buttons {
+        height: auto;
+        layout: horizontal;
+        align: center middle;
+    }
+    """
+
+    def compose(self) -> ComposeResult:
+        """Compose the add snippet dialog."""
+        with Container(id="dialog-container"):
+            yield Label(f"{Icons.PLUS} Add New Snippet", classes="header")
+            yield Label("Name:")
+            yield Input(placeholder="e.g., SSH to staging", id="snippet-name-input")
+            yield Label("Command/Code:")
+            yield TextArea(id="snippet-command-input")
+            yield Label("Tags (comma-separated, optional):")
+            yield Input(
+                placeholder="e.g., docker, ssh, deploy", id="snippet-tags-input"
+            )
+            with Horizontal(id="dialog-buttons"):
+                yield Button("Cancel", id="btn-cancel", variant="default")
+                yield Button("Add Snippet", id="btn-add", variant="success")
+
+    def on_mount(self) -> None:
+        """Focus the name input field when dialog opens."""
+        self.query_one("#snippet-name-input", Input).focus()
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button press."""
+        if event.button.id == "btn-cancel":
+            self.dismiss(None)
+        elif event.button.id == "btn-add":
+            name = self.query_one("#snippet-name-input", Input).value.strip()
+            command = self.query_one("#snippet-command-input", TextArea).text.strip()
+            tags_str = self.query_one("#snippet-tags-input", Input).value.strip()
+
+            # Validate required fields
+            if not name or not command:
+                self.app.notify("Name and command are required", severity="warning")
+                return
+
+            # Parse tags from comma-separated string
+            tags = [t.strip() for t in tags_str.split(",") if t.strip()]
+
+            # Create new snippet
+            snippet = Snippet(name=name, command=command, tags=tags)
+            self.dismiss(snippet)
+
+    def on_key(self, event) -> None:
+        """Handle keyboard shortcuts."""
+        if event.key == "escape":
+            self.dismiss(None)
+            event.prevent_default()
+
+
+class EditSnippetDialog(ModalScreen):
+    """Modal dialog for editing an existing code snippet."""
+
+    DEFAULT_CSS = """
+    EditSnippetDialog {
+        align: center middle;
+    }
+
+    #dialog-container {
+        width: 70;
+        height: auto;
+        background: $surface;
+        border: thick $primary;
+        padding: 1;
+    }
+
+    #snippet-command-input {
+        height: 8;
+        min-height: 8;
+    }
+
+    #dialog-buttons {
+        height: auto;
+        layout: horizontal;
+        align: center middle;
+    }
+    """
+
+    def __init__(self, snippet: Snippet):
+        super().__init__()
+        self.snippet = snippet
+
+    def compose(self) -> ComposeResult:
+        """Compose the edit snippet dialog."""
+        with Container(id="dialog-container"):
+            yield Label(f"{Icons.PENCIL} Edit Snippet", classes="header")
+            yield Label("Name:")
+            yield Input(
+                value=self.snippet.name,
+                placeholder="e.g., SSH to staging",
+                id="snippet-name-input",
+            )
+            yield Label("Command/Code:")
+            yield TextArea(text=self.snippet.command, id="snippet-command-input")
+            yield Label("Tags (comma-separated, optional):")
+            yield Input(
+                value=", ".join(self.snippet.tags) if self.snippet.tags else "",
+                placeholder="e.g., docker, ssh, deploy",
+                id="snippet-tags-input",
+            )
+            with Horizontal(id="dialog-buttons"):
+                yield Button("Cancel", id="btn-cancel", variant="default")
+                yield Button("Save", id="btn-save", variant="success")
+
+    def on_mount(self) -> None:
+        """Focus the name input field when dialog opens."""
+        self.query_one("#snippet-name-input", Input).focus()
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button press."""
+        if event.button.id == "btn-cancel":
+            self.dismiss(None)
+        elif event.button.id == "btn-save":
+            name = self.query_one("#snippet-name-input", Input).value.strip()
+            command = self.query_one("#snippet-command-input", TextArea).text.strip()
+            tags_str = self.query_one("#snippet-tags-input", Input).value.strip()
+
+            # Validate required fields
+            if not name or not command:
+                self.app.notify("Name and command are required", severity="warning")
+                return
+
+            # Parse tags from comma-separated string
+            tags = [t.strip() for t in tags_str.split(",") if t.strip()]
+
+            # Update snippet
+            self.snippet.name = name
+            self.snippet.command = command
+            self.snippet.tags = tags
+            self.dismiss(self.snippet)
+
+    def on_key(self, event) -> None:
+        """Handle keyboard shortcuts."""
+        if event.key == "escape":
+            self.dismiss(None)
             event.prevent_default()
