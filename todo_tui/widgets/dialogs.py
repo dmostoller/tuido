@@ -664,7 +664,7 @@ class SettingsDialog(ModalScreen):
     }
 
     #dialog-container {
-        width: 60;
+        width: 70;
         height: auto;
         background: $surface;
         border: thick $primary;
@@ -687,12 +687,25 @@ class SettingsDialog(ModalScreen):
         text-style: italic;
         margin-left: 2;
     }
+
+    .cloud-sync-section {
+        border: solid $accent;
+        padding: 1;
+        margin: 1 0;
+    }
+
+    .section-header {
+        text-style: bold;
+        color: $accent;
+        margin-bottom: 1;
+    }
     """
 
     def __init__(self, current_settings: Settings, available_themes: List[str]):
         super().__init__()
         self.settings = current_settings
         self.available_themes = available_themes
+        self.original_theme = current_settings.theme  # Store for revert on cancel
 
     def compose(self) -> ComposeResult:
         """Compose the settings dialog."""
@@ -757,13 +770,66 @@ class SettingsDialog(ModalScreen):
                 type="integer",
             )
 
+            # Cloud Sync configuration
+            with Container(classes="cloud-sync-section"):
+                yield Label("☁️  Cloud Sync", classes="section-header")
+                yield Static(
+                    "Sync your data across devices via tuido.vercel.app",
+                    classes="setting-hint",
+                )
+
+                yield Label("Enable Cloud Sync:")
+                yield Switch(
+                    value=self.settings.cloud_sync_enabled,
+                    id="cloud-sync-enabled-switch"
+                )
+
+                yield Label("API Token:")
+                yield Input(
+                    value=self.settings.cloud_sync_token,
+                    placeholder="Paste your API token from tuido.vercel.app",
+                    id="cloud-token-input",
+                    password=True,
+                )
+
+                yield Label("API URL:")
+                yield Input(
+                    value=self.settings.cloud_sync_url,
+                    placeholder="https://tuido.vercel.app/api",
+                    id="cloud-url-input",
+                )
+
+                if self.settings.last_cloud_sync:
+                    yield Static(
+                        f"Last synced: {self.settings.last_cloud_sync}",
+                        classes="setting-hint",
+                    )
+                else:
+                    yield Static(
+                        "Never synced",
+                        classes="setting-hint",
+                    )
+
+                yield Static(
+                    "Get your token at: https://tuido.vercel.app",
+                    classes="setting-hint",
+                )
+
             with Horizontal(id="dialog-buttons"):
                 yield Button("Cancel", id="btn-cancel", variant="default")
                 yield Button("Save", id="btn-save", variant="success")
 
+    def on_select_changed(self, event: Select.Changed) -> None:
+        """Handle theme selection changes - apply immediately for live preview."""
+        if event.select.id == "theme-select":
+            # Apply the theme immediately for preview
+            self.app.theme = event.value
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle button press."""
         if event.button.id == "btn-cancel":
+            # Revert to original theme when canceling
+            self.app.theme = self.original_theme
             self.dismiss(None)
         elif event.button.id == "btn-save":
             # Read current values
@@ -801,6 +867,11 @@ class SettingsDialog(ModalScreen):
             except ValueError:
                 long_break_minutes = self.settings.pomodoro_long_break_minutes
 
+            # Read cloud sync settings
+            cloud_sync_enabled = self.query_one("#cloud-sync-enabled-switch", Switch)
+            cloud_token_input = self.query_one("#cloud-token-input", Input)
+            cloud_url_input = self.query_one("#cloud-url-input", Input)
+
             # Update settings
             self.settings.theme = theme_select.value
             self.settings.show_completed_tasks = show_completed_switch.value
@@ -809,12 +880,17 @@ class SettingsDialog(ModalScreen):
             self.settings.pomodoro_work_minutes = work_minutes
             self.settings.pomodoro_short_break_minutes = short_break_minutes
             self.settings.pomodoro_long_break_minutes = long_break_minutes
+            self.settings.cloud_sync_enabled = cloud_sync_enabled.value
+            self.settings.cloud_sync_token = cloud_token_input.value.strip()
+            self.settings.cloud_sync_url = cloud_url_input.value.strip() or "https://tuido.vercel.app/api"
 
             self.dismiss(self.settings)
 
     def on_key(self, event) -> None:
         """Handle keyboard shortcuts."""
         if event.key == "escape":
+            # Revert to original theme when canceling
+            self.app.theme = self.original_theme
             self.dismiss(None)
             event.prevent_default()
 

@@ -5,6 +5,8 @@ description = "A beautiful Terminal User Interface (TUI) todo application built 
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "httpx>=0.27.0",
+    "platformdirs>=4.0.0",
     "plotext>=5.3.2",
     "python-dotenv>=1.0.0",
     "requests>=2.31.0",
@@ -20,6 +22,7 @@ dev = [
 ]
 
 [project.scripts]
+todo = "todo_tui.app:main"
 tuido = "todo_tui.app:main"
 tuido-dev = "todo_tui.app:dev"
 

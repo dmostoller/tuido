@@ -186,6 +186,10 @@ class Settings:
         pomodoro_long_break_minutes: Duration of long breaks in minutes (default: 15)
         weather_location: Location for weather widget (e.g., 'San Francisco' or 'London,UK')
         weather_use_fahrenheit: Whether to use Fahrenheit (True) or Celsius (False) for temperature
+        cloud_sync_enabled: Whether cloud sync is enabled
+        cloud_sync_token: API token for cloud sync service
+        cloud_sync_url: Base URL for cloud sync API
+        last_cloud_sync: ISO timestamp of last successful cloud sync
     """
 
     theme: str = "catppuccin-mocha"  # Default startup theme
@@ -195,6 +199,10 @@ class Settings:
     pomodoro_long_break_minutes: int = 15
     weather_location: str = ""  # Empty means not configured
     weather_use_fahrenheit: bool = True  # Default to Fahrenheit
+    cloud_sync_enabled: bool = False  # Cloud sync disabled by default
+    cloud_sync_token: str = ""  # API token from tuido.vercel.app
+    cloud_sync_url: str = "https://tuido.vercel.app/api"  # Cloud API base URL
+    last_cloud_sync: str = ""  # ISO timestamp of last sync
 
     def to_dict(self) -> dict:
         """Convert settings to dictionary for JSON serialization."""
@@ -206,6 +214,10 @@ class Settings:
             "pomodoro_long_break_minutes": self.pomodoro_long_break_minutes,
             "weather_location": self.weather_location,
             "weather_use_fahrenheit": self.weather_use_fahrenheit,
+            "cloud_sync_enabled": self.cloud_sync_enabled,
+            "cloud_sync_token": self.cloud_sync_token,
+            "cloud_sync_url": self.cloud_sync_url,
+            "last_cloud_sync": self.last_cloud_sync,
         }
 
     @classmethod
@@ -219,4 +231,8 @@ class Settings:
             pomodoro_long_break_minutes=data.get("pomodoro_long_break_minutes", 15),
             weather_location=data.get("weather_location", ""),
             weather_use_fahrenheit=data.get("weather_use_fahrenheit", True),
+            cloud_sync_enabled=data.get("cloud_sync_enabled", False),
+            cloud_sync_token=data.get("cloud_sync_token", ""),
+            cloud_sync_url=data.get("cloud_sync_url", "https://tuido.vercel.app/api"),
+            last_cloud_sync=data.get("last_cloud_sync", ""),
         )
