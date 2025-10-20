@@ -267,6 +267,28 @@ class ScratchpadPanel(Container):
             )
             list_view.append(ListItem(content))
 
+    def reload_notes(self) -> None:
+        """Reload notes from storage and update UI.
+
+        Called after cloud sync to refresh the scratchpad with synced notes.
+        """
+        # Reload notes from storage
+        self.notes = self.storage.load_notes()
+
+        # Update the list view
+        self._update_note_list()
+
+        # Select first note if available, otherwise clear the editor
+        if self.notes:
+            self._select_note(self.notes[0])
+        else:
+            # Clear editor and preview if no notes
+            textarea = self.query_one("#scratchpad-textarea", TextArea)
+            textarea.text = ""
+            markdown_viewer = self.query_one("#scratchpad-markdown-viewer", Markdown)
+            markdown_viewer.update("")
+            self.current_note = None
+
     def _select_note(self, note: Note) -> None:
         """Select and display a note.
 

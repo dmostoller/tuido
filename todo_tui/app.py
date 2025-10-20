@@ -564,8 +564,9 @@ class TodoApp(App):
         self.run_worker(self._manual_sync(), exclusive=True)
 
     async def _startup_sync(self) -> None:
-        """Sync on app startup (download from cloud)."""
+        """Sync on app startup - asks user before downloading from cloud."""
         from .cloud_sync import CloudSyncClient
+        from .widgets.dialogs import StartupSyncDialog
 
         try:
             client = CloudSyncClient(
@@ -573,7 +574,23 @@ class TodoApp(App):
                 api_token=self.settings.cloud_sync_token,
             )
 
-            # Download latest from cloud
+            # Check if cloud has data
+            success, cloud_timestamp = await client.get_last_sync_time()
+
+            if not success or not cloud_timestamp:
+                # No cloud data yet, silently continue with local data
+                return
+
+            # Cloud has data - ask user if they want to download
+            should_download = await self.push_screen_wait(
+                StartupSyncDialog(cloud_timestamp=cloud_timestamp)
+            )
+
+            if not should_download:
+                # User chose to skip
+                return
+
+            # User confirmed - download from cloud
             success, message = await client.download(self.storage)
 
             if success:
@@ -585,11 +602,13 @@ class TodoApp(App):
                 self.projects = self.storage.load_projects()
                 self._load_all_tasks()
 
-                self.notify(f"☁️  {message}", severity="information")
+                # Reload scratchpad notes
+                scratchpad = self.query_one("#scratchpad-panel", ScratchpadPanel)
+                scratchpad.reload_notes()
+
+                self.notify(f"☁️  {message}", severity="success")
             else:
-                # Don't show error on startup if no cloud data exists yet
-                if "No cloud data found" not in message:
-                    self.notify(f"Cloud sync: {message}", severity="warning")
+                self.notify(f"❌ {message}", severity="error")
 
         except Exception as e:
             self.notify(f"Startup sync failed: {str(e)}", severity="error")
@@ -597,17 +616,48 @@ class TodoApp(App):
     async def _manual_sync(self) -> None:
         """Manual sync triggered by user."""
         from .cloud_sync import CloudSyncClient
+        from .widgets.dialogs import SyncDirectionDialog
 
         try:
-            self.notify("☁️  Syncing...", severity="information")
+            self.notify("☁️  Checking sync status...", severity="information")
 
             client = CloudSyncClient(
                 api_url=self.settings.cloud_sync_url,
                 api_token=self.settings.cloud_sync_token,
             )
 
-            # Smart sync (compares timestamps)
-            success, message = await client.sync(self.storage)
+            # Check sync status first
+            sync_status = await client.check_sync_status(self.storage)
+            recommended_action = sync_status["recommended_action"]
+
+            # If both have data, prompt user to choose direction
+            if recommended_action == "prompt":
+                choice = await self.push_screen_wait(
+                    SyncDirectionDialog(
+                        cloud_timestamp=sync_status["cloud_timestamp"],
+                        local_timestamp=sync_status["local_timestamp"],
+                    )
+                )
+
+                if choice is None:
+                    # User cancelled
+                    self.notify("Sync cancelled", severity="information")
+                    return
+
+                # Execute user's choice
+                if choice == "download":
+                    success, message = await client.download(self.storage)
+                else:  # upload
+                    success, message = await client.upload(self.storage)
+            else:
+                # Auto-sync based on recommended action
+                if recommended_action == "download":
+                    success, message = await client.download(self.storage)
+                elif recommended_action == "upload":
+                    success, message = await client.upload(self.storage)
+                else:
+                    # Fallback to smart sync
+                    success, message = await client.sync(self.storage)
 
             if success:
                 # Update last sync time
@@ -617,6 +667,10 @@ class TodoApp(App):
                 # Reload UI
                 self.projects = self.storage.load_projects()
                 self._load_all_tasks()
+
+                # Reload scratchpad notes
+                scratchpad = self.query_one("#scratchpad-panel", ScratchpadPanel)
+                scratchpad.reload_notes()
 
                 self.notify(f"☁️  {message}", severity="success")
             else:
@@ -647,7 +701,9 @@ class TodoApp(App):
         except Exception as e:
             # Log error but don't block app closing
             # Error is written to stderr for debugging without interrupting user
-            print(f"Cloud sync on exit failed: {type(e).__name__}: {e}", file=sys.stderr)
+            print(
+                f"Cloud sync on exit failed: {type(e).__name__}: {e}", file=sys.stderr
+            )
             pass
 
     def on_button_pressed(self, event) -> None:

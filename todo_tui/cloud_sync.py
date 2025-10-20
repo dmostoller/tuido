@@ -77,19 +77,43 @@ class CloudSyncClient:
         Args:
             storage: StorageManager instance
             cloud_data: Data downloaded from cloud
+
+        Raises:
+            ValueError: If cloud data appears invalid or empty
         """
+        # Validate that cloud_data has expected structure
+        if not isinstance(cloud_data, dict):
+            raise ValueError("Cloud data must be a dictionary")
+
+        projects_list = cloud_data.get("projects", [])
+        tasks_dict = cloud_data.get("tasks", {})
+        notes_list = cloud_data.get("notes", [])
+
+        # Warning: Check if we're about to overwrite with completely empty data
+        # This could indicate a parsing error or API issue
+        if len(projects_list) == 0 and len(tasks_dict) == 0 and len(notes_list) == 0:
+            # Check if local storage has data
+            existing_projects = storage.load_projects()
+            if len(existing_projects) > 0:
+                # Log warning but still allow sync (cloud might legitimately be empty)
+                import sys
+
+                print(
+                    "WARNING: Overwriting local data with empty cloud data",
+                    file=sys.stderr,
+                )
+
         # Save projects
-        projects = [Project.from_dict(p) for p in cloud_data.get("projects", [])]
+        projects = [Project.from_dict(p) for p in projects_list]
         storage.save_projects(projects)
 
         # Save tasks for each project
-        tasks_dict = cloud_data.get("tasks", {})
         for project_id, task_list in tasks_dict.items():
             tasks = [Task.from_dict(t) for t in task_list]
             storage.save_tasks(project_id, tasks)
 
         # Save notes
-        notes = [Note.from_dict(n) for n in cloud_data.get("notes", [])]
+        notes = [Note.from_dict(n) for n in notes_list]
         storage.save_notes(notes)
 
     async def upload(self, storage: StorageManager) -> tuple[bool, str]:
@@ -114,8 +138,10 @@ class CloudSyncClient:
                 )
 
                 if response.status_code == 200:
-                    result = response.json()
-                    timestamp = result.get("timestamp", data["timestamp"])
+                    response_data = response.json()
+                    # API wraps data in { success, data, message } envelope
+                    result_data = response_data.get("data", {})
+                    timestamp = result_data.get("timestamp", data["timestamp"])
                     return True, f"Synced to cloud at {timestamp}"
                 elif response.status_code == 401:
                     return False, "Invalid API token. Please check your settings."
@@ -156,7 +182,13 @@ class CloudSyncClient:
                 )
 
                 if response.status_code == 200:
-                    cloud_data = response.json()
+                    response_data = response.json()
+                    # API wraps data in { success, data } envelope
+                    cloud_data = response_data.get("data", {})
+
+                    if not cloud_data:
+                        return False, "Download failed: No data in response"
+
                     self._save_local_data(storage, cloud_data)
                     timestamp = cloud_data.get("timestamp", "unknown")
                     return True, f"Downloaded data from {timestamp}"
@@ -196,13 +228,59 @@ class CloudSyncClient:
                 )
 
                 if response.status_code == 200:
-                    data = response.json()
+                    response_data = response.json()
+                    # API wraps data in { success, data } envelope
+                    data = response_data.get("data", {})
                     return True, data.get("lastSync")
                 else:
                     return False, None
 
         except Exception:
             return False, None
+
+    async def check_sync_status(
+        self, storage: StorageManager
+    ) -> dict[str, Optional[str]]:
+        """Check sync status and return cloud/local timestamps.
+
+        Args:
+            storage: StorageManager instance
+
+        Returns:
+            Dictionary with:
+            - cloud_timestamp: Last cloud sync time or None
+            - local_timestamp: Last local sync time or None
+            - has_cloud_data: Whether cloud has data
+            - has_local_data: Whether local has been synced before
+            - recommended_action: "upload", "download", "sync", or "prompt"
+        """
+        # Get cloud timestamp
+        success, cloud_timestamp = await self.get_last_sync_time()
+        has_cloud_data = success and cloud_timestamp is not None
+
+        # Get local timestamp
+        settings = StorageManager.load_settings()
+        local_timestamp = settings.last_cloud_sync
+        has_local_data = local_timestamp is not None
+
+        # Determine recommended action
+        if not has_cloud_data and not has_local_data:
+            recommended_action = "upload"  # Nothing anywhere, upload local
+        elif not has_cloud_data and has_local_data:
+            recommended_action = "upload"  # Local has data, cloud doesn't
+        elif has_cloud_data and not has_local_data:
+            recommended_action = "download"  # Cloud has data, local doesn't
+        else:
+            # Both have data - prompt user to choose
+            recommended_action = "prompt"
+
+        return {
+            "cloud_timestamp": cloud_timestamp,
+            "local_timestamp": local_timestamp,
+            "has_cloud_data": has_cloud_data,
+            "has_local_data": has_local_data,
+            "recommended_action": recommended_action,
+        }
 
     async def sync(self, storage: StorageManager) -> tuple[bool, str]:
         """Smart sync: compare timestamps and sync newest data.
@@ -249,7 +327,10 @@ class CloudSyncClient:
                     return await self.upload(storage)
             except (ValueError, AttributeError) as e:
                 # Fail safely if timestamp parsing fails
-                return False, f"Sync failed: Unable to parse timestamps ({type(e).__name__})"
+                return (
+                    False,
+                    f"Sync failed: Unable to parse timestamps ({type(e).__name__})",
+                )
 
         except Exception as e:
             return False, f"Sync failed: {str(e)}"

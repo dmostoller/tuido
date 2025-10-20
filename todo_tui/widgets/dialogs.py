@@ -568,6 +568,141 @@ class ConfirmDialog(ModalScreen):
             event.prevent_default()
 
 
+class SyncDirectionDialog(ModalScreen):
+    """Modal dialog for choosing cloud sync direction."""
+
+    DEFAULT_CSS = """
+    SyncDirectionDialog {
+        align: center middle;
+    }
+
+    #dialog-container {
+        width: 60;
+        height: auto;
+        background: $surface;
+        border: thick $primary;
+        padding: 1;
+    }
+
+    #sync-info {
+        padding: 1 0;
+        background: $panel;
+        margin-bottom: 1;
+    }
+
+    #dialog-buttons {
+        height: auto;
+        layout: horizontal;
+        align: center middle;
+    }
+    """
+
+    def __init__(self, cloud_timestamp: Optional[str], local_timestamp: Optional[str]):
+        """Initialize sync direction dialog.
+
+        Args:
+            cloud_timestamp: Last cloud sync timestamp (ISO format)
+            local_timestamp: Last local sync timestamp (ISO format)
+        """
+        super().__init__()
+        self.cloud_timestamp = cloud_timestamp or "Never"
+        self.local_timestamp = local_timestamp or "Never"
+
+    def compose(self) -> ComposeResult:
+        """Compose the sync direction dialog."""
+        with Container(id="dialog-container"):
+            yield Label(f"{Icons.CLOUD}  Choose Sync Direction", classes="header")
+            yield Label(
+                "Both cloud and local data exist. Choose which direction to sync:"
+            )
+            with Container(id="sync-info"):
+                yield Label(f"☁️  Cloud last synced: {self.cloud_timestamp}")
+                yield Label(f"💾 Local last synced: {self.local_timestamp}")
+            with Horizontal(id="dialog-buttons"):
+                yield Button("Cancel", id="btn-cancel", variant="default")
+                yield Button("⬇ Download", id="btn-download", variant="primary")
+                yield Button("⬆ Upload", id="btn-upload", variant="success")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button press."""
+        if event.button.id == "btn-cancel":
+            self.dismiss(None)
+        elif event.button.id == "btn-download":
+            self.dismiss("download")
+        elif event.button.id == "btn-upload":
+            self.dismiss("upload")
+
+    def on_key(self, event) -> None:
+        """Handle keyboard shortcuts."""
+        if event.key == "escape":
+            self.dismiss(None)
+            event.prevent_default()
+
+
+class StartupSyncDialog(ModalScreen):
+    """Modal dialog shown on startup asking if user wants to download from cloud."""
+
+    DEFAULT_CSS = """
+    StartupSyncDialog {
+        align: center middle;
+    }
+
+    #dialog-container {
+        width: 60;
+        height: auto;
+        background: $surface;
+        border: thick $primary;
+        padding: 1;
+    }
+
+    #sync-info {
+        padding: 1 0;
+        background: $panel;
+        margin-bottom: 1;
+    }
+
+    #dialog-buttons {
+        height: auto;
+        layout: horizontal;
+        align: center middle;
+    }
+    """
+
+    def __init__(self, cloud_timestamp: Optional[str]):
+        """Initialize startup sync dialog.
+
+        Args:
+            cloud_timestamp: Last cloud sync timestamp (ISO format)
+        """
+        super().__init__()
+        self.cloud_timestamp = cloud_timestamp or "Unknown"
+
+    def compose(self) -> ComposeResult:
+        """Compose the startup sync dialog."""
+        with Container(id="dialog-container"):
+            yield Label(f"{Icons.CLOUD}  Cloud Data Found", classes="header")
+            yield Label("Cloud sync data is available. Do you want to download it?")
+            with Container(id="sync-info"):
+                yield Label(f"☁️  Last synced: {self.cloud_timestamp}")
+                yield Label("⚠️  This will replace your local data")
+            with Horizontal(id="dialog-buttons"):
+                yield Button("Skip", id="btn-skip", variant="default")
+                yield Button("⬇ Download", id="btn-download", variant="primary")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button press."""
+        if event.button.id == "btn-skip":
+            self.dismiss(False)
+        elif event.button.id == "btn-download":
+            self.dismiss(True)
+
+    def on_key(self, event) -> None:
+        """Handle keyboard shortcuts."""
+        if event.key == "escape":
+            self.dismiss(False)
+            event.prevent_default()
+
+
 class MoveTaskDialog(ModalScreen):
     """Modal dialog for moving a task to a different project."""
 
@@ -781,7 +916,7 @@ class SettingsDialog(ModalScreen):
                 yield Label("Enable Cloud Sync:")
                 yield Switch(
                     value=self.settings.cloud_sync_enabled,
-                    id="cloud-sync-enabled-switch"
+                    id="cloud-sync-enabled-switch",
                 )
 
                 yield Label("API Token:")
@@ -882,7 +1017,9 @@ class SettingsDialog(ModalScreen):
             self.settings.pomodoro_long_break_minutes = long_break_minutes
             self.settings.cloud_sync_enabled = cloud_sync_enabled.value
             self.settings.cloud_sync_token = cloud_token_input.value.strip()
-            self.settings.cloud_sync_url = cloud_url_input.value.strip() or "https://tuido.vercel.app/api"
+            self.settings.cloud_sync_url = (
+                cloud_url_input.value.strip() or "https://tuido.vercel.app/api"
+            )
 
             self.dismiss(self.settings)
 
