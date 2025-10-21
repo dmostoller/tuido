@@ -49,6 +49,7 @@ _ICONS_NERD = {
     "FOLDER": "\uf07c",
     "FOLDER_OPEN": "\uf07b",
     "FILE": "\uf15b",
+    "CODE": "\uf121",
     "LIST": "\uf03a",
     "LIST_UL": "\uf0ca",
     # Stats & Metrics
@@ -119,6 +120,7 @@ _ICONS_ASCII = {
     "FOLDER": "[F]",
     "FOLDER_OPEN": "[f]",
     "FILE": "[f]",
+    "CODE": "[<>]",
     "LIST": "[L]",
     "LIST_UL": "[L]",
     # Stats & Metrics

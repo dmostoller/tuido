@@ -36,6 +36,7 @@ from .widgets.project_list import (
     ProjectSelected,
 )
 from .widgets.scratchpad import ScratchpadPanel
+from .widgets.snippets import SnippetsPanel
 from .widgets.task_detail import SubtaskToggled, TaskDetailPanel
 from .widgets.task_list import TaskListPanel, TaskSelected
 
@@ -80,6 +81,8 @@ class TodoApp(App):
                     yield TaskDetailPanel(id="task-detail-panel")
             with TabPane(f"{Icons.PENCIL} Scratchpad", id="scratchpad-tab"):
                 yield ScratchpadPanel(self.storage, id="scratchpad-panel")
+            with TabPane(f"{Icons.CODE} Snippets", id="snippets-tab"):
+                yield SnippetsPanel(self.storage, id="snippets-panel")
         yield Footer()
 
     def on_mount(self) -> None:
@@ -238,14 +241,23 @@ class TodoApp(App):
         if not self.current_task:
             return
 
+        # Store original project_id BEFORE dialog modifies the task
+        original_project_id = self.current_task.project_id
+
         def check_edit_task(result: Optional[Task]) -> None:
             """Callback when dialog is dismissed."""
             if result:
-                # Check if project was changed
-                project_changed = result.project_id != self.current_task.project_id
+                # Check if project was changed using stored original
+                project_changed = result.project_id != original_project_id
 
-                # Save task
-                self.storage.update_task(result)
+                # Handle project change as a move operation
+                if project_changed:
+                    # Delete from old project, add to new project
+                    self.storage.delete_task(original_project_id, result.id)
+                    self.storage.add_task(result)
+                else:
+                    # Normal update within same project
+                    self.storage.update_task(result)
 
                 # Refresh display
                 if self.current_project_id is None:
@@ -606,6 +618,10 @@ class TodoApp(App):
                 scratchpad = self.query_one("#scratchpad-panel", ScratchpadPanel)
                 scratchpad.reload_notes()
 
+                # Reload snippets
+                snippets_panel = self.query_one("#snippets-panel", SnippetsPanel)
+                snippets_panel.reload_snippets()
+
                 self.notify(f"☁️  {message}", severity="success")
             else:
                 self.notify(f"❌ {message}", severity="error")
@@ -671,6 +687,10 @@ class TodoApp(App):
                 # Reload scratchpad notes
                 scratchpad = self.query_one("#scratchpad-panel", ScratchpadPanel)
                 scratchpad.reload_notes()
+
+                # Reload snippets
+                snippets_panel = self.query_one("#snippets-panel", SnippetsPanel)
+                snippets_panel.reload_snippets()
 
                 self.notify(f"☁️  {message}", severity="success")
             else:

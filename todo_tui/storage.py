@@ -10,7 +10,7 @@ from typing import Dict, List, Optional, Union
 
 from platformdirs import user_config_dir, user_data_dir
 
-from .models import Note, Project, Settings, Task
+from .models import Note, Project, Settings, Snippet, Task
 
 
 class StorageManager:
@@ -67,6 +67,7 @@ class StorageManager:
         self.projects_file = self.data_dir / "projects.json"
         self.scratchpad_file = self.data_dir / "scratchpad.md"
         self.notes_file = self.data_dir / "notes.json"
+        self.snippets_file = self.data_dir / "snippets.json"
         self._ensure_data_dir()
         self._migrate_old_data_if_needed()
         self._migrate_scratchpad_to_notes()
@@ -82,6 +83,10 @@ class StorageManager:
         # Initialize notes file if it doesn't exist
         if not self.notes_file.exists():
             self._save_json(self.notes_file, [])
+
+        # Initialize snippets file if it doesn't exist
+        if not self.snippets_file.exists():
+            self._save_json(self.snippets_file, [])
 
         # Initialize scratchpad file if it doesn't exist (for backwards compatibility)
         if not self.scratchpad_file.exists():
@@ -326,4 +331,44 @@ class StorageManager:
         for n in notes:
             if n.id == note_id:
                 return n
+        return None
+
+    # Snippet operations
+    def load_snippets(self) -> List[Snippet]:
+        """Load all snippets."""
+        data = self._load_json(self.snippets_file)
+        return [Snippet.from_dict(s) for s in data]
+
+    def save_snippets(self, snippets: List[Snippet]) -> None:
+        """Save all snippets."""
+        data = [s.to_dict() for s in snippets]
+        self._save_json(self.snippets_file, data)
+
+    def add_snippet(self, snippet: Snippet) -> None:
+        """Add a new snippet."""
+        snippets = self.load_snippets()
+        snippets.append(snippet)
+        self.save_snippets(snippets)
+
+    def update_snippet(self, snippet: Snippet) -> None:
+        """Update an existing snippet."""
+        snippets = self.load_snippets()
+        for i, s in enumerate(snippets):
+            if s.id == snippet.id:
+                snippets[i] = snippet
+                break
+        self.save_snippets(snippets)
+
+    def delete_snippet(self, snippet_id: str) -> None:
+        """Delete a snippet."""
+        snippets = self.load_snippets()
+        snippets = [s for s in snippets if s.id != snippet_id]
+        self.save_snippets(snippets)
+
+    def get_snippet(self, snippet_id: str) -> Optional[Snippet]:
+        """Get a specific snippet by ID."""
+        snippets = self.load_snippets()
+        for s in snippets:
+            if s.id == snippet_id:
+                return s
         return None

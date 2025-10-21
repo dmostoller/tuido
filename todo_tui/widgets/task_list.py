@@ -14,6 +14,15 @@ from ..icons import Icons
 from ..models import Task
 
 
+class SortMode:
+    """Sort mode constants for task list."""
+
+    PRIORITY = "priority"
+    ALPHABETICAL = "alphabetical"
+    DATE = "date"
+    MANUAL = "manual"
+
+
 class TaskSelected(Message):
     """Message sent when a task is selected."""
 
@@ -38,6 +47,7 @@ class TaskListPanel(Container):
     BINDINGS = [
         Binding("/", "focus_search", "Search", show=False),
         Binding("ctrl+f", "focus_search", "Search", show=False),
+        Binding("ctrl+s", "cycle_sort", "Sort", show=True),
     ]
 
     def __init__(self, id: str = "task-list-panel"):
@@ -45,10 +55,11 @@ class TaskListPanel(Container):
         self.tasks: List[Task] = []
         self.selected_task: Optional[Task] = None
         self.search_query: str = ""
+        self.current_sort_mode: str = SortMode.PRIORITY
 
     def compose(self) -> ComposeResult:
         """Compose the task list panel."""
-        yield Label(f"{Icons.CHECK} Tasks", classes="header")
+        yield Label(f"{Icons.CHECK} Tasks", classes="header", id="task-list-header")
         yield Input(
             placeholder=f"{Icons.SEARCH} Search tasks...", id="task-search-input"
         )
@@ -62,6 +73,59 @@ class TaskListPanel(Container):
 
         self.tasks = tasks
         self._update_list()
+
+    def _sort_tasks(self, tasks: List[Task]) -> List[Task]:
+        """Sort tasks based on current sort mode, with completed tasks at bottom."""
+        # Separate incomplete and completed tasks
+        incomplete = [t for t in tasks if not t.completed]
+        completed = [t for t in tasks if t.completed]
+
+        # Define sort key functions for each mode
+        if self.current_sort_mode == SortMode.PRIORITY:
+            # Priority order: High (3) -> Medium (2) -> Low (1) -> None (0)
+            priority_map = {"high": 3, "medium": 2, "low": 1}
+
+            def priority_key(task: Task) -> int:
+                return priority_map.get(
+                    task.priority.lower() if task.priority else "", 0
+                )
+
+            incomplete.sort(key=priority_key, reverse=True)
+            completed.sort(key=priority_key, reverse=True)
+
+        elif self.current_sort_mode == SortMode.ALPHABETICAL:
+            incomplete.sort(key=lambda t: t.title.lower())
+            completed.sort(key=lambda t: t.title.lower())
+
+        elif self.current_sort_mode == SortMode.DATE:
+            # Sort by created_at, oldest first (use epoch for missing dates)
+            incomplete.sort(
+                key=lambda t: getattr(t, "created_at", "1970-01-01T00:00:00")
+            )
+            completed.sort(
+                key=lambda t: getattr(t, "created_at", "1970-01-01T00:00:00")
+            )
+
+        # MANUAL mode: no sorting, keep original order
+
+        # Return incomplete tasks followed by completed tasks
+        return incomplete + completed
+
+    def _update_header(self) -> None:
+        """Update the header label to show current sort mode."""
+        header_label = self.query_one("#task-list-header", Label)
+
+        # Map sort modes to display text
+        sort_display = {
+            SortMode.PRIORITY: f"{Icons.CHECK} Tasks",
+            SortMode.ALPHABETICAL: f"{Icons.CHECK} Tasks (A-Z)",
+            SortMode.DATE: f"{Icons.CHECK} Tasks (by Date)",
+            SortMode.MANUAL: f"{Icons.CHECK} Tasks (Manual)",
+        }
+
+        header_label.update(
+            sort_display.get(self.current_sort_mode, f"{Icons.CHECK} Tasks")
+        )
 
     def _update_list(self) -> None:
         """Update the task list display."""
@@ -86,6 +150,9 @@ class TaskListPanel(Container):
                 if query_lower in t.title.lower()
                 or query_lower in t.description.lower()
             ]
+
+        # Apply sorting
+        filtered_tasks = self._sort_tasks(filtered_tasks)
 
         # Show message if no matches
         if not filtered_tasks:
@@ -173,6 +240,32 @@ class TaskListPanel(Container):
         """Focus the search input."""
         search_input = self.query_one("#task-search-input", Input)
         search_input.focus()
+
+    def action_cycle_sort(self) -> None:
+        """Cycle through sort modes."""
+        # Define the cycle order
+        sort_cycle = [
+            SortMode.PRIORITY,
+            SortMode.ALPHABETICAL,
+            SortMode.DATE,
+            SortMode.MANUAL,
+        ]
+
+        # Find current index and move to next
+        try:
+            current_index = sort_cycle.index(self.current_sort_mode)
+            next_index = (current_index + 1) % len(sort_cycle)
+        except ValueError:
+            # If current mode is not in cycle, start from beginning
+            next_index = 0
+
+        self.current_sort_mode = sort_cycle[next_index]
+
+        # Update the header to show current sort mode
+        self._update_header()
+
+        # Refresh the display with new sort order
+        self._update_list()
 
     def on_key(self, event) -> None:
         """Handle keyboard shortcuts."""
