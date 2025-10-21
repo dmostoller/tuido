@@ -53,6 +53,7 @@ class TaskListPanel(Container):
     def __init__(self, id: str = "task-list-panel"):
         super().__init__(id=id)
         self.tasks: List[Task] = []
+        self.displayed_tasks: List[Task] = []
         self.selected_task: Optional[Task] = None
         self.search_query: str = ""
         self.current_sort_mode: str = SortMode.PRIORITY
@@ -133,6 +134,7 @@ class TaskListPanel(Container):
         list_view.clear()
 
         if not self.tasks:
+            self.displayed_tasks = []
             list_view.append(
                 ListItem(
                     Static("No tasks yet. Press Ctrl+N to add one!", classes="muted")
@@ -154,8 +156,12 @@ class TaskListPanel(Container):
         # Apply sorting
         filtered_tasks = self._sort_tasks(filtered_tasks)
 
+        # Store the displayed tasks for selection logic
+        self.displayed_tasks = filtered_tasks
+
         # Show message if no matches
         if not filtered_tasks:
+            self.displayed_tasks = []
             list_view.append(
                 ListItem(
                     Static(f"No tasks match '{self.search_query}'", classes="muted")
@@ -195,8 +201,8 @@ class TaskListPanel(Container):
         index = list_view.index
 
         # Check if we have tasks and the index is valid
-        if index is not None and 0 <= index < len(self.tasks):
-            self.selected_task = self.tasks[index]
+        if index is not None and 0 <= index < len(self.displayed_tasks):
+            self.selected_task = self.displayed_tasks[index]
             self.post_message(TaskSelected(self.selected_task))
         else:
             # No valid task selected (e.g., "No tasks" placeholder)
