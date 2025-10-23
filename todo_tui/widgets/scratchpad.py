@@ -13,7 +13,6 @@ from textual.message import Message
 from textual.timer import Timer
 from textual.widgets import (
     Button,
-    Label,
     ListItem,
     ListView,
     Markdown,
@@ -53,22 +52,15 @@ class ScratchpadPanel(Container):
     #note-list-section {
         width: 25%;
         height: 100%;
-        border: solid $panel;
+        border: round $panel;
+        border-title-align: left;
+        border-title-color: $primary;
         background: $surface;
-        padding: 0;
+        padding: 1 0 0 0;
     }
 
     #note-list-section:focus-within {
-        border: solid $secondary;
-    }
-
-    #note-list-header {
-        dock: top;
-        height: 1;
-        background: $surface;
-        color: $text;
-        text-style: bold;
-        padding: 0;
+        border: round $secondary;
     }
 
     #note-list-view {
@@ -95,12 +87,12 @@ class ScratchpadPanel(Container):
     #scratchpad-content-tabs {
         width: 75%;
         height: 100%;
-        border: solid $panel;
+        border: round $panel;
         background: $surface;
     }
 
     #scratchpad-content-tabs:focus-within {
-        border: solid $secondary;
+        border: round $secondary;
     }
 
     #scratchpad-content-tabs > ContentSwitcher {
@@ -208,12 +200,12 @@ class ScratchpadPanel(Container):
         self._debounce_timer: Timer | None = None
         self.notes: List[Note] = []
         self.current_note: Optional[Note] = None
+        self._programmatic_change: bool = False  # Flag to suppress events
 
     def compose(self) -> ComposeResult:
         """Compose the scratchpad panel layout."""
         # Left column: Note list
         with Vertical(id="note-list-section"):
-            yield Label(f"{Icons.LIST} Notes", id="note-list-header")
             yield ListView(id="note-list-view")
             with Horizontal(id="note-list-buttons"):
                 yield Button(
@@ -259,6 +251,9 @@ class ScratchpadPanel(Container):
 
     def on_mount(self) -> None:
         """Load notes when widget is mounted."""
+        # Set up border title
+        note_list_section = self.query_one("#note-list-section")
+        note_list_section.border_title = f"{Icons.LIST} Notes"
 
         # Set up markdown syntax highlighting after widget is fully initialized
         def setup_markdown():
@@ -308,15 +303,34 @@ class ScratchpadPanel(Container):
 
         Called after cloud sync to refresh the scratchpad with synced notes.
         """
+        # Save current note before reloading to prevent data loss
+        if self.current_note:
+            self._save_current_note()
+
+        # Store current note ID to try to re-select it after reload
+        current_note_id = self.current_note.id if self.current_note else None
+
         # Reload notes from storage
         self.notes = self.storage.load_notes()
 
         # Update the list view
         self._update_note_list()
 
-        # Select first note if available, otherwise clear the editor
-        if self.notes:
-            self._select_note(self.notes[0])
+        # Try to re-select the same note, or select first note if available
+        note_to_select = None
+        if current_note_id:
+            # Try to find the same note in the reloaded list
+            for note in self.notes:
+                if note.id == current_note_id:
+                    note_to_select = note
+                    break
+
+        # If we couldn't find the same note, select the first one
+        if not note_to_select and self.notes:
+            note_to_select = self.notes[0]
+
+        if note_to_select:
+            self._select_note(note_to_select)
         else:
             # Clear editor and preview if no notes
             textarea = self.query_one("#scratchpad-textarea", TextArea)
@@ -331,11 +345,18 @@ class ScratchpadPanel(Container):
         Args:
             note: The note to select.
         """
+        # Cancel any pending timer before switching
+        if self._debounce_timer is not None:
+            self._debounce_timer.stop()
+            self._debounce_timer = None
+
         self.current_note = note
 
-        # Update editor content
+        # Update editor content (suppress event handling for programmatic change)
+        self._programmatic_change = True
         textarea = self.query_one("#scratchpad-textarea", TextArea)
         textarea.text = note.content
+        self._programmatic_change = False
 
         # Update preview
         markdown_viewer = self.query_one("#scratchpad-markdown-viewer", Markdown)
@@ -371,6 +392,10 @@ class ScratchpadPanel(Container):
         if event.text_area.id != "scratchpad-textarea":
             return
 
+        # Ignore programmatic changes (when loading a note)
+        if self._programmatic_change:
+            return
+
         if not self.current_note:
             return
 
@@ -394,10 +419,14 @@ class ScratchpadPanel(Container):
         textarea = self.query_one("#scratchpad-textarea", TextArea)
         self.current_note.content = textarea.text
         self.storage.update_note(self.current_note)
+
+        # Properly stop and clear the debounce timer
+        if self._debounce_timer is not None:
+            self._debounce_timer.stop()
         self._debounce_timer = None
 
-        # Refresh note list to update timestamp
-        self._update_note_list()
+        # Don't refresh the list here to avoid race condition with list item clicks
+        # The timestamp will be updated next time the list is naturally refreshed
 
     def action_add_note(self) -> None:
         """Show dialog to add a new note."""
@@ -405,19 +434,25 @@ class ScratchpadPanel(Container):
         def check_add_note(result: Optional[Note]) -> None:
             """Callback when dialog is dismissed."""
             if result:
-                # Save note
+                # Save current note before reloading
+                if self.current_note:
+                    self._save_current_note()
+
+                # Save new note
                 self.storage.add_note(result)
 
                 # Reload notes
                 self.notes = self.storage.load_notes()
                 self._update_note_list()
 
-                # Select the new note
-                self._select_note(result)
+                # Find the newly added note in the reloaded list (should be last)
+                if self.notes:
+                    new_note = self.notes[-1]
+                    self._select_note(new_note)
 
-                # Update list selection
-                list_view = self.query_one("#note-list-view", ListView)
-                list_view.index = len(self.notes) - 1
+                    # Update list selection
+                    list_view = self.query_one("#note-list-view", ListView)
+                    list_view.index = len(self.notes) - 1
 
         self.app.push_screen(AddNoteDialog(), check_add_note)
 
@@ -426,15 +461,30 @@ class ScratchpadPanel(Container):
         if not self.current_note:
             return
 
+        # Store the note ID to find it after reload
+        note_id = self.current_note.id
+
         def check_rename_note(result: Optional[Note]) -> None:
             """Callback when dialog is dismissed."""
             if result:
+                # Save current note content before reloading
+                if self.current_note:
+                    self._save_current_note()
+
                 # Save updated note
                 self.storage.update_note(result)
 
                 # Reload notes
                 self.notes = self.storage.load_notes()
                 self._update_note_list()
+
+                # Re-select the renamed note from the reloaded list
+                for i, note in enumerate(self.notes):
+                    if note.id == note_id:
+                        self._select_note(note)
+                        list_view = self.query_one("#note-list-view", ListView)
+                        list_view.index = i
+                        break
 
         self.app.push_screen(RenameNoteDialog(self.current_note), check_rename_note)
 
@@ -458,6 +508,10 @@ class ScratchpadPanel(Container):
         def check_delete_note(confirmed: bool) -> None:
             """Callback when dialog is dismissed."""
             if confirmed:
+                # Save current note before deletion (in case user made changes)
+                if self.current_note:
+                    self._save_current_note()
+
                 # Delete note
                 self.storage.delete_note(note_to_delete.id)
 
@@ -465,7 +519,7 @@ class ScratchpadPanel(Container):
                 self.notes = self.storage.load_notes()
                 self._update_note_list()
 
-                # Select first note
+                # Select first note from the reloaded list
                 if self.notes:
                     self._select_note(self.notes[0])
                     list_view = self.query_one("#note-list-view", ListView)

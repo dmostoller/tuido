@@ -8,34 +8,32 @@ Screen {
 
 /* Dashboard Panel */
 #dashboard {
-  height: 38%;
+  height: 32%;
   background: $surface;
-  padding: 1;
+  padding: 0;
 }
 
 /* Dashboard Quadrants */
 #stats-quadrant {
   background: $surface;
-  border: solid $primary;
+  border: round $panel;
+  border-title-color: $primary;
 }
 
 #clock-quadrant {
   background: $surface;
-  border: solid $primary;
+  border: round $panel;
+  border-title-color: $accent-lighten-1;
 }
 
 #sparkline-quadrant {
   height: 1fr;
 }
 
-#pomodoro-quadrant {
-  background: $surface;
-  border: solid $primary;
-}
-
 #productivity-quadrant {
   background: $surface;
-  border: solid $primary;
+  border: round $panel;
+  border-title-color: $primary;
 }
 
 /* Sparkline specific styles */
@@ -45,7 +43,7 @@ Sparkline {
 
 /* Main Tabs Container */
 #main-tabs {
-  height: 62%;
+  height: 68%;
   width: 100%;
   background: $surface;
   border: none;
@@ -70,7 +68,7 @@ Sparkline {
 
 #main-tabs Tab:hover {
   background: $panel;
-  color: $foreground;
+  color: $secondary;
 }
 
 #main-tabs Tab.-active {
@@ -83,6 +81,35 @@ Sparkline {
   padding: 0;
   background: $surface;
   height: 100%;
+}
+
+/* Productivity Tabs (in dashboard) */
+#productivity-quadrant Tabs {
+  background: $surface;
+  border-bottom: solid $panel;
+}
+
+#productivity-quadrant Tab {
+  background: $surface;
+  color: $text-muted;
+  border: none;
+  text-style: none;
+}
+
+#productivity-quadrant Tab:hover {
+  background: $panel;
+  color: $secondary;
+}
+
+#productivity-quadrant Tab.-active {
+  background: $panel;
+  color: $primary;
+  text-style: bold;
+}
+
+#productivity-quadrant TabPane {
+  padding: 0;
+  background: $surface;
 }
 
 /* Main Content Area */
@@ -102,12 +129,13 @@ Sparkline {
 #projects-panel {
   height: 1fr;
   background: $surface;
-  border: solid $panel;
+  border: round $panel;
+  border-title-color: $primary;
   padding: 1;
 }
 
 #projects-panel:focus-within {
-  border: solid $secondary;
+  border: round $secondary;
 }
 
 .all-tasks {
@@ -118,12 +146,13 @@ Sparkline {
 #task-list-panel {
   height: 2fr;
   background: $surface;
-  border: solid $panel;
-  padding: 1;
+  border: round $panel;
+  border-title-color: $primary;
+  padding: 0 1;
 }
 
 #task-list-panel:focus-within {
-  border: solid $secondary;
+  border: round $secondary;
 }
 
 .task-title {
@@ -139,12 +168,13 @@ Sparkline {
 #task-detail-panel {
   width: 60%;
   background: $surface;
-  border: solid $panel;
+  border: round $panel;
+  border-title-color: $primary;
   padding: 1;
 }
 
 #task-detail-panel:focus-within {
-  border: solid $secondary;
+  border: round $secondary;
 }
 
 .detail-label {
@@ -168,47 +198,47 @@ Sparkline {
 
 /* Buttons */
 Button {
-  background: $surface;
+  background: transparent;
   color: $foreground;
-  border: solid $primary;
+  border: round $primary;
   margin: 0 0;
 }
 
 Button:hover {
   color: $primary-lighten-1;
-  border: solid $primary-lighten-1;
+  border: round $primary-lighten-1;
 }
 
 Button:focus {
-  background: $panel;
-  color: $background;
+  background: transparent;
+  color: $secondary;
   text-style: bold;
 }
 
 /* Input fields */
 Input {
-  background: $surface;
+  background: transparent;
   color: $foreground;
-  border: solid $panel-darken-1;
+  border: round $panel;
 }
 
 Input:focus {
-  border: solid $primary;
-  background: $surface;
+  border: round $primary;
+  background: transparent;
 }
 
 TextArea {
-  background: $panel;
+  background: transparent;
   color: $foreground;
-  border: solid $panel-darken-1;
+  border: round $panel-darken-1;
   scrollbar-background: $panel;
   scrollbar-color: $primary;
   scrollbar-size-vertical: 1;
 }
 
 TextArea:focus {
-  border: solid $primary;
-  background: $surface;
+  border: round $primary;
+  background: transparent;
 }
 
 /* Markdown */

@@ -53,13 +53,13 @@ class SnippetsPanel(Container):
     #snippet-list-section {
         width: 30%;
         height: 100%;
-        border: solid $panel;
+        border: round $panel;
         background: $surface;
         padding: 0;
     }
 
     #snippet-list-section:focus-within {
-        border: solid $secondary;
+        border: round $secondary;
     }
 
     #snippet-list-header {
@@ -103,13 +103,13 @@ class SnippetsPanel(Container):
     #snippet-detail-section {
         width: 70%;
         height: 100%;
-        border: solid $panel;
+        border: round $panel;
         background: $surface;
         padding: 0;
     }
 
     #snippet-detail-section:focus-within {
-        border: solid $secondary;
+        border: round $secondary;
     }
 
     #snippet-detail-header {
@@ -131,7 +131,7 @@ class SnippetsPanel(Container):
         height: 1fr;
         width: 100%;
         background: $surface;
-        border: solid $panel;
+        border: round $panel;
         padding: 1;
     }
 

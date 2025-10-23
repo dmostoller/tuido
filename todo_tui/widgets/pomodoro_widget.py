@@ -27,7 +27,7 @@ class PomodoroWidget(Container):
     PomodoroWidget {
         height: 100%;
         width: 100%;
-        border: solid $accent;
+        border: round $accent;
         background: $surface;
         padding: 0 1 1 1;
         min-width: 30;
@@ -117,13 +117,14 @@ class PomodoroWidget(Container):
     def compose(self) -> ComposeResult:
         """Compose the pomodoro widget."""
         with Horizontal(classes="pomo-header"):
-            yield Static(f"{Icons.TOMATO}", classes="pomo-title")
+            yield Static(f"{Icons.TOMATO}", id="pomo-icon", classes="pomo-title")
             yield Static("Ready to focus", id="pomo-state", classes="pomo-state")
             yield Static("●○○○", id="pomo-sessions", classes="pomo-sessions")
         yield Digits("25:00", id="pomo-timer")
         with Horizontal(classes="pomo-controls"):
             yield Button("Start", id="btn-pomo-start", variant="primary")
             yield Button("Reset", id="btn-pomo-reset", variant="default")
+            yield Button(Icons.ARROWS_H, id="btn-pomo-toggle", variant="default")
 
     def on_mount(self) -> None:
         """Initialize the timer."""
@@ -135,6 +136,8 @@ class PomodoroWidget(Container):
             self.toggle_timer()
         elif event.button.id == "btn-pomo-reset":
             self.reset_timer()
+        elif event.button.id == "btn-pomo-toggle":
+            self.toggle_stage()
 
     def toggle_timer(self) -> None:
         """Start or pause the timer."""
@@ -161,7 +164,8 @@ class PomodoroWidget(Container):
         self.pomo_state = PomodoroState.WORK
         work_duration, _, _ = self._get_durations_from_settings()
         self.time_remaining = work_duration
-        self.query_one("#pomo-state", Static).update(f"{Icons.TARGET} Focus Time")
+        self.query_one("#pomo-icon", Static).update(Icons.TARGET)
+        self.query_one("#pomo-state", Static).update("Focus Time")
         self.timer_interval = self.set_interval(1.0, self.tick)
 
     def reset_timer(self) -> None:
@@ -175,8 +179,37 @@ class PomodoroWidget(Container):
             self.timer_interval.stop()
             self.timer_interval = None
 
+        self.query_one("#pomo-icon", Static).update(Icons.TOMATO)
         self.query_one("#pomo-state", Static).update("Ready to focus")
         self.query_one("#btn-pomo-start", Button).label = "Start"
+        self.query_one("#btn-pomo-toggle", Button).label = Icons.ARROWS_H
+        self.update_display()
+
+    def toggle_stage(self) -> None:
+        """Manually toggle between work and break stages."""
+        work_duration, short_break_duration, _ = self._get_durations_from_settings()
+
+        # Pause the timer if it's running
+        if self.timer_running:
+            self.timer_running = False
+            if self.timer_interval is not None:
+                self.timer_interval.pause()
+            self.query_one("#btn-pomo-start", Button).label = "Start"
+
+        # Toggle between WORK and SHORT_BREAK
+        if self.pomo_state in (PomodoroState.WORK, PomodoroState.IDLE):
+            # Switch to break
+            self.pomo_state = PomodoroState.SHORT_BREAK
+            self.time_remaining = short_break_duration
+            self.query_one("#pomo-icon", Static).update(Icons.COFFEE)
+            self.query_one("#pomo-state", Static).update("Short Break")
+        else:
+            # Switch to work
+            self.pomo_state = PomodoroState.WORK
+            self.time_remaining = work_duration
+            self.query_one("#pomo-icon", Static).update(Icons.TARGET)
+            self.query_one("#pomo-state", Static).update("Focus Time")
+
         self.update_display()
 
     def tick(self) -> None:
@@ -190,36 +223,24 @@ class PomodoroWidget(Container):
 
     def on_timer_complete(self) -> None:
         """Handle timer completion."""
-        work_duration, short_break_duration, long_break_duration = (
-            self._get_durations_from_settings()
-        )
+        work_duration, short_break_duration, _ = self._get_durations_from_settings()
 
         if self.pomo_state == PomodoroState.WORK:
-            # Work session complete
+            # Work session complete - take a short break
             self.sessions_completed += 1
             self.update_sessions_display()
 
-            # Determine break type
-            if self.sessions_completed % 4 == 0:
-                # Long break after 4 sessions
-                self.pomo_state = PomodoroState.LONG_BREAK
-                self.time_remaining = long_break_duration
-                self.query_one("#pomo-state", Static).update(
-                    f"{Icons.COFFEE} Long Break"
-                )
-            else:
-                # Short break
-                self.pomo_state = PomodoroState.SHORT_BREAK
-                self.time_remaining = short_break_duration
-                self.query_one("#pomo-state", Static).update(
-                    f"{Icons.COFFEE} Short Break"
-                )
+            self.pomo_state = PomodoroState.SHORT_BREAK
+            self.time_remaining = short_break_duration
+            self.query_one("#pomo-icon", Static).update(Icons.COFFEE)
+            self.query_one("#pomo-state", Static).update("Short Break")
 
-        elif self.pomo_state in (PomodoroState.SHORT_BREAK, PomodoroState.LONG_BREAK):
+        elif self.pomo_state == PomodoroState.SHORT_BREAK:
             # Break complete, back to work
             self.pomo_state = PomodoroState.WORK
             self.time_remaining = work_duration
-            self.query_one("#pomo-state", Static).update(f"{Icons.TARGET} Focus Time")
+            self.query_one("#pomo-icon", Static).update(Icons.TARGET)
+            self.query_one("#pomo-state", Static).update("Focus Time")
 
         self.update_display()
 

@@ -29,6 +29,7 @@ class TaskDetailPanel(Container):
     TaskDetailPanel {
         width: auto;
         height: 100%;
+        border-title-align: left;
     }
 
     #task-detail-content {
@@ -51,13 +52,16 @@ class TaskDetailPanel(Container):
 
     def compose(self) -> ComposeResult:
         """Compose the task detail panel."""
-        yield Label(f"{Icons.EDIT} Task Details", classes="header")
         with Vertical(id="task-detail-content"):
             yield Static(
                 "Select a task to view details",
                 id="task-detail-placeholder",
                 classes="muted",
             )
+
+    def on_mount(self) -> None:
+        """Set up border title."""
+        self.border_title = f"{Icons.EDIT} Task Details"
 
     def show_task(self, task: Optional[Task]) -> None:
         """Display task details."""

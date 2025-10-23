@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
-from textual.widgets import Footer, Header, TabbedContent, TabPane
+from textual.widgets import Footer, TabbedContent, TabPane
 
 from .icons import Icons
 from .models import Project, Settings, Task
@@ -70,7 +70,7 @@ class TodoApp(App):
 
     def compose(self) -> ComposeResult:
         """Compose the application layout."""
-        yield Header()
+        # yield Header()
         yield Dashboard(id="dashboard")
         with TabbedContent(initial="tasks-tab", id="main-tabs"):
             with TabPane(f"{Icons.LIST} Tasks", id="tasks-tab"):
