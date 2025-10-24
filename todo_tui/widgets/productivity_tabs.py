@@ -7,12 +7,13 @@ from textual.containers import Container
 from textual.widgets import TabbedContent, TabPane
 
 from ..icons import Icons
+from .forecast_widget import ForecastWidget
 from .pomodoro_widget import PomodoroWidget
 from .weather_widget import WeatherWidget
 
 
 class ProductivityTabs(Container):
-    """A tabbed container for productivity widgets (Pomodoro and Weather)."""
+    """A tabbed container for productivity widgets (Pomodoro, Weather, and Forecast)."""
 
     DEFAULT_CSS = """
     ProductivityTabs {
@@ -44,6 +45,11 @@ class ProductivityTabs(Container):
         border: none;
         background: $surface;
     }
+
+    ProductivityTabs ForecastWidget {
+        border: none;
+        background: $surface;
+    }
     """
 
     def compose(self) -> ComposeResult:
@@ -51,5 +57,7 @@ class ProductivityTabs(Container):
         with TabbedContent(initial="weather-tab"):
             with TabPane(f"{Icons.CLOUD_SUN} Weather", id="weather-tab"):
                 yield WeatherWidget()
+            with TabPane(f"{Icons.CALENDAR} Forecast", id="forecast-tab"):
+                yield ForecastWidget()
             with TabPane(f"{Icons.TOMATO} Pomodoro", id="pomodoro-tab"):
                 yield PomodoroWidget()

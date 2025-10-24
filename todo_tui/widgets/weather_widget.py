@@ -24,7 +24,7 @@ class WeatherWidget(Container):
         background: $surface;
         padding: 0 1 1 1;
         min-width: 30;
-        min-height: 9;
+        min-height: 11;
     }
 
     WeatherWidget .weather-header {
@@ -71,6 +71,25 @@ class WeatherWidget(Container):
         padding: 0 2;
     }
 
+    WeatherWidget .weather-temp-details {
+        layout: horizontal;
+        height: auto;
+        width: 100%;
+        padding: 0 0 0 0;
+    }
+
+    WeatherWidget .weather-feels-like {
+        color: $text-muted;
+        text-align: left;
+        width: 1fr;
+    }
+
+    WeatherWidget .weather-minmax {
+        color: $text-muted;
+        text-align: right;
+        width: auto;
+    }
+
     WeatherWidget .weather-footer {
         layout: horizontal;
         height: auto;
@@ -103,7 +122,7 @@ class WeatherWidget(Container):
     def compose(self) -> ComposeResult:
         """Compose the weather widget."""
         with Horizontal(classes="weather-header"):
-            yield Static(f"{Icons.CLOUD_SUN} Weather", classes="weather-title")
+            yield Static(f"{Icons.CLOUD_SUN} Current Weather", classes="weather-title")
             yield Static("--", id="weather-location", classes="weather-location")
 
         # Main display: Large temperature Digits + Large weather icon
@@ -112,6 +131,11 @@ class WeatherWidget(Container):
             yield Static(
                 Icons.CLOUD, id="weather-icon-large", classes="weather-icon-large"
             )
+
+        # Temperature details: Feels Like (left) + Min/Max (right)
+        with Horizontal(classes="weather-temp-details"):
+            yield Static("--", id="weather-feels-like", classes="weather-feels-like")
+            yield Static("--", id="weather-minmax", classes="weather-minmax")
 
         # Footer: Condition (left) + Details (right)
         with Horizontal(classes="weather-footer"):
@@ -181,6 +205,9 @@ class WeatherWidget(Container):
 
             # Extract data
             temp = int(data["main"]["temp"])
+            feels_like = int(data["main"]["feels_like"])
+            temp_min = int(data["main"]["temp_min"])
+            temp_max = int(data["main"]["temp_max"])
             condition = data["weather"][0]["main"]
             description = data["weather"][0]["description"].title()
             humidity = data["main"]["humidity"]
@@ -190,6 +217,9 @@ class WeatherWidget(Container):
             # Update display
             self._update_display(
                 temp=temp,
+                feels_like=feels_like,
+                temp_min=temp_min,
+                temp_max=temp_max,
                 temp_symbol=temp_symbol,
                 condition=condition,
                 description=description,
@@ -208,6 +238,9 @@ class WeatherWidget(Container):
     def _update_display(
         self,
         temp: int,
+        feels_like: int,
+        temp_min: int,
+        temp_max: int,
         temp_symbol: str,
         condition: str,
         description: str,
@@ -226,6 +259,14 @@ class WeatherWidget(Container):
         # Update temperature in Digits
         self.query_one("#weather-temp", Digits).update(f"{temp}{temp_symbol}")
 
+        # Update feels like and min/max
+        self.query_one("#weather-feels-like", Static).update(
+            f"Feels like {feels_like}{temp_symbol}"
+        )
+        self.query_one("#weather-minmax", Static).update(
+            f"{temp_min}{temp_symbol} / {temp_max}{temp_symbol}"
+        )
+
         # Update condition
         self.query_one("#weather-condition", Static).update(description)
 
@@ -238,6 +279,8 @@ class WeatherWidget(Container):
         self.query_one("#weather-location", Static).update("Not Set")
         self.query_one("#weather-icon-large", Static).update(Icons.QUESTION)
         self.query_one("#weather-temp", Digits).update("--°")
+        self.query_one("#weather-feels-like", Static).update("--")
+        self.query_one("#weather-minmax", Static).update("--")
         self.query_one("#weather-condition", Static).update("Not Configured")
         self.query_one("#weather-details", Static).update("Set API Key")
 
