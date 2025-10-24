@@ -36,17 +36,13 @@ class Dashboard(Container):
 
     Dashboard #sparkline-container {
         height: 100%;
-        border: solid $accent;
+        border: round $panel;
+        border-title-align: left;
+        border-title-color: $accent-lighten-1;
         background: $surface;
         padding: 0 1 0 1;
         min-width: 30;
         min-height: 10;
-    }
-
-    Dashboard .sparkline-title {
-        color: $accent;
-        text-style: bold;
-        text-align: center;
     }
 
     Dashboard .progress-label {
@@ -76,15 +72,17 @@ class Dashboard(Container):
         """Compose the dashboard with 2x2 grid layout."""
         with Grid():
             with Vertical(id="sparkline-container"):
-                yield Static(
-                    f"{Icons.CHART_LINE} Activity (14d)", classes="sparkline-title"
-                )
                 yield Sparkline([], summary_function=max, id="sparkline-quadrant")
                 yield Static("", id="progress-label", classes="progress-label")
                 yield ProgressBar(total=100, show_eta=False, id="completion-progress")
             yield ClockWidget(id="clock-quadrant")
             yield ProductivityTabs(id="productivity-quadrant")
             yield StatsCard(id="stats-quadrant")
+
+    def on_mount(self) -> None:
+        """Set up border title for sparkline container."""
+        sparkline_container = self.query_one("#sparkline-container")
+        sparkline_container.border_title = f"{Icons.CHART_LINE} Activity (14d)"
 
     def update_metrics(self, tasks: List[Task]) -> None:
         """Update dashboard metrics with current tasks."""

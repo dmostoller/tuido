@@ -32,8 +32,7 @@ class AddTaskDialog(ModalScreen):
     AddTaskDialog > #dialog-container {
         width: 60;
         height: auto;
-        background: $surface;
-        border: thick $primary;
+        border: round $primary;
         padding: 1;
     }
 
@@ -133,8 +132,7 @@ class EditTaskDialog(ModalScreen):
     EditTaskDialog > #dialog-container {
         width: 60;
         height: auto;
-        background: $surface;
-        border: thick $primary;
+        border: round $primary;
         padding: 1;
     }
 
@@ -407,8 +405,7 @@ class AddProjectDialog(ModalScreen):
     #dialog-container {
         width: 50;
         height: auto;
-        background: $surface;
-        border: thick $primary;
+        border: round $primary;
         padding: 1;
     }
 
@@ -464,8 +461,7 @@ class EditProjectDialog(ModalScreen):
     #dialog-container {
         width: 50;
         height: auto;
-        background: $surface;
-        border: thick $primary;
+        border: round $primary;
         padding: 1;
     }
 
@@ -529,8 +525,7 @@ class ConfirmDialog(ModalScreen):
     #dialog-container {
         width: 50;
         height: auto;
-        background: $surface;
-        border: thick $error;
+        border: round $error;
         padding: 1;
     }
 
@@ -579,8 +574,7 @@ class SyncDirectionDialog(ModalScreen):
     SyncDirectionDialog > #dialog-container {
         width: 60;
         height: 20;
-        background: $surface;
-        border: thick $primary;
+        border: round $primary;
         padding: 1;
     }
 
@@ -650,8 +644,7 @@ class StartupSyncDialog(ModalScreen):
     StartupSyncDialog > #dialog-container {
         width: 60;
         height: 18;
-        background: $surface;
-        border: thick $primary;
+        border: round $primary;
         padding: 1;
     }
 
@@ -714,8 +707,7 @@ class MoveTaskDialog(ModalScreen):
     #dialog-container {
         width: 60;
         height: auto;
-        background: $surface;
-        border: thick $primary;
+        border: round $primary;
         padding: 1;
     }
 
@@ -801,8 +793,7 @@ class SettingsDialog(ModalScreen):
     #dialog-container {
         width: 70;
         height: auto;
-        background: $surface;
-        border: thick $primary;
+        border: round $primary;
         padding: 1;
     }
 
@@ -824,7 +815,7 @@ class SettingsDialog(ModalScreen):
     }
 
     .cloud-sync-section {
-        border: solid $accent;
+        border: round $accent;
         padding: 1;
         margin: 1 0;
     }
@@ -1043,8 +1034,7 @@ class ErrorDialog(ModalScreen):
     ErrorDialog > #dialog-container {
         width: 50;
         height: auto;
-        background: $surface;
-        border: thick $error;
+        border: round $error;
         padding: 1;
     }
 
@@ -1091,8 +1081,7 @@ class InfoDialog(ModalScreen):
     InfoDialog > #dialog-container {
         width: 50;
         height: auto;
-        background: $surface;
-        border: thick $primary;
+        border: round $primary;
         padding: 1;
     }
 
@@ -1139,8 +1128,7 @@ class HelpDialog(ModalScreen):
     #dialog-container {
         width: 60;
         height: auto;
-        background: $surface;
-        border: thick $primary;
+        border: round $primary;
         padding: 1;
     }
 
@@ -1268,8 +1256,7 @@ class AddNoteDialog(ModalScreen):
     #dialog-container {
         width: 50;
         height: auto;
-        background: $surface;
-        border: thick $primary;
+        border: round $primary;
         padding: 1;
     }
 
@@ -1332,8 +1319,7 @@ class RenameNoteDialog(ModalScreen):
     #dialog-container {
         width: 50;
         height: auto;
-        background: $surface;
-        border: thick $primary;
+        border: round $primary;
         padding: 1;
     }
 
@@ -1407,8 +1393,7 @@ class AddSnippetDialog(ModalScreen):
     #dialog-container {
         width: 70;
         height: auto;
-        background: $surface;
-        border: thick $primary;
+        border: round $primary;
         padding: 1;
     }
 
@@ -1483,8 +1468,7 @@ class EditSnippetDialog(ModalScreen):
     #dialog-container {
         width: 70;
         height: auto;
-        background: $surface;
-        border: thick $primary;
+        border: round $primary;
         padding: 1;
     }
 

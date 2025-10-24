@@ -19,7 +19,7 @@ class ProductivityTabs(Container):
         height: 100%;
         width: 100%;
         background: $surface;
-        border: solid $accent;
+        border: round $accent;
         padding: 0;
         min-width: 30;
         min-height: 9;
@@ -32,33 +32,7 @@ class ProductivityTabs(Container):
         border: none;
     }
 
-    ProductivityTabs Tabs {
-        background: $surface;
-        border-bottom: solid $panel;
-    }
-
-    ProductivityTabs Tab {
-        background: $surface;
-        color: $text-muted;
-        border: none;
-        text-style: none;
-    }
-
-    ProductivityTabs Tab:hover {
-        background: $panel;
-        color: $foreground;
-    }
-
-    ProductivityTabs Tab.-active {
-        background: $panel;
-        color: $primary;
-        text-style: bold;
-    }
-
-    ProductivityTabs TabPane {
-        padding: 0;
-        background: $surface;
-    }
+    /* Tab styling (Tabs, Tab, TabPane) is in theme.css as #productivity-quadrant for consistency */
 
     /* Remove borders from child widgets since container has border */
     ProductivityTabs PomodoroWidget {

@@ -67,6 +67,9 @@ _ICONS_NERD = {
     "SEARCH": "\uf002",
     "COG": "\uf013",
     "COPY": "\uf0c5",
+    "SWAP": "\uf362",
+    "EXCHANGE": "\uf362",
+    "ARROWS_H": "\uf07e",
     # Calendar & Date
     "CALENDAR": "\uf073",
     "CALENDAR_CHECK": "\uf274",
@@ -138,6 +141,9 @@ _ICONS_ASCII = {
     "SEARCH": "[?]",
     "COG": "[*]",
     "COPY": "[C]",
+    "SWAP": "[<>]",
+    "EXCHANGE": "[<>]",
+    "ARROWS_H": "[<->]",
     # Calendar & Date
     "CALENDAR": "[C]",
     "CALENDAR_CHECK": "[C✓]",

@@ -8,7 +8,7 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container
 from textual.message import Message
-from textual.widgets import Input, Label, ListItem, ListView, Static
+from textual.widgets import Input, ListItem, ListView, Static
 
 from ..icons import Icons
 from ..models import Task
@@ -37,6 +37,7 @@ class TaskListPanel(Container):
     DEFAULT_CSS = """
     TaskListPanel {
         width: auto;
+        border-title-align: left;
     }
 
     TaskListPanel #task-search-input {
@@ -60,11 +61,14 @@ class TaskListPanel(Container):
 
     def compose(self) -> ComposeResult:
         """Compose the task list panel."""
-        yield Label(f"{Icons.CHECK} Tasks", classes="header", id="task-list-header")
         yield Input(
             placeholder=f"{Icons.SEARCH} Search tasks...", id="task-search-input"
         )
         yield ListView(id="task-list")
+
+    def on_mount(self) -> None:
+        """Set up initial border title."""
+        self._update_header()
 
     def set_tasks(self, tasks: List[Task], show_completed: bool = True) -> None:
         """Set the list of tasks."""
@@ -113,9 +117,7 @@ class TaskListPanel(Container):
         return incomplete + completed
 
     def _update_header(self) -> None:
-        """Update the header label to show current sort mode."""
-        header_label = self.query_one("#task-list-header", Label)
-
+        """Update the border title to show current sort mode."""
         # Map sort modes to display text
         sort_display = {
             SortMode.PRIORITY: f"{Icons.CHECK} Tasks",
@@ -124,8 +126,8 @@ class TaskListPanel(Container):
             SortMode.MANUAL: f"{Icons.CHECK} Tasks (Manual)",
         }
 
-        header_label.update(
-            sort_display.get(self.current_sort_mode, f"{Icons.CHECK} Tasks")
+        self.border_title = sort_display.get(
+            self.current_sort_mode, f"{Icons.CHECK} Tasks"
         )
 
     def _update_list(self) -> None:

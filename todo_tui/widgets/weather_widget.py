@@ -20,7 +20,7 @@ class WeatherWidget(Container):
     WeatherWidget {
         height: 100%;
         width: 100%;
-        border: solid $accent;
+        border: round $accent;
         background: $surface;
         padding: 0 1 1 1;
         min-width: 30;

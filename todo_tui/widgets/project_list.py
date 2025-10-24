@@ -8,7 +8,7 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container
 from textual.message import Message
-from textual.widgets import Label, ListItem, ListView, Static
+from textual.widgets import ListItem, ListView, Static
 
 from ..icons import Icons
 from ..models import Project, Task
@@ -44,6 +44,7 @@ class ProjectListPanel(Container):
     DEFAULT_CSS = """
     ProjectListPanel {
         width: auto;
+        border-title-align: left;
     }
     """
 
@@ -60,10 +61,11 @@ class ProjectListPanel(Container):
 
     def compose(self) -> ComposeResult:
         """Compose the project list panel."""
-        yield Label(
-            f"{Icons.FOLDER} Projects", classes="header", id="project-header-title"
-        )
         yield ListView(id="project-list")
+
+    def on_mount(self) -> None:
+        """Set up border title."""
+        self.border_title = f"{Icons.FOLDER} Projects"
 
     def set_projects(self, projects: List[Project]) -> None:
         """Set the list of projects."""
