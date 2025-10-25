@@ -4,14 +4,16 @@ from __future__ import annotations
 
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import List
+from typing import List, Optional
 
 from textual.app import ComposeResult
 from textual.containers import Container, Grid, Vertical
+from textual.theme import Theme
 from textual.widgets import ProgressBar, Sparkline, Static
 
 from ..icons import Icons
 from ..models import Task
+from ..themes import ALL_THEMES
 from .clock_widget import ClockWidget
 from .productivity_tabs import ProductivityTabs
 from .stats_card import StatsCard
@@ -36,6 +38,7 @@ class Dashboard(Container):
 
     Dashboard #sparkline-container {
         height: 100%;
+        width: 100%;
         border: round $panel;
         border-title-align: left;
         border-title-color: $accent-lighten-1;
@@ -52,7 +55,12 @@ class Dashboard(Container):
     }
 
     Dashboard ProgressBar {
-        margin: 0 2;
+        width: 100%;
+        margin: 0 0;
+    }
+
+    Dashboard ProgressBar > Bar {
+        width: 1fr;
     }
 
     Dashboard ProgressBar > .bar--bar {
@@ -83,6 +91,20 @@ class Dashboard(Container):
         """Set up border title for sparkline container."""
         sparkline_container = self.query_one("#sparkline-container")
         sparkline_container.border_title = f"{Icons.CHART_LINE} Activity (14d)"
+
+    def _get_current_theme(self) -> Optional[Theme]:
+        """Get the current Theme object from ALL_THEMES.
+
+        Returns:
+            Theme: The current theme object, or the first theme as fallback.
+                   Returns None if ALL_THEMES is empty.
+        """
+        theme_name = self.app.theme  # String like "catppuccin-mocha"
+        for theme in ALL_THEMES:
+            if theme.name == theme_name:
+                return theme
+        # Fallback to first theme if not found
+        return ALL_THEMES[0] if ALL_THEMES else None
 
     def update_metrics(self, tasks: List[Task]) -> None:
         """Update dashboard metrics with current tasks."""
@@ -137,17 +159,31 @@ class Dashboard(Container):
             ),
         )
 
-        # Update progress label with rich markup
+        # Update progress label with rich markup using theme colors
+        # Get theme object and extract colors
+        theme = self._get_current_theme()
+
+        # Defensive: handle case where themes failed to load
+        if theme is None:
+            # Log error - this should never happen in production
+            self.app.log.warning("No themes available, using fallback colors")
+            # Use sensible hex color fallbacks (Catppuccin Mocha defaults)
+            primary_color = "#89b4fa"  # Blue
+            accent_color = "#fab387"  # Peach
+            secondary_color = "#cba6f7"  # Mauve
+        else:
+            primary_color = theme.primary
+            accent_color = theme.accent
+            secondary_color = theme.secondary
+
         if rate >= 75:
-            label_text = (
-                f"[bold green]{Icons.CHECK_CIRCLE} {rate}% Complete - Excellent![/]"
-            )
+            label_text = f"[bold {primary_color}]{Icons.CHECK_CIRCLE} {rate}% Complete - Excellent![/]"
         elif rate >= 50:
             label_text = (
-                f"[bold yellow]{Icons.TARGET} {rate}% Complete - Keep Going![/]"
+                f"[bold {accent_color}]{Icons.TARGET} {rate}% Complete - Keep Going![/]"
             )
         elif rate >= 25:
-            label_text = f"[bold bright_magenta]{Icons.TARGET} {rate}% Complete[/]"
+            label_text = f"[bold {secondary_color}]{Icons.TARGET} {rate}% Complete[/]"
         else:
             label_text = f"[dim]{Icons.TARGET} {rate}% Complete[/]"
 

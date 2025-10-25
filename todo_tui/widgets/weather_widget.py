@@ -271,7 +271,7 @@ class WeatherWidget(Container):
         self.query_one("#weather-condition", Static).update(description)
 
         # Update details
-        details = f"{Icons.WIND} {wind_speed}mph • 💧{humidity}%"
+        details = f"{Icons.WIND} {wind_speed}mph • {Icons.DROPLET}{humidity}%"
         self.query_one("#weather-details", Static).update(details)
 
     def _display_no_config(self) -> None:
