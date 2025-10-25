@@ -104,6 +104,7 @@ _ICONS_NERD = {
     "THUNDERSTORM": "\ue31d",
     "WIND": "\ue34b",
     "THERMOMETER": "\uf2c7",
+    "DROPLET": "\uf043",
 }
 
 _ICONS_ASCII = {
@@ -178,6 +179,7 @@ _ICONS_ASCII = {
     "THUNDERSTORM": "[~!]",
     "WIND": "[>>]",
     "THERMOMETER": "[T]",
+    "DROPLET": "[~]",
 }
 
 
