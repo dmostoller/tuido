@@ -6,15 +6,15 @@ from textual.theme import Theme
 # https://catppuccin.com/palette
 catppuccin_mocha = Theme(
     name="catppuccin-mocha",
-    primary="#89b4fa",  # Blue
+    primary="#b4befe",  # Lavender
     secondary="#cba6f7",  # Mauve
-    accent="#fab387",  # Peach
+    accent="#74c7ec",  # Sapphire
     foreground="#cdd6f4",  # Text
     background="#1e1e2e",  # Base
     success="#a6e3a1",  # Green
     warning="#f9e2af",  # Yellow
     error="#f38ba8",  # Red
-    surface="#313244",  # Surface0
+    surface="#1e1e2e",  # Base
     panel="#45475a",  # Surface1
     dark=True,
     variables={
@@ -22,17 +22,119 @@ catppuccin_mocha = Theme(
         "foreground-muted": "#bac2de",  # Subtext1
         "foreground-disabled": "#6c7086",  # Overlay0
         # Border colors
-        "border": "#89b4fa",  # Blue
-        "border-blurred": "#585b70",  # Surface2
+        "border": "#b4befe",  # Lavender (active border per style guide)
+        "border-blurred": "#6c7086",  # Overlay0 (inactive border per style guide)
         # Scrollbar
         "scrollbar": "#45475a",  # Surface1
         "scrollbar-hover": "#585b70",  # Surface2
         "scrollbar-background": "#313244",  # Surface0
         # Input selection
-        "input-selection-background": "#89b4fa 40%",  # Blue with transparency
+        "input-selection-background": "#7f849c 25%",  # Overlay2 with transparency per style guide
         # Block cursor
-        "block-cursor-background": "#89b4fa",  # Blue
+        "block-cursor-background": "#f5e0dc",  # Rosewater (cursor per style guide)
         "block-cursor-foreground": "#1e1e2e",  # Base
+    },
+)
+
+# Catppuccin Latte - Official Colors
+# https://catppuccin.com/palette
+catppuccin_latte = Theme(
+    name="catppuccin-latte",
+    primary="#7287fd",  # Lavender
+    secondary="#8839ef",  # Mauve
+    accent="#209fb5",  # Sapphire
+    foreground="#4c4f69",  # Text
+    background="#eff1f5",  # Base
+    success="#40a02b",  # Green
+    warning="#df8e1d",  # Yellow
+    error="#d20f39",  # Red
+    surface="#eff1f5",  # Surface0
+    panel="#bcc0cc",  # Surface1
+    dark=False,
+    variables={
+        # Text colors
+        "foreground-muted": "#5c5f77",  # Subtext1
+        "foreground-disabled": "#9ca0b0",  # Overlay0
+        # Border colors
+        "border": "#7287fd",  # Lavender (active border per style guide)
+        "border-blurred": "#9ca0b0",  # Overlay0 (inactive border per style guide)
+        # Scrollbar
+        "scrollbar": "#bcc0cc",  # Surface1
+        "scrollbar-hover": "#acb0be",  # Surface2
+        "scrollbar-background": "#ccd0da",  # Surface0
+        # Input selection
+        "input-selection-background": "#7c7f93 25%",  # Overlay2 with transparency per style guide
+        # Block cursor
+        "block-cursor-background": "#dc8a78",  # Rosewater (cursor per style guide)
+        "block-cursor-foreground": "#eff1f5",  # Base
+    },
+)
+
+# Catppuccin Frappé - Official Colors
+# https://catppuccin.com/palette
+catppuccin_frappe = Theme(
+    name="catppuccin-frappe",
+    primary="#babbf1",  # Lavender
+    secondary="#ca9ee6",  # Mauve
+    accent="#85c1dc",  # Sapphire
+    foreground="#c6d0f5",  # Text
+    background="#303446",  # Base
+    success="#a6d189",  # Green
+    warning="#e5c890",  # Yellow
+    error="#e78284",  # Red
+    surface="#303446",  # Base
+    panel="#51576d",  # Surface1
+    dark=True,
+    variables={
+        # Text colors
+        "foreground-muted": "#b5bfe2",  # Subtext1
+        "foreground-disabled": "#737994",  # Overlay0
+        # Border colors
+        "border": "#babbf1",  # Lavender (active border per style guide)
+        "border-blurred": "#737994",  # Overlay0 (inactive border per style guide)
+        # Scrollbar
+        "scrollbar": "#51576d",  # Surface1
+        "scrollbar-hover": "#626880",  # Surface2
+        "scrollbar-background": "#414559",  # Surface0
+        # Input selection
+        "input-selection-background": "#838ba7 25%",  # Overlay2 with transparency per style guide
+        # Block cursor
+        "block-cursor-background": "#f2d5cf",  # Rosewater (cursor per style guide)
+        "block-cursor-foreground": "#303446",  # Base
+    },
+)
+
+# Catppuccin Macchiato - Official Colors
+# https://catppuccin.com/palette
+catppuccin_macchiato = Theme(
+    name="catppuccin-macchiato",
+    primary="#b7bdf8",  # Lavender
+    secondary="#c6a0f6",  # Mauve
+    accent="#7dc4e4",  # Sapphire
+    foreground="#cad3f5",  # Text
+    background="#24273a",  # Base
+    success="#a6da95",  # Green
+    warning="#eed49f",  # Yellow
+    error="#ed8796",  # Red
+    surface="#24273a",  # Base
+    panel="#494d64",  # Surface1
+    dark=True,
+    variables={
+        # Text colors
+        "foreground-muted": "#b8c0e0",  # Subtext1
+        "foreground-disabled": "#6e738d",  # Overlay0
+        # Border colors
+        "border": "#b7bdf8",  # Lavender (active border per style guide)
+        "border-blurred": "#6e738d",  # Overlay0 (inactive border per style guide)
+        # Scrollbar
+        "scrollbar": "#494d64",  # Surface1
+        "scrollbar-hover": "#5b6078",  # Surface2
+        "scrollbar-background": "#363a4f",  # Surface0
+        # Input selection
+        "input-selection-background": "#8087a2 25%",  # Overlay2 with transparency per style guide
+        # Block cursor
+        "block-cursor-background": "#f4dbd6",  # Rosewater (cursor per style guide)
+        "block-cursor-foreground": "#24273a",  # Base
     },
 )
 
@@ -243,6 +345,9 @@ tailwind_light = Theme(
 # Export all themes
 ALL_THEMES = [
     catppuccin_mocha,
+    catppuccin_latte,
+    catppuccin_frappe,
+    catppuccin_macchiato,
     nord,
     gruvbox,
     tokyo_night,
