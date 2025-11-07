@@ -21,7 +21,7 @@ class ForecastWidget(Container):
         height: 100%;
         width: 100%;
         border: round $accent;
-        background: $surface;
+        background: $background;
         padding: 0 1 1 1;
         min-width: 30;
         min-height: 11;

@@ -38,7 +38,7 @@ class ClockWidget(Container):
     }
 
     ClockWidget Digits {
-        color: $primary;
+        color: $accent;
         height: auto;
         text-style: bold;
         text-align: center;

@@ -54,7 +54,7 @@ class SnippetsPanel(Container):
         width: 30%;
         height: 100%;
         border: round $panel;
-        background: $surface;
+        background: $background;
         padding: 0;
     }
 
@@ -65,7 +65,7 @@ class SnippetsPanel(Container):
     #snippet-list-header {
         dock: top;
         height: 1;
-        background: $surface;
+        background: $background;
         color: $text;
         text-style: bold;
         padding: 0 1;
@@ -87,7 +87,7 @@ class SnippetsPanel(Container):
         height: 3;
         layout: horizontal;
         align: left middle;
-        background: $surface;
+        background: $background;
         padding: 0 1;
     }
 
@@ -104,7 +104,7 @@ class SnippetsPanel(Container):
         width: 70%;
         height: 100%;
         border: round $panel;
-        background: $surface;
+        background: $background;
         padding: 0;
     }
 
@@ -130,7 +130,7 @@ class SnippetsPanel(Container):
     #snippet-code-display {
         height: 1fr;
         width: 100%;
-        background: $surface;
+        background: $background;
         border: round $panel;
         padding: 1;
     }
@@ -140,7 +140,7 @@ class SnippetsPanel(Container):
         height: 3;
         layout: horizontal;
         align: right middle;
-        background: $surface;
+        background: $background;
         padding: 0 1;
     }
 

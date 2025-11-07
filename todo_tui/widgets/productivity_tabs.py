@@ -19,7 +19,7 @@ class ProductivityTabs(Container):
     ProductivityTabs {
         height: 100%;
         width: 100%;
-        background: $surface;
+        background: $background;
         border: round $accent;
         padding: 0;
         min-width: 30;
@@ -29,7 +29,7 @@ class ProductivityTabs(Container):
     ProductivityTabs TabbedContent {
         height: 100%;
         width: 100%;
-        background: $surface;
+        background: $background;
         border: none;
     }
 
@@ -38,17 +38,17 @@ class ProductivityTabs(Container):
     /* Remove borders from child widgets since container has border */
     ProductivityTabs PomodoroWidget {
         border: none;
-        background: $surface;
+        background: $background;
     }
 
     ProductivityTabs WeatherWidget {
         border: none;
-        background: $surface;
+        background: $background;
     }
 
     ProductivityTabs ForecastWidget {
         border: none;
-        background: $surface;
+        background: $background;
     }
     """
 

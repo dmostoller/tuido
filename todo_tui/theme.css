@@ -9,19 +9,19 @@ Screen {
 /* Dashboard Panel */
 #dashboard {
   height: 32%;
-  background: $surface;
+  background: $background;
   padding: 0;
 }
 
 /* Dashboard Quadrants */
 #stats-quadrant {
-  background: $surface;
+  background: $background;
   border: round $panel;
   border-title-color: $primary;
 }
 
 #clock-quadrant {
-  background: $surface;
+  background: $background;
   border: round $panel;
   border-title-color: $accent-lighten-1;
 }
@@ -31,7 +31,7 @@ Screen {
 }
 
 #productivity-quadrant {
-  background: $surface;
+  background: $background;
   border: round $panel;
   border-title-color: $primary;
 }
@@ -45,12 +45,12 @@ Sparkline {
 #main-tabs {
   height: 68%;
   width: 100%;
-  background: $surface;
+  background: $background;
   border: none;
 }
 
 #main-tabs > Tabs {
-  background: $surface;
+  background: $background;
   border-bottom: solid $panel;
 }
 
@@ -60,56 +60,56 @@ Sparkline {
 }
 
 #main-tabs Tab {
-  background: $surface;
+  background: $background;
   color: $text-muted;
   border: none;
   text-style: none;
 }
 
 #main-tabs Tab:hover {
-  background: $panel;
-  color: $secondary;
+  background: $surface;
+  color: $accent;
 }
 
 #main-tabs Tab.-active {
-  background: $panel;
-  color: $primary;
+  # background: $surface;
+  color: $accent;
   text-style: bold;
 }
 
 #main-tabs TabPane {
   padding: 0;
-  background: $surface;
+  background: $background;
   height: 100%;
 }
 
 /* Productivity Tabs (in dashboard) */
 #productivity-quadrant Tabs {
-  background: $surface;
+  background: $background;
   border-bottom: solid $panel;
 }
 
 #productivity-quadrant Tab {
-  background: $surface;
+  background: $background;
   color: $text-muted;
   border: none;
   text-style: none;
 }
 
 #productivity-quadrant Tab:hover {
-  background: $panel;
-  color: $secondary;
+  background: $surface;
+  color: $accent;
 }
 
 #productivity-quadrant Tab.-active {
-  background: $panel;
-  color: $primary;
+  # background: $surface;
+  color: $accent;
   text-style: bold;
 }
 
 #productivity-quadrant TabPane {
   padding: 0;
-  background: $surface;
+  background: $background;
 }
 
 /* Main Content Area */
@@ -128,7 +128,7 @@ Sparkline {
 /* Projects Panel */
 #projects-panel {
   height: 1fr;
-  background: $surface;
+  background: $background;
   border: round $panel;
   border-title-color: $primary;
   padding: 1;
@@ -145,7 +145,7 @@ Sparkline {
 /* Task List Panel */
 #task-list-panel {
   height: 2fr;
-  background: $surface;
+  background: $background;
   border: round $panel;
   border-title-color: $primary;
   padding: 0 1;
@@ -167,7 +167,7 @@ Sparkline {
 /* Task Detail Panel */
 #task-detail-panel {
   width: 60%;
-  background: $surface;
+  background: $background;
   border: round $panel;
   border-title-color: $primary;
   padding: 1;
@@ -243,7 +243,7 @@ TextArea:focus {
 
 /* Markdown */
 Markdown {
-  background: $surface;
+  background: $background;
   color: $foreground;
   scrollbar-background: $panel;
   scrollbar-color: $primary;
@@ -284,33 +284,33 @@ Static {
 
 /* Header */
 Header {
-  background: $surface;
+  background: $background;
   color: $primary-lighten-1;
   text-style: bold;
 }
 
 /* Footer */
 Footer {
-  background: $surface;
+  background: $background;
   color: $text-muted;
 }
 
 /* ListView */
 ListView {
-  background: $surface;
+  background: $background;
   scrollbar-background: $panel;
   scrollbar-color: $primary;
   scrollbar-size-vertical: 1;
 }
 
 ListView:focus {
-  background: $surface;
+  background: $background;
 }
 
 /* ListItem */
 ListItem {
   color: $foreground;
-  background: $surface;
+  background: $background;
 }
 
 ListItem:hover {

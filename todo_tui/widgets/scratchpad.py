@@ -55,7 +55,7 @@ class ScratchpadPanel(Container):
         border: round $panel;
         border-title-align: left;
         border-title-color: $primary;
-        background: $surface;
+        background: $background;
         padding: 1 0 0 0;
     }
 
@@ -73,7 +73,7 @@ class ScratchpadPanel(Container):
         height: 3;
         layout: horizontal;
         align: left middle;
-        background: $surface;
+        background: $background;
         padding: 0 1;
     }
 
@@ -88,7 +88,7 @@ class ScratchpadPanel(Container):
         width: 75%;
         height: 100%;
         border: round $panel;
-        background: $surface;
+        background: $background;
     }
 
     #scratchpad-content-tabs:focus-within {
@@ -125,7 +125,7 @@ class ScratchpadPanel(Container):
     #scratchpad-textarea {
         height: 1fr;
         width: 100%;
-        background: $surface;
+        background: $background;
         border: none;
         padding: 1;
     }
@@ -138,7 +138,7 @@ class ScratchpadPanel(Container):
         dock: bottom;
         height: 1;
         width: 100%;
-        background: $surface;
+        background: $background;
         color: $text-muted;
         text-align: right;
         padding: 0 1;
@@ -148,7 +148,7 @@ class ScratchpadPanel(Container):
     #scratchpad-markdown-viewer {
         height: 1fr;
         width: 100%;
-        background: $surface;
+        background: $background;
         padding: 1;
         overflow-y: auto;
     }
@@ -158,7 +158,7 @@ class ScratchpadPanel(Container):
         height: 3;
         layout: horizontal;
         align: right middle;
-        background: $surface;
+        background: $background;
         padding: 0 1;
     }
 

@@ -42,7 +42,7 @@ class Dashboard(Container):
         border: round $panel;
         border-title-align: left;
         border-title-color: $accent-lighten-1;
-        background: $surface;
+        background: $background;
         padding: 0 1 0 1;
         min-width: 30;
         min-height: 10;
