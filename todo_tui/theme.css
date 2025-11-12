@@ -50,8 +50,9 @@ Sparkline {
 }
 
 #main-tabs > Tabs {
+  height: 2;
   background: $background;
-  border-bottom: solid $panel;
+  # border-bottom: solid $panel;
 }
 
 #main-tabs > ContentSwitcher {
@@ -77,6 +78,16 @@ Sparkline {
   text-style: bold;
 }
 
+#main-tabs Underline {
+  height: 1;
+  display: block;
+}
+
+#main-tabs .underline--bar {
+  color: $accent;
+  background: $panel;
+}
+
 #main-tabs TabPane {
   padding: 0;
   background: $background;
@@ -85,8 +96,9 @@ Sparkline {
 
 /* Productivity Tabs (in dashboard) */
 #productivity-quadrant Tabs {
+  height: 2;
   background: $background;
-  border-bottom: solid $panel;
+  # border-bottom: solid $panel;
 }
 
 #productivity-quadrant Tab {
@@ -105,6 +117,16 @@ Sparkline {
   # background: $surface;
   color: $accent;
   text-style: bold;
+}
+
+#productivity-quadrant Underline {
+  height: 1;
+  display: block;
+}
+
+#productivity-quadrant .underline--bar {
+  color: $accent;
+  background: $panel;
 }
 
 #productivity-quadrant TabPane {
@@ -205,7 +227,7 @@ Button {
 }
 
 Button:hover {
-  color: $primary-lighten-1;
+  color: $accent;
   border: round $primary-lighten-1;
 }
 

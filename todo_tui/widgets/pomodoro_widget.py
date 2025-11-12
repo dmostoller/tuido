@@ -55,7 +55,7 @@ class PomodoroWidget(Container):
     }
 
     PomodoroWidget Digits {
-        color: $primary;
+        color: $accent;
         width: 100%;
         height: 3;
         text-style: bold;

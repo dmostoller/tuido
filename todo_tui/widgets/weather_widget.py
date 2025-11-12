@@ -56,7 +56,7 @@ class WeatherWidget(Container):
     }
 
     WeatherWidget Digits {
-        color: $primary;
+        color: $accent;
         width: auto;
         height: 3;
         text-style: bold;

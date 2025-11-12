@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 
 from textual.app import ComposeResult
+from textual.color import Gradient
 from textual.containers import Container, Grid, Vertical
 from textual.theme import Theme
 from textual.widgets import ProgressBar, Sparkline, Static
@@ -63,13 +64,14 @@ class Dashboard(Container):
         width: 1fr;
     }
 
-    Dashboard ProgressBar > .bar--bar {
+    /* Gradient colors are set programmatically via gradient property */
+    /* Dashboard ProgressBar > .bar--bar {
         color: $success;
     }
 
     Dashboard ProgressBar > .bar--complete {
         color: $primary;
-    }
+    } */
     """
 
     def __init__(self, id: str = "dashboard"):
@@ -144,23 +146,7 @@ class Dashboard(Container):
             ),
         )
 
-        # Update progress bar with animation
-        progress_bar = self.query_one("#completion-progress", ProgressBar)
-        progress_bar.update(progress=rate)
-
-        # Animate progress bar container for visual feedback
-        progress_bar.styles.animate(
-            "opacity",
-            value=0.8,
-            duration=0.3,
-            easing="in_out_cubic",
-            on_complete=lambda: progress_bar.styles.animate(
-                "opacity", value=1.0, duration=0.3, easing="in_out_cubic"
-            ),
-        )
-
-        # Update progress label with rich markup using theme colors
-        # Get theme object and extract colors
+        # Get theme object and extract colors for gradient and progress label
         theme = self._get_current_theme()
 
         # Defensive: handle case where themes failed to load
@@ -176,6 +162,42 @@ class Dashboard(Container):
             accent_color = theme.accent
             secondary_color = theme.secondary
 
+        # Update progress bar with animation and gradient
+        progress_bar = self.query_one("#completion-progress", ProgressBar)
+        progress_bar.update(progress=rate)
+
+        # Create gradient: accent → secondary → primary (even transition)
+        if theme is None:
+            # Fallback hex colors
+            gradient = Gradient.from_colors(
+                "#fab387",  # Accent (peach) - 0%
+                "#cba6f7",  # Secondary (mauve) - 50%
+                "#89b4fa",  # Primary (blue) - 100%
+                quality=100,
+            )
+        else:
+            # Use theme colors for gradient
+            gradient = Gradient.from_colors(
+                accent_color,  # 0% - Starting color
+                secondary_color,  # 50% - Middle transition
+                primary_color,  # 100% - End color
+                quality=100,
+            )
+
+        progress_bar.gradient = gradient
+
+        # Animate progress bar container for visual feedback
+        progress_bar.styles.animate(
+            "opacity",
+            value=0.8,
+            duration=0.3,
+            easing="in_out_cubic",
+            on_complete=lambda: progress_bar.styles.animate(
+                "opacity", value=1.0, duration=0.3, easing="in_out_cubic"
+            ),
+        )
+
+        # Update progress label with rich markup using theme colors
         if rate >= 75:
             label_text = f"[bold {primary_color}]{Icons.CHECK_CIRCLE} {rate}% Complete - Excellent![/]"
         elif rate >= 50:
