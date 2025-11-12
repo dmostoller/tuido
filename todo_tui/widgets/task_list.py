@@ -177,7 +177,7 @@ class TaskListPanel(Container):
             title_class = "task-title completed" if task.completed else "task-title"
 
             # Get priority indicator
-            priority_icon, _ = task.get_priority_display()
+            priority_icon, _ = task.get_priority_display(task.completed)
             priority_str = f"{priority_icon} " if priority_icon else ""
 
             # Show subtask progress if any

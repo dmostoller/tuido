@@ -80,7 +80,7 @@ class TaskDetailPanel(Container):
 
         # Task title
         checkbox = Icons.CHECK_SQUARE if task.completed else Icons.SQUARE_O
-        priority_icon, _ = task.get_priority_display()
+        priority_icon, _ = task.get_priority_display(task.completed)
         priority_str = f"{priority_icon} " if priority_icon else ""
         title_text = f"{priority_str}{checkbox} {task.title}"
         title_class = "title completed" if task.completed else "title"

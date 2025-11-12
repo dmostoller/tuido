@@ -107,20 +107,32 @@ class Task:
             priority=data.get("priority", "none"),
         )
 
-    def get_priority_display(self) -> tuple[str, str]:
+    def get_priority_display(self, completed: bool = False) -> tuple[str, str]:
         """Get priority icon and color for display.
+
+        Args:
+            completed: If True, use muted colors for completed tasks
 
         Returns:
             tuple: (icon, color_class) for the priority level
         """
         from .icons import Icons
 
-        priority_map = {
-            "high": (f"[$accent]{Icons.BOOKMARK}[/]", "error"),
-            "medium": (f"[$secondary]{Icons.BOOKMARK}[/]", "warning"),
-            "low": (f"[$primary]{Icons.BOOKMARK}[/]", "success"),
-            "none": ("", ""),
-        }
+        # Use muted color for completed tasks
+        if completed:
+            priority_map = {
+                "high": (f"[$panel]{Icons.BOOKMARK}[/]", "error"),
+                "medium": (f"[$panel]{Icons.BOOKMARK}[/]", "warning"),
+                "low": (f"[$panel]{Icons.BOOKMARK}[/]", "success"),
+                "none": ("", ""),
+            }
+        else:
+            priority_map = {
+                "high": (f"[$accent]{Icons.BOOKMARK}[/]", "error"),
+                "medium": (f"[$secondary]{Icons.BOOKMARK}[/]", "warning"),
+                "low": (f"[$primary]{Icons.BOOKMARK}[/]", "success"),
+                "none": ("", ""),
+            }
         return priority_map.get(self.priority, ("", ""))
 
 
