@@ -66,9 +66,9 @@ class AddTaskDialog(ModalScreen):
             yield Label("Priority:")
             priority_options = [
                 ("None", "none"),
-                (f"[#89b4fa]{Icons.BOOKMARK}[/] Low", "low"),
-                (f"[#f9e2af]{Icons.BOOKMARK}[/] Medium", "medium"),
-                (f"[#f38ba8]{Icons.BOOKMARK}[/] High", "high"),
+                (f"[$primary]{Icons.BOOKMARK}[/] Low", "low"),
+                (f"[$secondary]{Icons.BOOKMARK}[/] Medium", "medium"),
+                (f"[$accent]{Icons.BOOKMARK}[/] High", "high"),
             ]
             yield Select(options=priority_options, value="none", id="priority-select")
             yield Label("Description (optional):")
@@ -206,9 +206,9 @@ class EditTaskDialog(ModalScreen):
             yield Label("Priority:")
             priority_options = [
                 ("None", "none"),
-                (f"[#89b4fa]{Icons.BOOKMARK}[/] Low", "low"),
-                (f"[#f9e2af]{Icons.BOOKMARK}[/] Medium", "medium"),
-                (f"[#f38ba8]{Icons.BOOKMARK}[/] High", "high"),
+                (f"[$primary]{Icons.BOOKMARK}[/] Low", "low"),
+                (f"[$secondary]{Icons.BOOKMARK}[/] Medium", "medium"),
+                (f"[$accent]{Icons.BOOKMARK}[/] High", "high"),
             ]
             yield Select(
                 options=priority_options,

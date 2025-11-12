@@ -116,9 +116,9 @@ class Task:
         from .icons import Icons
 
         priority_map = {
-            "high": (f"[#f38ba8]{Icons.BOOKMARK}[/]", "error"),
-            "medium": (f"[#f9e2af]{Icons.BOOKMARK}[/]", "warning"),
-            "low": (f"[#89b4fa]{Icons.BOOKMARK}[/]", "success"),
+            "high": (f"[$accent]{Icons.BOOKMARK}[/]", "error"),
+            "medium": (f"[$secondary]{Icons.BOOKMARK}[/]", "warning"),
+            "low": (f"[$primary]{Icons.BOOKMARK}[/]", "success"),
             "none": ("", ""),
         }
         return priority_map.get(self.priority, ("", ""))
