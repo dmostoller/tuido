@@ -70,13 +70,33 @@ The app features a three-panel layout:
 
 ## Installation
 
+### Quick Install (Recommended)
+
+Install Tuido with [pipx](https://pipx.pypa.io/) for isolated, system-wide access:
+
+```bash
+# Install pipx if you don't have it
+brew install pipx && pipx ensurepath  # macOS
+# or: pip install pipx && pipx ensurepath  # Other platforms
+
+# Install Tuido
+pipx install tuido-tui
+
+# Run from anywhere
+tuido
+```
+
+**Update to latest version:**
+```bash
+pipx upgrade tuido-tui
+```
+
 ### Prerequisites
 
 - Python 3.12 or higher
-- [uv](https://github.com/astral-sh/uv) package manager (recommended) or pip
 - **JetBrains Mono Nerd Font** (required for proper icon display)
 
-### Setup
+### Font Setup
 
 1. **Install JetBrains Mono Nerd Font**
 
@@ -115,66 +135,34 @@ The app features a three-panel layout:
 
    If you see proper icons in the test output, you're all set! If you see rectangles, check the [Troubleshooting](#troubleshooting) section.
 
-2. Clone the repository:
+### Development Setup
 
-   ```bash
-   git clone https://github.com/dmostoller/tuido.git
-   cd tuido
-   ```
+For contributors or running from source:
 
-   > **Note**: Replace `yourusername` with the actual repository owner when the repo is published.
+```bash
+# Clone the repository
+git clone https://github.com/dmostoller/tuido.git
+cd tuido
 
-3. Install dependencies:
+# Install dependencies with uv (recommended)
+uv sync
 
-Using uv (recommended):
-
-   ```bash
-   uv sync
-   ```
-
-   Or using pip:
-
-   ```bash
-   pip install textual textual-dev
-   ```
+# Run the application
+uv run tuido
+# or: uv run python main.py
+```
 
 ## Usage
 
-### Running the Application
+After installation, run Tuido from any terminal:
 
 ```bash
-# With uv (recommended)
-uv run python main.py
-
-# Or directly
-python main.py
+tuido
 ```
 
-### Running from Anywhere
+### Data Storage
 
-Since data is stored in `~/.local/share/tuido/`, you can run the app from any directory. Set up a shell alias for quick access:
-
-**Bash/Zsh** (add to `~/.bashrc` or `~/.zshrc`):
-
-```bash
-alias todo='cd /path/to/tuido && uv run python main.py'
-```
-
-**Or with a function for better path handling:**
-
-```bash
-todo() {
-    (cd /path/to/tuido && uv run python main.py)
-}
-```
-
-After adding the alias, reload your shell configuration:
-
-```bash
-source ~/.bashrc  # or source ~/.zshrc
-```
-
-Now you can simply type `todo` from any directory to launch the app!
+Your data is stored in `~/.local/share/tuido/` - run `tuido` from any directory and your tasks are always available.
 
 ### Keyboard Shortcuts
 

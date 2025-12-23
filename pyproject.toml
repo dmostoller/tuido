@@ -1,9 +1,43 @@
 [project]
-name = "todo-tui"
+name = "tuido-tui"
 version = "0.1.0"
 description = "A beautiful Terminal User Interface (TUI) todo application built with Textual, featuring multiple themes, Pomodoro timer, and markdown notes"
 readme = "README.md"
+license = { text = "MIT" }
 requires-python = ">=3.12"
+authors = [
+    { name = "Dave Mostoller", email = "dmostoller@gmail.com" }
+]
+keywords = [
+    "todo",
+    "tui",
+    "terminal",
+    "textual",
+    "productivity",
+    "task-manager",
+    "pomodoro",
+    "cli"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Utilities",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://tuido.dev"
+Documentation = "https://tuido.dev"
+Repository = "https://github.com/dmostoller/tuido"
+"Bug Tracker" = "https://github.com/dmostoller/tuido/issues"
+
 dependencies = [
     "httpx>=0.27.0",
     "platformdirs>=4.0.0",
