@@ -31,13 +31,6 @@ classifiers = [
     "Topic :: Utilities",
     "Typing :: Typed",
 ]
-
-[project.urls]
-Homepage = "https://tuido.dev"
-Documentation = "https://tuido.dev"
-Repository = "https://github.com/dmostoller/tuido"
-"Bug Tracker" = "https://github.com/dmostoller/tuido/issues"
-
 dependencies = [
     "httpx>=0.27.0",
     "platformdirs>=4.0.0",
@@ -50,6 +43,12 @@ dependencies = [
     "tree-sitter>=0.25.0",
     "tree-sitter-markdown>=0.3.0",
 ]
+
+[project.urls]
+Homepage = "https://tuido.dev"
+Documentation = "https://tuido.dev"
+Repository = "https://github.com/dmostoller/tuido"
+"Bug Tracker" = "https://github.com/dmostoller/tuido/issues"
 
 [dependency-groups]
 dev = [
