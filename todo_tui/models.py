@@ -236,6 +236,9 @@ class Settings:
         pomodoro_long_break_minutes: Duration of long breaks in minutes (default: 15)
         weather_location: Location for weather widget (e.g., 'San Francisco' or 'London,UK')
         weather_use_fahrenheit: Whether to use Fahrenheit (True) or Celsius (False) for temperature
+        weather_api_key: OpenWeatherMap API key for weather data
+        show_weather_widget: Whether to show weather/forecast tabs (True) or just Pomodoro (False)
+        onboarding_complete: Whether the user has completed the first-run onboarding
         cloud_sync_enabled: Whether cloud sync is enabled
         cloud_sync_token: API token for cloud sync service
         cloud_sync_url: Base URL for cloud sync API
@@ -249,6 +252,9 @@ class Settings:
     pomodoro_long_break_minutes: int = 15
     weather_location: str = ""  # Empty means not configured
     weather_use_fahrenheit: bool = True  # Default to Fahrenheit
+    weather_api_key: str = ""  # OpenWeatherMap API key
+    show_weather_widget: bool = True  # Toggle weather/forecast tabs visibility
+    onboarding_complete: bool = False  # Track first-run status
     cloud_sync_enabled: bool = False  # Cloud sync disabled by default
     cloud_sync_token: str = ""  # API token from tuido.vercel.app
     cloud_sync_url: str = "https://tuido.vercel.app/api"  # Cloud API base URL
@@ -264,6 +270,9 @@ class Settings:
             "pomodoro_long_break_minutes": self.pomodoro_long_break_minutes,
             "weather_location": self.weather_location,
             "weather_use_fahrenheit": self.weather_use_fahrenheit,
+            "weather_api_key": self.weather_api_key,
+            "show_weather_widget": self.show_weather_widget,
+            "onboarding_complete": self.onboarding_complete,
             "cloud_sync_enabled": self.cloud_sync_enabled,
             "cloud_sync_token": self.cloud_sync_token,
             "cloud_sync_url": self.cloud_sync_url,
@@ -281,6 +290,9 @@ class Settings:
             pomodoro_long_break_minutes=data.get("pomodoro_long_break_minutes", 15),
             weather_location=data.get("weather_location", ""),
             weather_use_fahrenheit=data.get("weather_use_fahrenheit", True),
+            weather_api_key=data.get("weather_api_key", ""),
+            show_weather_widget=data.get("show_weather_widget", True),
+            onboarding_complete=data.get("onboarding_complete", False),
             cloud_sync_enabled=data.get("cloud_sync_enabled", False),
             cloud_sync_token=data.get("cloud_sync_token", ""),
             cloud_sync_url=data.get("cloud_sync_url", "https://tuido.vercel.app/api"),

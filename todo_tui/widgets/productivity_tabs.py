@@ -13,7 +13,12 @@ from .weather_widget import WeatherWidget
 
 
 class ProductivityTabs(Container):
-    """A tabbed container for productivity widgets (Pomodoro, Weather, and Forecast)."""
+    """A tabbed container for productivity widgets (Pomodoro, Weather, and Forecast).
+
+    Args:
+        show_weather: If True, show Weather and Forecast tabs alongside Pomodoro.
+                      If False, show only the Pomodoro timer without tabs.
+    """
 
     DEFAULT_CSS = """
     ProductivityTabs {
@@ -52,12 +57,21 @@ class ProductivityTabs(Container):
     }
     """
 
+    def __init__(self, show_weather: bool = True, **kwargs):
+        super().__init__(**kwargs)
+        self.show_weather = show_weather
+
     def compose(self) -> ComposeResult:
         """Compose the tabbed productivity widget."""
-        with TabbedContent(initial="weather-tab"):
-            with TabPane(f"{Icons.CLOUD_SUN} Weather", id="weather-tab"):
-                yield WeatherWidget()
-            with TabPane(f"{Icons.CALENDAR} Forecast", id="forecast-tab"):
-                yield ForecastWidget()
-            with TabPane(f"{Icons.TOMATO} Pomodoro", id="pomodoro-tab"):
-                yield PomodoroWidget()
+        if self.show_weather:
+            # Show all tabs: Weather, Forecast, Pomodoro
+            with TabbedContent(initial="weather-tab"):
+                with TabPane(f"{Icons.CLOUD_SUN} Weather", id="weather-tab"):
+                    yield WeatherWidget()
+                with TabPane(f"{Icons.CALENDAR} Forecast", id="forecast-tab"):
+                    yield ForecastWidget()
+                with TabPane(f"{Icons.TOMATO} Pomodoro", id="pomodoro-tab"):
+                    yield PomodoroWidget()
+        else:
+            # Weather disabled: Just show Pomodoro timer without tabs
+            yield PomodoroWidget()

@@ -94,6 +94,10 @@ _ICONS_NERD = {
     "ROCKET": "\uf135",
     "LIGHTBULB": "\uf0eb",
     "MUSCLE": "\uf2c5",
+    "PALETTE": "\uf53f",
+    "DOWNLOAD": "\uf019",
+    "LINK": "\uf0c1",
+    "CLOUD_DOWNLOAD": "\uf0ed",
     # Weather Icons
     "SUN": "\ue30d",
     "MOON": "\ue32a",
@@ -169,6 +173,10 @@ _ICONS_ASCII = {
     "ROCKET": "[R]",
     "LIGHTBULB": "[i]",
     "MUSCLE": "[M]",
+    "PALETTE": "[P]",
+    "DOWNLOAD": "[v]",
+    "LINK": "[>]",
+    "CLOUD_DOWNLOAD": "[v]",
     # Weather Icons
     "SUN": "[O]",
     "MOON": "[)]",

@@ -26,6 +26,7 @@ from .widgets.dialogs import (
     HelpDialog,
     InfoDialog,
     MoveTaskDialog,
+    OnboardingDialog,
     SettingsDialog,
 )
 from .widgets.pomodoro_widget import PomodoroWidget
@@ -52,6 +53,7 @@ class TodoApp(App):
         Binding("space", "toggle_task", "Toggle Complete"),
         Binding("s", "settings", "Settings"),
         Binding("ctrl+shift+s", "cloud_sync", "Cloud Sync"),
+        Binding("ctrl+shift+w", "setup_wizard", "Setup Wizard", show=False),
         Binding("q", "quit", "Quit"),
         Binding("?", "help", "Help"),
     ]
@@ -71,7 +73,9 @@ class TodoApp(App):
     def compose(self) -> ComposeResult:
         """Compose the application layout."""
         # yield Header()
-        yield Dashboard(id="dashboard")
+        yield Dashboard(
+            id="dashboard", show_weather=self.settings.show_weather_widget
+        )
         with TabbedContent(initial="tasks-tab", id="main-tabs"):
             with TabPane(f"{Icons.LIST} Tasks", id="tasks-tab"):
                 with Horizontal(id="main-content"):
@@ -116,6 +120,45 @@ class TodoApp(App):
         # Startup cloud sync (if enabled)
         if self.settings.cloud_sync_enabled and self.settings.cloud_sync_token:
             self.run_worker(self._startup_sync(), exclusive=True)
+
+        # Show onboarding dialog on first run
+        if not self.settings.onboarding_complete:
+            self.call_after_refresh(self._show_onboarding)
+
+    def _show_onboarding(self) -> None:
+        """Show the onboarding/setup wizard dialog."""
+
+        def check_onboarding(result) -> None:
+            """Callback when onboarding dialog is dismissed."""
+            if result and isinstance(result, Settings):
+                # User completed onboarding with settings
+                self.settings = result
+                StorageManager.save_settings(self.settings)
+                # Refresh weather widget if API key was set
+                self._refresh_weather_widgets()
+            elif result is None:
+                # User closed without saving, still mark complete
+                self.settings.onboarding_complete = True
+                StorageManager.save_settings(self.settings)
+
+        self.push_screen(OnboardingDialog(self.settings), check_onboarding)
+
+    def action_setup_wizard(self) -> None:
+        """Show the setup wizard (onboarding) dialog."""
+        self._show_onboarding()
+
+    def _refresh_weather_widgets(self) -> None:
+        """Refresh weather widgets after settings change."""
+        try:
+            from .widgets.weather_widget import WeatherWidget
+            from .widgets.forecast_widget import ForecastWidget
+
+            for widget in self.query(WeatherWidget):
+                widget.refresh_weather_settings()
+            for widget in self.query(ForecastWidget):
+                widget.refresh_weather_settings()
+        except Exception:
+            pass  # Widgets might not be mounted
 
     def _load_all_tasks(self) -> None:
         """Load and display all tasks across all projects."""
@@ -510,9 +553,12 @@ class TodoApp(App):
         # Get list of available theme names
         theme_names = [theme.name for theme in ALL_THEMES]
 
-        def check_settings(result: Optional[Settings]) -> None:
+        def check_settings(result) -> None:
             """Callback when dialog is dismissed."""
-            if result:
+            if result == "open_wizard":
+                # User wants to open the setup wizard
+                self.call_after_refresh(self._show_onboarding)
+            elif result and isinstance(result, Settings):
                 # Save settings (using static method)
                 StorageManager.save_settings(result)
                 self.settings = result
@@ -533,14 +579,8 @@ class TodoApp(App):
                 except Exception:
                     pass  # Widget might not be mounted yet
 
-                # Refresh weather widget with new settings
-                try:
-                    from .widgets.weather_widget import WeatherWidget
-
-                    weather_widget = self.query_one(WeatherWidget)
-                    weather_widget.refresh_weather_settings()
-                except Exception:
-                    pass  # Widget might not be mounted yet
+                # Refresh weather widgets with new settings
+                self._refresh_weather_widgets()
 
         self.push_screen(SettingsDialog(self.settings, theme_names), check_settings)
 

@@ -134,6 +134,50 @@ Sparkline {
   background: $background;
 }
 
+/* Dialog Tabs (OnboardingDialog and SettingsDialog) */
+OnboardingDialog Tabs,
+SettingsDialog Tabs {
+  height: 2;
+  background: $background;
+}
+
+OnboardingDialog Tab,
+SettingsDialog Tab {
+  background: $background;
+  color: $text-muted;
+  border: none;
+  text-style: none;
+}
+
+OnboardingDialog Tab:hover,
+SettingsDialog Tab:hover {
+  background: $surface;
+  color: $accent;
+}
+
+OnboardingDialog Tab.-active,
+SettingsDialog Tab.-active {
+  color: $accent;
+  text-style: bold;
+}
+
+OnboardingDialog Underline,
+SettingsDialog Underline {
+  height: 1;
+  display: block;
+}
+
+OnboardingDialog .underline--bar,
+SettingsDialog .underline--bar {
+  color: $accent;
+  background: $panel;
+}
+
+OnboardingDialog TabPane,
+SettingsDialog TabPane {
+  background: $background;
+}
+
 /* Main Content Area */
 #main-content {
   height: 100%;

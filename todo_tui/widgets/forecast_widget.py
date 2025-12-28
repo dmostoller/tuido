@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 from datetime import datetime
 from typing import Optional
 
@@ -103,9 +102,8 @@ class ForecastWidget(Container):
         self.forecast_data: Optional[dict] = None
         self.last_updated: Optional[datetime] = None
         self.update_interval = None
-        self.api_key = os.getenv("OPENWEATHER_API_KEY", "")
-        # Location and unit will be loaded from settings
-        self.location = "Philadelphia, US"
+        self.api_key = ""  # Loaded from settings only
+        self.location = ""  # Loaded from settings
         self.use_fahrenheit = True
 
     def compose(self) -> ComposeResult:
@@ -158,16 +156,16 @@ class ForecastWidget(Container):
                 yield Static("Loading...", id="day-4-desc", classes="day-description")
 
     def _load_settings(self) -> None:
-        """Load location and temperature unit from app settings."""
+        """Load weather settings from app settings."""
         try:
             settings = self.app.settings
             if settings:
                 self.location = settings.weather_location
                 self.use_fahrenheit = settings.weather_use_fahrenheit
+                self.api_key = settings.weather_api_key
         except AttributeError:
-            # Fallback to environment variables for migration/backwards compatibility
-            self.location = os.getenv("WEATHER_LOCATION", "Philadelphia, US")
-            self.use_fahrenheit = os.getenv("WEATHER_UNIT", "F") == "F"
+            # Settings not available yet
+            pass
 
     def on_mount(self) -> None:
         """Initialize the forecast widget."""

@@ -96,44 +96,32 @@ pipx upgrade tuido-tui
 - Python 3.12 or higher
 - **JetBrains Mono Nerd Font** (required for proper icon display)
 
-### Font Setup
+### First-Run Setup Wizard
 
-1. **Install JetBrains Mono Nerd Font**
+On first launch, Tuido will guide you through setup with an interactive wizard:
 
-   This application uses Nerd Font icons for a beautiful visual experience. You need to install and configure JetBrains Mono Nerd Font in your terminal.
+1. **Font Setup**:
+   - Automatically detects your terminal (VS Code, Ghostty, iTerm2, etc.)
+   - Shows test icons so you can verify fonts are working
+   - Provides terminal-specific configuration instructions
+   - One-click button to download JetBrains Mono Nerd Font
+2. **Weather Widget** (optional): Configure the weather display with a free API key
 
-   **Download and Install:**
-   - Visit [Nerd Fonts Downloads](https://www.nerdfonts.com/font-downloads)
-   - Download "JetBrainsMono Nerd Font"
-   - Install the font on your system
+The setup wizard can be re-run anytime from **Settings → General → Run Setup Wizard** or by pressing `Ctrl+Shift+W`.
 
-   **Configure Your Terminal:**
-   - **macOS Terminal.app**: Preferences → Profiles → Text → Change font to "JetBrainsMono Nerd Font"
-   - **iTerm2**: Preferences → Profiles → Text → Font → Select "JetBrainsMono Nerd Font"
-   - **WezTerm**: Already bundles JetBrains Mono by default
-   - **Alacritty**: Edit `~/.config/alacritty/alacritty.yml`:
+### Font Setup (Manual)
 
-     ```yaml
-     font:
-       normal:
-         family: "JetBrainsMono Nerd Font"
-     ```
+If you prefer to set up fonts manually, or need to troubleshoot:
 
-   - **VS Code Terminal**: Settings → Terminal › Integrated: Font Family → `JetBrainsMono Nerd Font`
+1. **Download JetBrains Mono Nerd Font** from [nerdfonts.com/font-downloads](https://www.nerdfonts.com/font-downloads)
+2. **Install the font** by double-clicking the downloaded `.ttf` files
+3. **Configure your terminal** to use "JetBrainsMono Nerd Font":
+   - **VS Code**: Settings → `terminal.integrated.fontFamily` → `JetBrainsMono Nerd Font`
+   - **iTerm2**: Preferences → Profiles → Text → Font
+   - **macOS Terminal**: Preferences → Profiles → Text → Change Font
+4. **Restart your terminal** completely
 
-   > **Important**: After configuring the font, **restart your terminal completely** for changes to take effect.
-   >
-   > **Seeing rectangles instead of icons?** See the [Troubleshooting](#troubleshooting) section below.
-
-   **Testing Your Setup:**
-
-   After installation and configuration, test that icons are working:
-
-   ```bash
-   python test_icons.py
-   ```
-
-   If you see proper icons in the test output, you're all set! If you see rectangles, check the [Troubleshooting](#troubleshooting) section.
+> **Seeing rectangles?** See [Troubleshooting](#troubleshooting) or run the setup wizard (`Ctrl+Shift+W`).
 
 ### Development Setup
 
@@ -193,32 +181,26 @@ Your data is stored in `~/.local/share/tuido/` - run `tuido` from any directory 
 
 ### Weather Widget (Optional)
 
-The dashboard includes an optional weather widget that displays current conditions with ASCII art. To enable it:
+The dashboard includes an optional weather widget that displays current conditions and a 5-day forecast. To enable it:
 
 1. **Get a free API key** from [OpenWeatherMap](https://openweathermap.org/api):
    - Sign up at <https://home.openweathermap.org/users/sign_up>
    - Get your API key from the dashboard (free tier allows 60 calls/min)
 
-2. **Set your API key** as an environment variable:
-
-   ```bash
-   export OPENWEATHER_API_KEY="your-api-key-here"
-   ```
-
-   Or create a `.env` file in the project root:
-
-   ```text
-   OPENWEATHER_API_KEY=your-api-key-here
-   ```
-
-3. **Configure location and temperature unit** in the app:
-   - Run the app: `uv run python main.py`
-   - Press `s` to open Settings
+2. **Configure in the app** (no environment variables needed!):
+   - Press `s` to open Settings → go to the **Weather** tab
+   - Paste your API key
    - Enter your location (e.g., "San Francisco" or "London,UK")
    - Toggle temperature unit between Fahrenheit (°F) and Celsius (°C)
    - Save settings
 
-The weather widget will update automatically every 30 minutes.
+   Or use the **Setup Wizard** on first launch to configure everything at once!
+
+3. **Disable weather** if you don't want it:
+   - Settings → Weather → Toggle off "Enable Weather Widget"
+   - Only the Pomodoro timer will be shown in the dashboard
+
+The weather widget updates automatically every 30 minutes.
 
 **Without configuration**, the weather widget displays "Not Configured" - the app works perfectly fine without it!
 
@@ -296,77 +278,47 @@ If you previously used this app with data stored in the relative `data/` directo
 
 ## Troubleshooting
 
-### Icons Showing as Rectangles or Question Marks
+### Icons Showing as Rectangles
 
-If you see rectangles (□), question marks (?), or other placeholder characters instead of icons, this means your terminal isn't configured to use a Nerd Font.
+If you see rectangles (□) instead of icons, your terminal isn't using a Nerd Font.
 
-**Quick Test:**
+**Quick Fix:**
 
-Run the icon test script to verify your font configuration:
+1. Run the **Setup Wizard** (`Ctrl+Shift+W`) - it detects your terminal and shows specific configuration instructions
+2. The wizard displays test icons so you can verify they work before proceeding
+3. Install the font and configure your terminal, then **restart your terminal completely**
 
-```bash
-python test_icons.py
-```
+**Terminal-Specific Configuration:**
 
-This will display all icons used in the app. If you see proper icons, your setup is working! If you see rectangles, follow the steps below.
+The setup wizard automatically detects your terminal and provides tailored instructions. Here's a reference for common terminals:
 
-**Solution:**
+| Terminal | Configuration |
+|----------|--------------|
+| **VS Code** | Settings → Search `terminal.integrated.fontFamily` → Set to `JetBrainsMono Nerd Font` |
+| **Ghostty** | `~/.config/ghostty/config` → Add `font-family = JetBrainsMono Nerd Font` |
+| **iTerm2** | Preferences → Profiles → Text → Font |
+| **macOS Terminal** | Preferences → Profiles → Text → Change Font |
+| **Kitty** | `~/.config/kitty/kitty.conf` → `font_family JetBrainsMono Nerd Font` |
+| **Alacritty** | `~/.config/alacritty/alacritty.yml` → `font.normal.family: JetBrainsMono Nerd Font` |
+| **WezTerm** | `~/.wezterm.lua` → `config.font = wezterm.font('JetBrainsMono Nerd Font')` |
+| **Hyper** | `~/.hyper.js` → `fontFamily: 'JetBrainsMono Nerd Font'` |
 
-1. **Verify Font Installation**
-   - JetBrains Mono Nerd Font must be installed on your system
-   - Download from: <https://www.nerdfonts.com/font-downloads>
-   - Look for "JetBrainsMono Nerd Font" (NOT regular JetBrains Mono)
-   - Install all font files (.ttf or .otf) by double-clicking them
+> **Note:** Icons may work in one terminal (e.g., Ghostty) but not another (e.g., VS Code integrated terminal). Each terminal needs to be configured separately.
 
-2. **Configure Your Terminal** (CRITICAL STEP)
+**Manual Download:**
 
-   The font must be set in your terminal emulator's preferences:
+1. Download from [nerdfonts.com/font-downloads](https://www.nerdfonts.com/font-downloads) - get "JetBrainsMono Nerd Font" (NOT regular JetBrains Mono)
+2. Install all `.ttf` files by double-clicking them
+3. Configure your terminal using the table above
+4. Restart your terminal completely
 
-   **VS Code Terminal** (most common):
-   - Open Settings (Cmd+, or Ctrl+,)
-   - Search for: `terminal.integrated.fontFamily`
-   - Set to: `JetBrainsMono Nerd Font`
-   - **Restart VS Code completely**
+### ASCII Fallback Mode
 
-   **macOS Terminal.app**:
-   - Terminal → Preferences (Cmd+,)
-   - Profiles tab → Text section
-   - Click "Change" button under Font
-   - Select "JetBrainsMono Nerd Font"
-   - Set size to 12-14pt for best results
-
-   **iTerm2**:
-   - Preferences → Profiles → Text
-   - Change Font to "JetBrainsMono Nerd Font"
-
-   **Alacritty**:
-   - Edit `~/.config/alacritty/alacritty.yml`:
-
-     ```yaml
-     font:
-       normal:
-         family: "JetBrainsMono Nerd Font"
-     ```
-
-3. **Restart Your Terminal**
-   - Completely close and reopen your terminal
-   - Run `python test_icons.py` again to verify
-
-**Still Not Working?**
-
-- Make sure you installed **Nerd Font** version, not regular JetBrains Mono
-- Check that your terminal is actually using the font (some terminals have separate settings for different profiles)
-- Try setting a different Nerd Font to test (e.g., "FiraCode Nerd Font")
-
-### Temporary Workaround: ASCII Fallback Mode
-
-If you can't install Nerd Fonts, you can use ASCII fallback characters:
+If you can't install Nerd Fonts, use ASCII mode:
 
 ```bash
-NERD_FONTS_ENABLED=0 uv run python main.py
+NERD_FONTS_ENABLED=0 tuido
 ```
-
-This will replace all icons with simple ASCII characters like `[✓]`, `[✗]`, etc.
 
 ## Contributing
 

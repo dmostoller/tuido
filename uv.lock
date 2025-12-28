@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.12"
 
 [[package]]
@@ -900,45 +900,6 @@ wheels = [
 ]
 
 [[package]]
-name = "todo-tui"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "httpx" },
-    { name = "platformdirs" },
-    { name = "plotext" },
-    { name = "pyperclip" },
-    { name = "python-dotenv" },
-    { name = "requests" },
-    { name = "textual", extra = ["syntax"] },
-    { name = "textual-dev" },
-    { name = "tree-sitter" },
-    { name = "tree-sitter-markdown" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "ruff" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "httpx", specifier = ">=0.27.0" },
-    { name = "platformdirs", specifier = ">=4.0.0" },
-    { name = "plotext", specifier = ">=5.3.2" },
-    { name = "pyperclip", specifier = ">=1.8.0" },
-    { name = "python-dotenv", specifier = ">=1.0.0" },
-    { name = "requests", specifier = ">=2.31.0" },
-    { name = "textual", extras = ["syntax"], specifier = ">=0.73.0" },
-    { name = "textual-dev", specifier = ">=1.6.1" },
-    { name = "tree-sitter", specifier = ">=0.25.0" },
-    { name = "tree-sitter-markdown", specifier = ">=0.3.0" },
-]
-
-[package.metadata.requires-dev]
-dev = [{ name = "ruff", specifier = ">=0.14.1" }]
-
-[[package]]
 name = "tree-sitter"
 version = "0.25.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1198,6 +1159,45 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/4a/d6/8d1e1ace03db3b02e64e91daf21d1347941d1bbecc606a5473a1a605250d/tree_sitter_yaml-0.7.2-cp310-abi3-win_amd64.whl", hash = "sha256:7587b5ca00fc4f9a548eff649697a3b395370b2304b399ceefa2087d8a6c9186", size = 45514, upload-time = "2025-10-07T14:40:34.562Z" },
     { url = "https://files.pythonhosted.org/packages/d8/c7/dcf3ea1c4f5da9b10353b9af4455d756c92d728a8f58f03c480d3ef0ead5/tree_sitter_yaml-0.7.2-cp310-abi3-win_arm64.whl", hash = "sha256:f63c227b18e7ce7587bce124578f0bbf1f890ac63d3e3cd027417574273642c4", size = 44065, upload-time = "2025-10-07T14:40:35.337Z" },
 ]
+
+[[package]]
+name = "tuido-tui"
+version = "0.1.1"
+source = { editable = "." }
+dependencies = [
+    { name = "httpx" },
+    { name = "platformdirs" },
+    { name = "plotext" },
+    { name = "pyperclip" },
+    { name = "python-dotenv" },
+    { name = "requests" },
+    { name = "textual", extra = ["syntax"] },
+    { name = "textual-dev" },
+    { name = "tree-sitter" },
+    { name = "tree-sitter-markdown" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "httpx", specifier = ">=0.27.0" },
+    { name = "platformdirs", specifier = ">=4.0.0" },
+    { name = "plotext", specifier = ">=5.3.2" },
+    { name = "pyperclip", specifier = ">=1.8.0" },
+    { name = "python-dotenv", specifier = ">=1.0.0" },
+    { name = "requests", specifier = ">=2.31.0" },
+    { name = "textual", extras = ["syntax"], specifier = ">=0.73.0" },
+    { name = "textual-dev", specifier = ">=1.6.1" },
+    { name = "tree-sitter", specifier = ">=0.25.0" },
+    { name = "tree-sitter-markdown", specifier = ">=0.3.0" },
+]
+
+[package.metadata.requires-dev]
+dev = [{ name = "ruff", specifier = ">=0.14.1" }]
 
 [[package]]
 name = "typing-extensions"

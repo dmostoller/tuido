@@ -74,9 +74,10 @@ class Dashboard(Container):
     } */
     """
 
-    def __init__(self, id: str = "dashboard"):
+    def __init__(self, id: str = "dashboard", show_weather: bool = True):
         super().__init__(id=id)
         self.tasks: List[Task] = []
+        self.show_weather = show_weather
 
     def compose(self) -> ComposeResult:
         """Compose the dashboard with 2x2 grid layout."""
@@ -86,7 +87,9 @@ class Dashboard(Container):
                 yield Static("", id="progress-label", classes="progress-label")
                 yield ProgressBar(total=100, show_eta=False, id="completion-progress")
             yield ClockWidget(id="clock-quadrant")
-            yield ProductivityTabs(id="productivity-quadrant")
+            yield ProductivityTabs(
+                id="productivity-quadrant", show_weather=self.show_weather
+            )
             yield StatsCard(id="stats-quadrant")
 
     def on_mount(self) -> None:

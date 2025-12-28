@@ -1,6 +1,8 @@
 """Dialog widgets for user interactions."""
 
-from typing import List, Optional
+import os
+import webbrowser
+from typing import List, Optional, Tuple
 
 from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical
@@ -14,6 +16,8 @@ from textual.widgets import (
     Select,
     Static,
     Switch,
+    TabbedContent,
+    TabPane,
     TextArea,
 )
 
@@ -782,47 +786,419 @@ class MoveTaskDialog(ModalScreen):
             event.prevent_default()
 
 
+def _detect_terminal() -> Tuple[str, str]:
+    """Detect the current terminal emulator and return setup instructions.
+
+    Returns:
+        Tuple of (terminal_name, configuration_instructions)
+    """
+    term_program = os.environ.get("TERM_PROGRAM", "").lower()
+    ghostty_dir = os.environ.get("GHOSTTY_RESOURCES_DIR", "")
+
+    if ghostty_dir:
+        return (
+            "Ghostty",
+            "Config file: ~/.config/ghostty/config\n"
+            "Add: font-family = JetBrainsMono Nerd Font",
+        )
+    elif term_program == "vscode":
+        return (
+            "VS Code Terminal",
+            "Settings → Search 'terminal.integrated.fontFamily'\n"
+            "Set to: JetBrainsMono Nerd Font",
+        )
+    elif term_program == "iterm.app":
+        return (
+            "iTerm2",
+            "Preferences → Profiles → Text → Font\n"
+            "Select: JetBrainsMono Nerd Font",
+        )
+    elif term_program == "apple_terminal":
+        return (
+            "macOS Terminal",
+            "Preferences → Profiles → Text → Change Font\n"
+            "Select: JetBrainsMono Nerd Font",
+        )
+    elif term_program == "hyper":
+        return (
+            "Hyper",
+            "Config file: ~/.hyper.js\n"
+            "Set fontFamily: 'JetBrainsMono Nerd Font'",
+        )
+    elif term_program == "alacritty":
+        return (
+            "Alacritty",
+            "Config file: ~/.config/alacritty/alacritty.yml\n"
+            "Set font.normal.family: JetBrainsMono Nerd Font",
+        )
+    elif term_program == "wezterm":
+        return (
+            "WezTerm",
+            "Config file: ~/.wezterm.lua\n"
+            "Set config.font = wezterm.font('JetBrainsMono Nerd Font')",
+        )
+    elif term_program == "kitty":
+        return (
+            "Kitty",
+            "Config file: ~/.config/kitty/kitty.conf\n"
+            "Set font_family JetBrainsMono Nerd Font",
+        )
+    else:
+        return (
+            "Unknown Terminal",
+            "Configure your terminal's font settings to use:\n"
+            "JetBrainsMono Nerd Font",
+        )
+
+
+class OnboardingDialog(ModalScreen):
+    """Modal dialog for first-run onboarding and setup wizard."""
+
+    DEFAULT_CSS = """
+    OnboardingDialog {
+        align: center middle;
+    }
+
+    OnboardingDialog > #dialog-container {
+        width: 75;
+        height: auto;
+        max-height: 90%;
+        border: round $primary;
+        padding: 1 2;
+    }
+
+    OnboardingDialog .section {
+        margin: 1 0;
+        padding: 1;
+        border: round $accent;
+    }
+
+    OnboardingDialog .section-header {
+        text-style: bold;
+        color: $accent;
+        margin-bottom: 1;
+    }
+
+    OnboardingDialog .section-description {
+        color: $text-muted;
+        margin-bottom: 1;
+    }
+
+    OnboardingDialog .instructions {
+        color: $text;
+        margin: 1 0;
+    }
+
+    OnboardingDialog .link-row {
+        height: auto;
+        margin: 1 0;
+    }
+
+    OnboardingDialog .setting-row {
+        height: auto;
+        margin: 1 0;
+    }
+
+    OnboardingDialog .setting-hint {
+        color: $text-muted;
+        text-style: italic;
+        margin-left: 2;
+    }
+
+    OnboardingDialog #dialog-buttons {
+        height: auto;
+        layout: horizontal;
+        align: center middle;
+        margin-top: 1;
+    }
+
+    OnboardingDialog .welcome-header {
+        text-style: bold;
+        color: $primary;
+        text-align: center;
+        margin-bottom: 1;
+    }
+
+    OnboardingDialog .font-test-box {
+        background: $panel;
+        padding: 1;
+        margin: 1 0;
+        border: round $primary;
+    }
+
+    OnboardingDialog .font-test-icons {
+        text-align: center;
+        text-style: bold;
+        color: $accent;
+    }
+
+    OnboardingDialog .terminal-detected {
+        color: $success;
+        text-style: bold;
+        margin: 1 0;
+    }
+
+    OnboardingDialog .font-status-good {
+        color: $success;
+        text-style: bold;
+    }
+
+    OnboardingDialog .font-status-bad {
+        color: $warning;
+    }
+
+    OnboardingDialog #font-help-section {
+        display: none;
+    }
+
+    OnboardingDialog #font-help-section.visible {
+        display: block;
+    }
+
+    OnboardingDialog TabbedContent {
+        height: auto;
+        max-height: 50;
+    }
+
+    OnboardingDialog TabPane {
+        padding: 1;
+    }
+    """
+
+    def __init__(self, current_settings: Settings):
+        super().__init__()
+        self.settings = current_settings
+        self.terminal_name, self.terminal_instructions = _detect_terminal()
+
+    def compose(self) -> ComposeResult:
+        """Compose the onboarding dialog."""
+        with Container(id="dialog-container"):
+            yield Label(
+                f"{Icons.STAR} Welcome to Tuido!",
+                classes="welcome-header",
+            )
+            yield Static(
+                "Let's get you set up for the best experience.",
+                classes="section-description",
+            )
+
+            with TabbedContent(initial="font-tab"):
+                # Font Setup Tab
+                with TabPane(f"{Icons.PALETTE} Font Setup", id="font-tab"):
+                    # Show detected terminal
+                    yield Static(
+                        f"{Icons.CHECK} Detected: {self.terminal_name}",
+                        classes="terminal-detected",
+                    )
+
+                    yield Static(
+                        "Tuido uses Nerd Font icons for a beautiful interface. "
+                        "Do these icons display correctly?",
+                        classes="section-description",
+                    )
+
+                    # Font test box with sample icons
+                    with Container(classes="font-test-box"):
+                        yield Static(
+                            f"  {Icons.CHECK}  {Icons.STAR}  {Icons.FOLDER}  {Icons.CLOCK}  {Icons.CLOUD_SUN}  ",
+                            classes="font-test-icons",
+                        )
+                        yield Static(
+                            "You should see: checkmark, star, folder, clock, sun/cloud",
+                            classes="setting-hint",
+                        )
+
+                    # Font status toggle
+                    with Horizontal(classes="setting-row"):
+                        yield Label("Icons display correctly:")
+                        yield Switch(value=True, id="font-working-switch")
+                        yield Static(
+                            "Yes, I see the icons!",
+                            id="font-status-label",
+                            classes="font-status-good",
+                        )
+
+                    # Show configuration instructions (hidden by default if icons work)
+                    with Container(id="font-help-section"):
+                        with Horizontal(classes="link-row"):
+                            yield Button(
+                                f"{Icons.DOWNLOAD} Download JetBrains Mono Nerd Font",
+                                id="btn-download-font",
+                                variant="primary",
+                            )
+                        yield Static(
+                            f"For {self.terminal_name}:\n{self.terminal_instructions}",
+                            classes="instructions",
+                        )
+                        yield Static(
+                            "After configuring, restart your terminal completely.",
+                            classes="setting-hint",
+                        )
+
+                # Weather Setup Tab
+                with TabPane(f"{Icons.CLOUD_SUN} Weather (Optional)", id="weather-tab"):
+                    yield Static(
+                        "The weather widget displays current conditions and forecast. "
+                        "It requires a free OpenWeatherMap API key.",
+                        classes="section-description",
+                    )
+                    with Horizontal(classes="link-row"):
+                        yield Button(
+                            f"{Icons.LINK} Get Free API Key",
+                            id="btn-get-api-key",
+                            variant="default",
+                        )
+                    yield Label("API Key:")
+                    yield Input(
+                        value=self.settings.weather_api_key,
+                        placeholder="Paste your OpenWeatherMap API key here",
+                        id="weather-api-key-input",
+                        password=True,
+                    )
+                    yield Label("Location:")
+                    yield Input(
+                        value=self.settings.weather_location,
+                        placeholder="e.g., San Francisco  or  London,UK",
+                        id="weather-location-input",
+                    )
+                    with Horizontal(classes="setting-row"):
+                        yield Label("Temperature Unit:")
+                        yield Switch(
+                            value=self.settings.weather_use_fahrenheit,
+                            id="weather-unit-switch",
+                        )
+                        yield Static(
+                            "Fahrenheit (°F)"
+                            if self.settings.weather_use_fahrenheit
+                            else "Celsius (°C)",
+                            id="weather-unit-label",
+                            classes="setting-hint",
+                        )
+                    with Horizontal(classes="setting-row"):
+                        yield Label("Enable Weather Widget:")
+                        yield Switch(
+                            value=self.settings.show_weather_widget,
+                            id="show-weather-switch",
+                        )
+                        yield Static(
+                            "Disable to skip weather setup",
+                            classes="setting-hint",
+                        )
+
+            with Horizontal(id="dialog-buttons"):
+                yield Button("Skip for Now", id="btn-skip", variant="default")
+                yield Button(
+                    f"{Icons.CHECK} Get Started",
+                    id="btn-save",
+                    variant="success",
+                )
+
+    def on_switch_changed(self, event: Switch.Changed) -> None:
+        """Handle switch changes for live updates."""
+        if event.switch.id == "font-working-switch":
+            # Toggle visibility of font help section
+            font_help = self.query_one("#font-help-section", Container)
+            font_status = self.query_one("#font-status-label", Static)
+            if event.value:
+                # Icons work - hide help section
+                font_help.remove_class("visible")
+                font_status.update("Yes, I see the icons!")
+                font_status.remove_class("font-status-bad")
+                font_status.add_class("font-status-good")
+            else:
+                # Icons don't work - show help section
+                font_help.add_class("visible")
+                font_status.update("No, I see rectangles □")
+                font_status.remove_class("font-status-good")
+                font_status.add_class("font-status-bad")
+        elif event.switch.id == "weather-unit-switch":
+            label = self.query_one("#weather-unit-label", Static)
+            label.update("Fahrenheit (°F)" if event.value else "Celsius (°C)")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button press."""
+        if event.button.id == "btn-download-font":
+            webbrowser.open("https://www.nerdfonts.com/font-downloads")
+        elif event.button.id == "btn-get-api-key":
+            webbrowser.open("https://openweathermap.org/api")
+        elif event.button.id == "btn-skip":
+            # Mark onboarding complete but don't save weather settings
+            self.settings.onboarding_complete = True
+            self.dismiss(self.settings)
+        elif event.button.id == "btn-save":
+            # Save all settings
+            weather_api_key = self.query_one(
+                "#weather-api-key-input", Input
+            ).value.strip()
+            weather_location = self.query_one(
+                "#weather-location-input", Input
+            ).value.strip()
+            weather_use_fahrenheit = self.query_one(
+                "#weather-unit-switch", Switch
+            ).value
+            show_weather = self.query_one("#show-weather-switch", Switch).value
+
+            self.settings.weather_api_key = weather_api_key
+            self.settings.weather_location = weather_location
+            self.settings.weather_use_fahrenheit = weather_use_fahrenheit
+            self.settings.show_weather_widget = show_weather
+            self.settings.onboarding_complete = True
+            self.dismiss(self.settings)
+
+    def on_key(self, event) -> None:
+        """Handle keyboard shortcuts."""
+        if event.key == "escape":
+            # Treat escape as skip
+            self.settings.onboarding_complete = True
+            self.dismiss(self.settings)
+            event.prevent_default()
+
+
 class SettingsDialog(ModalScreen):
-    """Modal dialog for application settings."""
+    """Modal dialog for application settings with tabbed layout."""
 
     DEFAULT_CSS = """
     SettingsDialog {
         align: center middle;
     }
 
-    #dialog-container {
-        width: 70;
+    SettingsDialog > #dialog-container {
+        width: 75;
         height: auto;
+        max-height: 85%;
         border: round $primary;
         padding: 1;
     }
 
-    #dialog-buttons {
+    SettingsDialog TabbedContent {
+        height: auto;
+        max-height: 60;
+    }
+
+    SettingsDialog TabPane {
+        padding: 1;
+    }
+
+    SettingsDialog #dialog-buttons {
         height: auto;
         layout: horizontal;
         align: center middle;
+        margin-top: 1;
     }
 
-    .setting-row {
+    SettingsDialog .setting-row {
         height: auto;
         margin: 1 0;
     }
 
-    .setting-hint {
+    SettingsDialog .setting-hint {
         color: $text-muted;
         text-style: italic;
         margin-left: 2;
     }
 
-    .cloud-sync-section {
-        border: round $accent;
-        padding: 1;
-        margin: 1 0;
-    }
-
-    .section-header {
-        text-style: bold;
-        color: $accent;
+    SettingsDialog .section-description {
+        color: $text-muted;
         margin-bottom: 1;
     }
     """
@@ -834,112 +1210,159 @@ class SettingsDialog(ModalScreen):
         self.original_theme = current_settings.theme  # Store for revert on cancel
 
     def compose(self) -> ComposeResult:
-        """Compose the settings dialog."""
+        """Compose the settings dialog with tabs."""
         with Container(id="dialog-container"):
             yield Label(f"{Icons.COG} Settings", classes="header")
 
-            # Theme selection
-            yield Label("Default Theme:")
-            theme_options = [(name, name) for name in self.available_themes]
-            yield Select(
-                options=theme_options, value=self.settings.theme, id="theme-select"
-            )
-
-            # Show completed tasks toggle
-            yield Label("Show Completed Tasks:")
-            yield Switch(
-                value=self.settings.show_completed_tasks, id="show-completed-switch"
-            )
-
-            # Weather configuration
-            yield Label("Weather Location:")
-            yield Input(
-                value=self.settings.weather_location,
-                placeholder="San Francisco  or  London,UK",
-                id="weather-location-input",
-            )
-
-            yield Label("Temperature Unit:")
-            yield Switch(
-                value=self.settings.weather_use_fahrenheit, id="weather-unit-switch"
-            )
-            yield Static(
-                "Fahrenheit (°F)"
-                if self.settings.weather_use_fahrenheit
-                else "Celsius (°C)",
-                id="weather-unit-label",
-                classes="setting-hint",
-            )
-
-            # Pomodoro duration settings
-            yield Label("Pomodoro Work Duration (minutes):")
-            yield Input(
-                value=str(self.settings.pomodoro_work_minutes),
-                placeholder="25",
-                id="pomodoro-work-input",
-                type="integer",
-            )
-
-            yield Label("Pomodoro Short Break (minutes):")
-            yield Input(
-                value=str(self.settings.pomodoro_short_break_minutes),
-                placeholder="5",
-                id="pomodoro-short-break-input",
-                type="integer",
-            )
-
-            yield Label("Pomodoro Long Break (minutes):")
-            yield Input(
-                value=str(self.settings.pomodoro_long_break_minutes),
-                placeholder="15",
-                id="pomodoro-long-break-input",
-                type="integer",
-            )
-
-            # Cloud Sync configuration
-            with Container(classes="cloud-sync-section"):
-                yield Label("☁️  Cloud Sync", classes="section-header")
-                yield Static(
-                    "Sync your data across devices via tuido.vercel.app",
-                    classes="setting-hint",
-                )
-
-                yield Label("Enable Cloud Sync:")
-                yield Switch(
-                    value=self.settings.cloud_sync_enabled,
-                    id="cloud-sync-enabled-switch",
-                )
-
-                yield Label("API Token:")
-                yield Input(
-                    value=self.settings.cloud_sync_token,
-                    placeholder="Paste your API token from tuido.vercel.app",
-                    id="cloud-token-input",
-                    password=True,
-                )
-
-                yield Label("API URL:")
-                yield Input(
-                    value=self.settings.cloud_sync_url,
-                    placeholder="https://tuido.vercel.app/api",
-                    id="cloud-url-input",
-                )
-
-                if self.settings.last_cloud_sync:
-                    yield Static(
-                        f"Last synced: {self.settings.last_cloud_sync}",
-                        classes="setting-hint",
+            with TabbedContent(initial="general-tab"):
+                # General Tab
+                with TabPane(f"{Icons.COG} General", id="general-tab"):
+                    yield Label("Default Theme:")
+                    theme_options = [(name, name) for name in self.available_themes]
+                    yield Select(
+                        options=theme_options,
+                        value=self.settings.theme,
+                        id="theme-select",
                     )
-                else:
+
+                    with Horizontal(classes="setting-row"):
+                        yield Label("Show Completed Tasks:")
+                        yield Switch(
+                            value=self.settings.show_completed_tasks,
+                            id="show-completed-switch",
+                        )
+
                     yield Static(
-                        "Never synced",
+                        "Run the setup wizard to configure fonts and weather:",
+                        classes="section-description",
+                    )
+                    yield Button(
+                        f"{Icons.STAR} Run Setup Wizard",
+                        id="btn-setup-wizard",
+                        variant="default",
+                    )
+
+                # Weather Tab
+                with TabPane(f"{Icons.CLOUD_SUN} Weather", id="weather-tab"):
+                    with Horizontal(classes="setting-row"):
+                        yield Label("Enable Weather Widget:")
+                        yield Switch(
+                            value=self.settings.show_weather_widget,
+                            id="show-weather-switch",
+                        )
+                        yield Static(
+                            "Shows weather and forecast in dashboard",
+                            classes="setting-hint",
+                        )
+
+                    yield Label("API Key (from OpenWeatherMap):")
+                    yield Input(
+                        value=self.settings.weather_api_key,
+                        placeholder="Paste your OpenWeatherMap API key",
+                        id="weather-api-key-input",
+                        password=True,
+                    )
+                    yield Static(
+                        "Get a free key at: openweathermap.org/api",
                         classes="setting-hint",
                     )
 
-                yield Static(
-                    "Get your token at: https://tuido.vercel.app",
-                    classes="setting-hint",
-                )
+                    yield Label("Location:")
+                    yield Input(
+                        value=self.settings.weather_location,
+                        placeholder="e.g., San Francisco  or  London,UK",
+                        id="weather-location-input",
+                    )
+
+                    with Horizontal(classes="setting-row"):
+                        yield Label("Temperature Unit:")
+                        yield Switch(
+                            value=self.settings.weather_use_fahrenheit,
+                            id="weather-unit-switch",
+                        )
+                        yield Static(
+                            "Fahrenheit (°F)"
+                            if self.settings.weather_use_fahrenheit
+                            else "Celsius (°C)",
+                            id="weather-unit-label",
+                            classes="setting-hint",
+                        )
+
+                # Pomodoro Tab
+                with TabPane(f"{Icons.TOMATO} Pomodoro", id="pomodoro-tab"):
+                    yield Static(
+                        "Customize your Pomodoro timer durations:",
+                        classes="section-description",
+                    )
+
+                    yield Label("Work Duration (minutes):")
+                    yield Input(
+                        value=str(self.settings.pomodoro_work_minutes),
+                        placeholder="25",
+                        id="pomodoro-work-input",
+                        type="integer",
+                    )
+
+                    yield Label("Short Break (minutes):")
+                    yield Input(
+                        value=str(self.settings.pomodoro_short_break_minutes),
+                        placeholder="5",
+                        id="pomodoro-short-break-input",
+                        type="integer",
+                    )
+
+                    yield Label("Long Break (minutes):")
+                    yield Input(
+                        value=str(self.settings.pomodoro_long_break_minutes),
+                        placeholder="15",
+                        id="pomodoro-long-break-input",
+                        type="integer",
+                    )
+
+                # Cloud Sync Tab
+                with TabPane(f"{Icons.CLOUD} Cloud Sync", id="cloud-tab"):
+                    yield Static(
+                        "Sync your data across devices via tuido.vercel.app",
+                        classes="section-description",
+                    )
+
+                    with Horizontal(classes="setting-row"):
+                        yield Label("Enable Cloud Sync:")
+                        yield Switch(
+                            value=self.settings.cloud_sync_enabled,
+                            id="cloud-sync-enabled-switch",
+                        )
+
+                    yield Label("API Token:")
+                    yield Input(
+                        value=self.settings.cloud_sync_token,
+                        placeholder="Paste your API token from tuido.vercel.app",
+                        id="cloud-token-input",
+                        password=True,
+                    )
+
+                    yield Label("API URL:")
+                    yield Input(
+                        value=self.settings.cloud_sync_url,
+                        placeholder="https://tuido.vercel.app/api",
+                        id="cloud-url-input",
+                    )
+
+                    if self.settings.last_cloud_sync:
+                        yield Static(
+                            f"Last synced: {self.settings.last_cloud_sync}",
+                            classes="setting-hint",
+                        )
+                    else:
+                        yield Static(
+                            "Never synced",
+                            classes="setting-hint",
+                        )
+
+                    yield Static(
+                        "Get your token at: https://tuido.vercel.app",
+                        classes="setting-hint",
+                    )
 
             with Horizontal(id="dialog-buttons"):
                 yield Button("Cancel", id="btn-cancel", variant="default")
@@ -951,18 +1374,30 @@ class SettingsDialog(ModalScreen):
             # Apply the theme immediately for preview
             self.app.theme = event.value
 
+    def on_switch_changed(self, event: Switch.Changed) -> None:
+        """Handle switch changes for live updates."""
+        if event.switch.id == "weather-unit-switch":
+            label = self.query_one("#weather-unit-label", Static)
+            label.update("Fahrenheit (°F)" if event.value else "Celsius (°C)")
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle button press."""
         if event.button.id == "btn-cancel":
             # Revert to original theme when canceling
             self.app.theme = self.original_theme
             self.dismiss(None)
+        elif event.button.id == "btn-setup-wizard":
+            # Close settings and open onboarding wizard
+            self.app.theme = self.original_theme
+            self.dismiss("open_wizard")
         elif event.button.id == "btn-save":
-            # Read current values
+            # Read current values from all tabs
             theme_select = self.query_one("#theme-select", Select)
             show_completed_switch = self.query_one("#show-completed-switch", Switch)
 
             # Read weather settings
+            show_weather_switch = self.query_one("#show-weather-switch", Switch)
+            weather_api_key_input = self.query_one("#weather-api-key-input", Input)
             weather_location_input = self.query_one("#weather-location-input", Input)
             weather_unit_switch = self.query_one("#weather-unit-switch", Switch)
 
@@ -1001,6 +1436,8 @@ class SettingsDialog(ModalScreen):
             # Update settings
             self.settings.theme = theme_select.value
             self.settings.show_completed_tasks = show_completed_switch.value
+            self.settings.show_weather_widget = show_weather_switch.value
+            self.settings.weather_api_key = weather_api_key_input.value.strip()
             self.settings.weather_location = weather_location_input.value.strip()
             self.settings.weather_use_fahrenheit = weather_unit_switch.value
             self.settings.pomodoro_work_minutes = work_minutes
