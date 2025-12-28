@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 from datetime import datetime
+from pathlib import Path
 from typing import List, Optional
 
 from dotenv import load_dotenv
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
+from textual.css.query import NoMatches
 from textual.widgets import Footer, TabbedContent, TabPane
 
 from .icons import Icons
@@ -20,6 +22,7 @@ from .widgets.dialogs import (
     AddProjectDialog,
     AddTaskDialog,
     ConfirmDialog,
+    DeviceLinkDialog,
     EditProjectDialog,
     EditTaskDialog,
     ErrorDialog,
@@ -28,6 +31,7 @@ from .widgets.dialogs import (
     MoveTaskDialog,
     OnboardingDialog,
     SettingsDialog,
+    UnlinkDeviceDialog,
 )
 from .widgets.pomodoro_widget import PomodoroWidget
 from .widgets.project_list import (
@@ -58,12 +62,20 @@ class TodoApp(App):
         Binding("?", "help", "Help"),
     ]
 
-    def __init__(self):
+    def __init__(self, demo_data_dir: Optional[Path] = None):
         super().__init__()
-        # Load settings from fixed config location
-        self.settings = StorageManager.load_settings()
-        # Initialize storage with default data directory
-        self.storage = StorageManager()
+        self._demo_mode = demo_data_dir is not None
+
+        if self._demo_mode:
+            # Demo mode: load settings and data from demo directory
+            self.settings = StorageManager.load_settings_from_path(
+                demo_data_dir / "settings.json"
+            )
+            self.storage = StorageManager(data_dir=demo_data_dir, skip_migrations=True)
+        else:
+            # Normal mode: load from default locations
+            self.settings = StorageManager.load_settings()
+            self.storage = StorageManager()
 
         self.projects: List[Project] = []
         self.current_project_id: Optional[str] = None
@@ -117,9 +129,12 @@ class TodoApp(App):
         # Load all tasks initially
         self._load_all_tasks()
 
-        # Startup cloud sync (if enabled)
-        if self.settings.cloud_sync_enabled and self.settings.cloud_sync_token:
-            self.run_worker(self._startup_sync(), exclusive=True)
+        # Startup cloud sync (if enabled and device is linked, skip in demo mode)
+        if not self._demo_mode:
+            from .encryption import has_device_token
+
+            if self.settings.cloud_sync_enabled and has_device_token():
+                self.run_worker(self._startup_sync(), exclusive=True)
 
         # Show onboarding dialog on first run
         if not self.settings.onboarding_complete:
@@ -143,6 +158,35 @@ class TodoApp(App):
 
         self.push_screen(OnboardingDialog(self.settings), check_onboarding)
 
+    def _show_device_link(self) -> None:
+        """Show the device link dialog for cloud sync authorization."""
+
+        def check_device_link(result) -> None:
+            """Callback when device link dialog is dismissed."""
+            if result:
+                # Device was successfully linked
+                self.notify("Device linked successfully!", severity="information")
+            # Re-open settings to show updated status
+            self.call_after_refresh(self.action_settings)
+
+        self.push_screen(
+            DeviceLinkDialog(api_url=self.settings.cloud_sync_url),
+            check_device_link,
+        )
+
+    def _show_unlink_device(self) -> None:
+        """Show the unlink device confirmation dialog."""
+
+        def check_unlink(result) -> None:
+            """Callback when unlink dialog is dismissed."""
+            if result:
+                # Device was unlinked
+                self.notify("Device unlinked.", severity="information")
+            # Re-open settings to show updated status
+            self.call_after_refresh(self.action_settings)
+
+        self.push_screen(UnlinkDeviceDialog(), check_unlink)
+
     def action_setup_wizard(self) -> None:
         """Show the setup wizard (onboarding) dialog."""
         self._show_onboarding()
@@ -159,6 +203,16 @@ class TodoApp(App):
                 widget.refresh_weather_settings()
         except Exception:
             pass  # Widgets might not be mounted
+
+    def watch_theme(self, new_theme: str) -> None:
+        """React to theme changes and update TextArea themes."""
+        try:
+            from .widgets.scratchpad import ScratchpadPanel
+
+            scratchpad = self.query_one("#scratchpad-panel", ScratchpadPanel)
+            scratchpad._update_textarea_theme()
+        except NoMatches:
+            pass  # Widget might not be mounted yet
 
     def _load_all_tasks(self) -> None:
         """Load and display all tasks across all projects."""
@@ -558,6 +612,12 @@ class TodoApp(App):
             if result == "open_wizard":
                 # User wants to open the setup wizard
                 self.call_after_refresh(self._show_onboarding)
+            elif result == "link_device":
+                # User wants to link a device
+                self.call_after_refresh(self._show_device_link)
+            elif result == "unlink_device":
+                # User wants to unlink the device
+                self.call_after_refresh(self._show_unlink_device)
             elif result and isinstance(result, Settings):
                 # Save settings (using static method)
                 StorageManager.save_settings(result)
@@ -590,25 +650,31 @@ class TodoApp(App):
 
     async def action_quit(self) -> None:
         """Quit the application with cloud sync on exit."""
-        # If cloud sync enabled, upload on exit
-        if self.settings.cloud_sync_enabled and self.settings.cloud_sync_token:
-            # Await sync before exit
-            await self._exit_sync()
+        # Skip cloud sync in demo mode
+        if not self._demo_mode:
+            from .encryption import has_device_token
+
+            # If cloud sync enabled, upload on exit
+            if self.settings.cloud_sync_enabled and has_device_token():
+                # Await sync before exit
+                await self._exit_sync()
 
         # Exit the app
         self.exit()
 
     def action_cloud_sync(self) -> None:
         """Manually trigger cloud sync."""
+        from .encryption import has_device_token
+
         if not self.settings.cloud_sync_enabled:
             self.notify(
                 "Cloud sync is disabled. Enable it in Settings.", severity="warning"
             )
             return
 
-        if not self.settings.cloud_sync_token:
+        if not has_device_token():
             self.notify(
-                "No API token set. Configure cloud sync in Settings.", severity="error"
+                "Device not linked. Link your device in Settings.", severity="error"
             )
             return
 
@@ -618,12 +684,14 @@ class TodoApp(App):
     async def _startup_sync(self) -> None:
         """Sync on app startup - asks user before downloading from cloud."""
         from .cloud_sync import CloudSyncClient
+        from .encryption import get_device_token, get_encryption_password
         from .widgets.dialogs import StartupSyncDialog
 
         try:
             client = CloudSyncClient(
                 api_url=self.settings.cloud_sync_url,
-                api_token=self.settings.cloud_sync_token,
+                api_token=get_device_token() or "",
+                encryption_password=get_encryption_password(),
             )
 
             # Check if cloud has data
@@ -672,14 +740,16 @@ class TodoApp(App):
     async def _manual_sync(self) -> None:
         """Manual sync triggered by user."""
         from .cloud_sync import CloudSyncClient
+        from .encryption import get_device_token, get_encryption_password
         from .widgets.dialogs import SyncDirectionDialog
 
         try:
-            self.notify("☁️  Checking sync status...", severity="information")
+            self.notify("Checking sync status...", severity="information")
 
             client = CloudSyncClient(
                 api_url=self.settings.cloud_sync_url,
-                api_token=self.settings.cloud_sync_token,
+                api_token=get_device_token() or "",
+                encryption_password=get_encryption_password(),
             )
 
             # Check sync status first
@@ -741,13 +811,16 @@ class TodoApp(App):
 
     async def _exit_sync(self) -> None:
         """Sync on app exit (upload to cloud)."""
-        from .cloud_sync import CloudSyncClient
         import sys
+
+        from .cloud_sync import CloudSyncClient
+        from .encryption import get_device_token, get_encryption_password
 
         try:
             client = CloudSyncClient(
                 api_url=self.settings.cloud_sync_url,
-                api_token=self.settings.cloud_sync_token,
+                api_token=get_device_token() or "",
+                encryption_password=get_encryption_password(),
             )
 
             # Upload to cloud
@@ -779,10 +852,30 @@ class TodoApp(App):
 
 def main():
     """Run the Todo TUI application."""
+    import argparse
+
     # Load environment variables from .env file
     load_dotenv()
 
-    app = TodoApp()
+    parser = argparse.ArgumentParser(
+        description="Tuido - A beautiful TUI todo application"
+    )
+    parser.add_argument(
+        "--demo",
+        action="store_true",
+        help="Run in demo mode with sample data (for screenshots/testing)",
+    )
+    args = parser.parse_args()
+
+    demo_data_dir = None
+    if args.demo:
+        # Look for demo_data inside this package
+        demo_data_dir = Path(__file__).parent / "demo_data"
+        if not demo_data_dir.exists():
+            print(f"Error: Demo data directory not found at {demo_data_dir}")
+            return
+
+    app = TodoApp(demo_data_dir=demo_data_dir)
     app.run()
 
 

@@ -52,6 +52,23 @@ class StorageManager:
         return Settings.from_dict(data)
 
     @staticmethod
+    def load_settings_from_path(settings_path: Path) -> Settings:
+        """Load application settings from a custom path.
+
+        Args:
+            settings_path: Path to the settings.json file.
+
+        Returns:
+            Settings object loaded from the file, or defaults if not found.
+        """
+        if not settings_path.exists():
+            return Settings()
+
+        with open(settings_path, "r") as f:
+            data = json.load(f)
+        return Settings.from_dict(data)
+
+    @staticmethod
     def save_settings(settings: Settings) -> None:
         """Save application settings to fixed config location."""
         config_dir = StorageManager.get_config_dir()
@@ -61,16 +78,22 @@ class StorageManager:
         with open(settings_file, "w") as f:
             json.dump(settings.to_dict(), f, indent=2)
 
-    def __init__(self):
-        """Initialize storage manager with default data directory."""
-        self.data_dir = self.get_default_data_dir()
+    def __init__(self, data_dir: Optional[Path] = None, skip_migrations: bool = False):
+        """Initialize storage manager.
+
+        Args:
+            data_dir: Custom data directory path. If None, uses default XDG location.
+            skip_migrations: If True, skip data migrations (useful for demo mode).
+        """
+        self.data_dir = data_dir if data_dir else self.get_default_data_dir()
         self.projects_file = self.data_dir / "projects.json"
         self.scratchpad_file = self.data_dir / "scratchpad.md"
         self.notes_file = self.data_dir / "notes.json"
         self.snippets_file = self.data_dir / "snippets.json"
         self._ensure_data_dir()
-        self._migrate_old_data_if_needed()
-        self._migrate_scratchpad_to_notes()
+        if not skip_migrations:
+            self._migrate_old_data_if_needed()
+            self._migrate_scratchpad_to_notes()
 
     def _ensure_data_dir(self) -> None:
         """Create data directory if it doesn't exist."""

@@ -1,4 +1,4 @@
-"""Compact stats card widget with rotating programmer wisdom quotes."""
+"""Compact card widget with rotating programmer wisdom quotes."""
 
 from __future__ import annotations
 
@@ -10,7 +10,6 @@ from textual.widgets import Static
 
 from ..icons import Icons
 
-# Curated programmer wisdom quotes - the real deal
 PROGRAMMER_QUOTES = [
     ("Premature optimization is the root of all evil.", "Donald Knuth"),
     ("The best way to predict the future is to invent it.", "Alan Kay"),
@@ -102,14 +101,86 @@ PROGRAMMER_QUOTES = [
         "Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.",
         "Brian Kernighan",
     ),
+    (
+        "Curse of the self-taught: fear that you know only points here and there, islands of knowledge, and between them are chasms into which you will fall in humiliating failure, a fear that followed me from the first time I learned how to code.",
+        "Ellen Ullman",
+    ),
+    (
+        "The most dangerous phrase in the language is, 'We've always done it this way.'",
+        "Grace Hopper",
+    ),
+    (
+        "Programming isn't about what you know; it's about what you can figure out.",
+        "Chris Pine",
+    ),
+    (
+        "Code is read much more often than it is written.",
+        "Guido Van Rossum",
+    ),
+    (
+        "You might not think that programmers are artists, but programming is an extremely creative profession. It's logic-based creativity.",
+        "John Romero",
+    ),
+    (
+        "This was one of the best parts of being a coder, and an artist: the thrill of being in the middle of creating something delightful. It's like the anticipation of eating freshly baked bread after its aroma fills the room.",
+        "Dr. Joy Buolamwini",
+    ),
+    (
+        "Every great developer you know got there by solving problems they were unqualified to solve until they actually did it.",
+        "Patrick McKenzie",
+    ),
+    (
+        "The code you write makes you a programmer. The code you delete makes you a good one. The code you don't have to write makes you a great one.",
+        "Mario Fusco",
+    ),
+    (
+        "Code is like humor. When you have to explain it, it's bad.",
+        "Cory House",
+    ),
+    (
+        "The more I study, the more insatiable do I feel my genius for it to be.",
+        "Ada Lovelace",
+    ),
+    (
+        "Learning to write programs stretches your mind, and helps you think better, creates a way of thinking about things that I think is helpful in all domains.",
+        "Bill Gates",
+    ),
+    (
+        "In the beginner's mind, there are many possibilities; in the expert's mind, there are few.",
+        "Shunryu Suzuki",
+    ),
+    (
+        "People think that computer science is the art of geniuses but the actual reality is the opposite, just many people doing things that build on each other, like a wall of mini stones.",
+        "Donald Knuth",
+    ),
+    (
+        "First learn computer science and all the theory. Next develop a programming style. Then forget all that and just hack.",
+        "George Carrette",
+    ),
+    (
+        "To iterate is human, to recurse divine.",
+        "L. Peter Deutsch",
+    ),
+    (
+        "On two occasions I have been asked [by members of Parliament]: 'Pray, Mr. Babbage, if you put into the machine wrong figures, will the right answers come out?' I am not able rightly to apprehend the kind of confusion of ideas that could provoke such a question.",
+        "Charles Babbage",
+    ),
+    (
+        "Most good programmers do programming not because they expect to get paid or get adulation by the public, but because it is fun to program.",
+        "Linus Torvalds",
+    ),
+    (
+        "There are two ways of constructing a software design. One way is to make it so simple that there are obviously no deficiencies. And the other way is to make it so complicated that there are no obvious deficiencies.",
+        "C.A.R. Hoare",
+    ),
 ]
 
 
-class StatsCard(Container):
-    """A compact card displaying key task statistics and rotating programmer wisdom."""
+class QuotesCard(Container):
+    """A compact card displaying  rotating programmer wisdom."""
 
     DEFAULT_CSS = """
-    StatsCard {
+    QuotesCard {
         height: 100%;
         width: 100%;
         border: round $accent;
@@ -121,27 +192,27 @@ class StatsCard(Container):
         min-height: 10;
     }
 
-    StatsCard Vertical {
+    QuotesCard Vertical {
         height: 100%;
         width: 100%;
         content-align: center middle;
     }
 
-    StatsCard .stats-line {
+    QuotesCard .stats-line {
         color: $foreground;
         text-align: center;
         padding: 0 0 0 0;
         height: auto;
     }
 
-    StatsCard .stat-divider {
+    QuotesCard .stat-divider {
         color: $primary-darken-2;
         height: 1;
         padding: 0;
         margin: 0;
     }
 
-    StatsCard .quote-container {
+    QuotesCard .quote-container {
         height: 1fr;
         width: 100%;
         padding: 1 1 0 1;
@@ -149,14 +220,14 @@ class StatsCard(Container):
         content-align: center middle;
     }
 
-    StatsCard .quote-text {
+    QuotesCard .quote-text {
         color: $text-muted;
         text-style: italic;
         text-align: center;
         width: 100%;
     }
 
-    StatsCard .quote-author {
+    QuotesCard .quote-author {
         color: $primary-darken-1;
         text-align: center;
         padding: 1 0 0 0;

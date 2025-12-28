@@ -185,8 +185,8 @@ class ForecastWidget(Container):
         self.fetch_forecast()
 
     def fetch_forecast(self) -> None:
-        """Fetch 5-day forecast data from OpenWeatherMap API."""
-        if not self.api_key or not self.location:
+        """Fetch 5-day forecast data via tuido.dev weather proxy API."""
+        if not self.location:
             self._display_no_config()
             return
 
@@ -197,11 +197,10 @@ class ForecastWidget(Container):
             units = "imperial" if self.use_fahrenheit else "metric"
             temp_symbol = "°F" if self.use_fahrenheit else "°C"
 
-            # Build API URL
-            url = "https://api.openweathermap.org/data/2.5/forecast"
+            # Build API URL - use tuido.dev weather proxy
+            url = "https://tuido.dev/api/weather/forecast"
             params = {
-                "q": self.location,
-                "appid": self.api_key,
+                "location": self.location,
                 "units": units,
             }
 
@@ -311,14 +310,14 @@ class ForecastWidget(Container):
             self.query_one(f"#day-{i}-desc", Static).update(day_data["description"])
 
     def _display_no_config(self) -> None:
-        """Display message when API key or location is not configured."""
+        """Display message when location is not configured."""
         self.query_one("#forecast-location", Static).update("Not Set")
         for i in range(5):
             self.query_one(f"#day-{i}-name", Static).update("--")
             self.query_one(f"#day-{i}-icon", Static).update(Icons.QUESTION)
             self.query_one(f"#day-{i}-high", Static).update("--°")
             self.query_one(f"#day-{i}-low", Static).update("--°")
-            self.query_one(f"#day-{i}-desc", Static).update("Not Configured")
+            self.query_one(f"#day-{i}-desc", Static).update("Set Location" if i == 2 else "--")
 
     def _display_error(self, error_msg: str) -> None:
         """Display error message."""

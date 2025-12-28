@@ -172,10 +172,8 @@ class WeatherWidget(Container):
         self.fetch_weather()
 
     def fetch_weather(self) -> None:
-        """Fetch weather data from OpenWeatherMap API."""
-        # TODO(human): Implement API call to OpenWeatherMap
-        # For now, display placeholder data
-        if not self.api_key or not self.location:
+        """Fetch weather data via tuido.dev weather proxy API."""
+        if not self.location:
             self._display_no_config()
             return
 
@@ -186,11 +184,10 @@ class WeatherWidget(Container):
             units = "imperial" if self.use_fahrenheit else "metric"
             temp_symbol = "°F" if self.use_fahrenheit else "°C"
 
-            # Build API URL
-            url = "https://api.openweathermap.org/data/2.5/weather"
+            # Build API URL - use tuido.dev weather proxy
+            url = "https://tuido.dev/api/weather"
             params = {
-                "q": self.location,
-                "appid": self.api_key,
+                "location": self.location,
                 "units": units,
             }
 
@@ -273,14 +270,14 @@ class WeatherWidget(Container):
         self.query_one("#weather-details", Static).update(details)
 
     def _display_no_config(self) -> None:
-        """Display message when API key or location is not configured."""
+        """Display message when location is not configured."""
         self.query_one("#weather-location", Static).update("Not Set")
         self.query_one("#weather-icon-large", Static).update(Icons.QUESTION)
         self.query_one("#weather-temp", Digits).update("--°")
         self.query_one("#weather-feels-like", Static).update("--")
         self.query_one("#weather-minmax", Static).update("--")
         self.query_one("#weather-condition", Static).update("Not Configured")
-        self.query_one("#weather-details", Static).update("Set API Key")
+        self.query_one("#weather-details", Static).update("Set Location")
 
     def _display_error(self, error_msg: str) -> None:
         """Display error message."""

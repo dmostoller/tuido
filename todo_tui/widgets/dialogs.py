@@ -13,6 +13,7 @@ from textual.widgets import (
     Label,
     ListItem,
     ListView,
+    LoadingIndicator,
     Select,
     Static,
     Switch,
@@ -21,6 +22,8 @@ from textual.widgets import (
     TextArea,
 )
 
+from ..cloud_sync import AuthorizationResult, CloudSyncClient, DeviceCodeResponse
+from ..encryption import delete_device_credentials, has_device_token, has_encryption_password
 from ..icons import Icons
 from ..models import Note, Project, Settings, Snippet, Task
 
@@ -810,8 +813,7 @@ def _detect_terminal() -> Tuple[str, str]:
     elif term_program == "iterm.app":
         return (
             "iTerm2",
-            "Preferences → Profiles → Text → Font\n"
-            "Select: JetBrainsMono Nerd Font",
+            "Preferences → Profiles → Text → Font\nSelect: JetBrainsMono Nerd Font",
         )
     elif term_program == "apple_terminal":
         return (
@@ -822,8 +824,7 @@ def _detect_terminal() -> Tuple[str, str]:
     elif term_program == "hyper":
         return (
             "Hyper",
-            "Config file: ~/.hyper.js\n"
-            "Set fontFamily: 'JetBrainsMono Nerd Font'",
+            "Config file: ~/.hyper.js\nSet fontFamily: 'JetBrainsMono Nerd Font'",
         )
     elif term_program == "alacritty":
         return (
@@ -846,8 +847,7 @@ def _detect_terminal() -> Tuple[str, str]:
     else:
         return (
             "Unknown Terminal",
-            "Configure your terminal's font settings to use:\n"
-            "JetBrainsMono Nerd Font",
+            "Configure your terminal's font settings to use:\nJetBrainsMono Nerd Font",
         )
 
 
@@ -860,9 +860,8 @@ class OnboardingDialog(ModalScreen):
     }
 
     OnboardingDialog > #dialog-container {
-        width: 75;
+        width: 70;
         height: auto;
-        max-height: 90%;
         border: round $primary;
         padding: 1 2;
     }
@@ -871,6 +870,7 @@ class OnboardingDialog(ModalScreen):
         margin: 1 0;
         padding: 1;
         border: round $accent;
+        height: auto;
     }
 
     OnboardingDialog .section-header {
@@ -881,7 +881,6 @@ class OnboardingDialog(ModalScreen):
 
     OnboardingDialog .section-description {
         color: $text-muted;
-        margin-bottom: 1;
     }
 
     OnboardingDialog .instructions {
@@ -891,12 +890,10 @@ class OnboardingDialog(ModalScreen):
 
     OnboardingDialog .link-row {
         height: auto;
-        margin: 1 0;
     }
 
     OnboardingDialog .setting-row {
         height: auto;
-        margin: 1 0;
     }
 
     OnboardingDialog .setting-hint {
@@ -924,6 +921,7 @@ class OnboardingDialog(ModalScreen):
         padding: 1;
         margin: 1 0;
         border: round $primary;
+        height: auto;
     }
 
     OnboardingDialog .font-test-icons {
@@ -935,7 +933,6 @@ class OnboardingDialog(ModalScreen):
     OnboardingDialog .terminal-detected {
         color: $success;
         text-style: bold;
-        margin: 1 0;
     }
 
     OnboardingDialog .font-status-good {
@@ -949,6 +946,7 @@ class OnboardingDialog(ModalScreen):
 
     OnboardingDialog #font-help-section {
         display: none;
+        height: auto;
     }
 
     OnboardingDialog #font-help-section.visible {
@@ -957,11 +955,11 @@ class OnboardingDialog(ModalScreen):
 
     OnboardingDialog TabbedContent {
         height: auto;
-        max-height: 50;
     }
 
     OnboardingDialog TabPane {
         padding: 1;
+        height: auto;
     }
     """
 
@@ -1039,21 +1037,8 @@ class OnboardingDialog(ModalScreen):
                 with TabPane(f"{Icons.CLOUD_SUN} Weather (Optional)", id="weather-tab"):
                     yield Static(
                         "The weather widget displays current conditions and forecast. "
-                        "It requires a free OpenWeatherMap API key.",
+                        "Just enter your location below!",
                         classes="section-description",
-                    )
-                    with Horizontal(classes="link-row"):
-                        yield Button(
-                            f"{Icons.LINK} Get Free API Key",
-                            id="btn-get-api-key",
-                            variant="default",
-                        )
-                    yield Label("API Key:")
-                    yield Input(
-                        value=self.settings.weather_api_key,
-                        placeholder="Paste your OpenWeatherMap API key here",
-                        id="weather-api-key-input",
-                        password=True,
                     )
                     yield Label("Location:")
                     yield Input(
@@ -1119,17 +1104,12 @@ class OnboardingDialog(ModalScreen):
         """Handle button press."""
         if event.button.id == "btn-download-font":
             webbrowser.open("https://www.nerdfonts.com/font-downloads")
-        elif event.button.id == "btn-get-api-key":
-            webbrowser.open("https://openweathermap.org/api")
         elif event.button.id == "btn-skip":
             # Mark onboarding complete but don't save weather settings
             self.settings.onboarding_complete = True
             self.dismiss(self.settings)
         elif event.button.id == "btn-save":
             # Save all settings
-            weather_api_key = self.query_one(
-                "#weather-api-key-input", Input
-            ).value.strip()
             weather_location = self.query_one(
                 "#weather-location-input", Input
             ).value.strip()
@@ -1138,7 +1118,6 @@ class OnboardingDialog(ModalScreen):
             ).value
             show_weather = self.query_one("#show-weather-switch", Switch).value
 
-            self.settings.weather_api_key = weather_api_key
             self.settings.weather_location = weather_location
             self.settings.weather_use_fahrenheit = weather_use_fahrenheit
             self.settings.show_weather_widget = show_weather
@@ -1201,6 +1180,23 @@ class SettingsDialog(ModalScreen):
         color: $text-muted;
         margin-bottom: 1;
     }
+
+    SettingsDialog .password-row {
+        height: auto;
+        width: 100%;
+    }
+
+    SettingsDialog .password-row Input {
+        width: 50;
+    }
+
+    SettingsDialog #btn-toggle-password {
+        width: 8;
+        min-width: 8;
+        height: 3;
+        padding: 0 1;
+        margin-left: 1;
+    }
     """
 
     def __init__(self, current_settings: Settings, available_themes: List[str]):
@@ -1254,18 +1250,6 @@ class SettingsDialog(ModalScreen):
                             "Shows weather and forecast in dashboard",
                             classes="setting-hint",
                         )
-
-                    yield Label("API Key (from OpenWeatherMap):")
-                    yield Input(
-                        value=self.settings.weather_api_key,
-                        placeholder="Paste your OpenWeatherMap API key",
-                        id="weather-api-key-input",
-                        password=True,
-                    )
-                    yield Static(
-                        "Get a free key at: openweathermap.org/api",
-                        classes="setting-hint",
-                    )
 
                     yield Label("Location:")
                     yield Input(
@@ -1322,7 +1306,7 @@ class SettingsDialog(ModalScreen):
                 # Cloud Sync Tab
                 with TabPane(f"{Icons.CLOUD} Cloud Sync", id="cloud-tab"):
                     yield Static(
-                        "Sync your data across devices via tuido.vercel.app",
+                        "Sync your data across devices with end-to-end encryption",
                         classes="section-description",
                     )
 
@@ -1333,19 +1317,61 @@ class SettingsDialog(ModalScreen):
                             id="cloud-sync-enabled-switch",
                         )
 
-                    yield Label("API Token:")
-                    yield Input(
-                        value=self.settings.cloud_sync_token,
-                        placeholder="Paste your API token from tuido.vercel.app",
-                        id="cloud-token-input",
-                        password=True,
-                    )
+                    # Device Link Status
+                    is_linked = has_device_token()
+                    if is_linked:
+                        yield Static(
+                            f"{Icons.CHECK} Device is linked",
+                            id="device-link-status",
+                            classes="setting-hint",
+                        )
+                        yield Button(
+                            f"{Icons.TIMES} Unlink Device",
+                            id="btn-unlink-device",
+                            variant="warning",
+                        )
+                    else:
+                        yield Static(
+                            "Device is not linked. Link to sync.",
+                            id="device-link-status",
+                            classes="setting-hint",
+                        )
+                        yield Button(
+                            f"{Icons.LINK} Link Device",
+                            id="btn-link-device",
+                            variant="primary",
+                        )
 
-                    yield Label("API URL:")
-                    yield Input(
-                        value=self.settings.cloud_sync_url,
-                        placeholder="https://tuido.vercel.app/api",
-                        id="cloud-url-input",
+                    yield Label("Encryption Password:")
+                    password_is_set = has_encryption_password()
+                    if password_is_set:
+                        yield Static(
+                            f"{Icons.CHECK} Password is set",
+                            id="encryption-password-status",
+                            classes="setting-hint",
+                        )
+                    else:
+                        yield Static(
+                            "No password set",
+                            id="encryption-password-status",
+                            classes="setting-hint",
+                        )
+                    with Horizontal(classes="password-row"):
+                        yield Input(
+                            value="",  # Never pre-fill password for security
+                            placeholder="Enter to change password" if password_is_set else "Set password for encryption",
+                            id="cloud-encryption-password-input",
+                            password=True,
+                        )
+                        yield Button(
+                            Icons.EYE,
+                            id="btn-toggle-password",
+                            variant="default",
+                        )
+
+                    yield Static(
+                        "Sync URL: https://tuido.dev/api",
+                        classes="setting-hint",
                     )
 
                     if self.settings.last_cloud_sync:
@@ -1360,7 +1386,7 @@ class SettingsDialog(ModalScreen):
                         )
 
                     yield Static(
-                        "Get your token at: https://tuido.vercel.app",
+                        "Your data is encrypted before upload. We can never see your tasks.",
                         classes="setting-hint",
                     )
 
@@ -1390,6 +1416,22 @@ class SettingsDialog(ModalScreen):
             # Close settings and open onboarding wizard
             self.app.theme = self.original_theme
             self.dismiss("open_wizard")
+        elif event.button.id == "btn-toggle-password":
+            # Toggle password visibility
+            password_input = self.query_one("#cloud-encryption-password-input", Input)
+            toggle_btn = self.query_one("#btn-toggle-password", Button)
+            password_input.password = not password_input.password
+            toggle_btn.label = (
+                Icons.EYE_SLASH if not password_input.password else Icons.EYE
+            )
+        elif event.button.id == "btn-link-device":
+            # Open device link dialog
+            self.app.theme = self.original_theme
+            self.dismiss("link_device")
+        elif event.button.id == "btn-unlink-device":
+            # Open unlink confirmation dialog
+            self.app.theme = self.original_theme
+            self.dismiss("unlink_device")
         elif event.button.id == "btn-save":
             # Read current values from all tabs
             theme_select = self.query_one("#theme-select", Select)
@@ -1397,7 +1439,6 @@ class SettingsDialog(ModalScreen):
 
             # Read weather settings
             show_weather_switch = self.query_one("#show-weather-switch", Switch)
-            weather_api_key_input = self.query_one("#weather-api-key-input", Input)
             weather_location_input = self.query_one("#weather-location-input", Input)
             weather_unit_switch = self.query_one("#weather-unit-switch", Switch)
 
@@ -1430,24 +1471,28 @@ class SettingsDialog(ModalScreen):
 
             # Read cloud sync settings
             cloud_sync_enabled = self.query_one("#cloud-sync-enabled-switch", Switch)
-            cloud_token_input = self.query_one("#cloud-token-input", Input)
-            cloud_url_input = self.query_one("#cloud-url-input", Input)
+            cloud_encryption_password_input = self.query_one(
+                "#cloud-encryption-password-input", Input
+            )
 
             # Update settings
             self.settings.theme = theme_select.value
             self.settings.show_completed_tasks = show_completed_switch.value
             self.settings.show_weather_widget = show_weather_switch.value
-            self.settings.weather_api_key = weather_api_key_input.value.strip()
             self.settings.weather_location = weather_location_input.value.strip()
             self.settings.weather_use_fahrenheit = weather_unit_switch.value
             self.settings.pomodoro_work_minutes = work_minutes
             self.settings.pomodoro_short_break_minutes = short_break_minutes
             self.settings.pomodoro_long_break_minutes = long_break_minutes
             self.settings.cloud_sync_enabled = cloud_sync_enabled.value
-            self.settings.cloud_sync_token = cloud_token_input.value.strip()
-            self.settings.cloud_sync_url = (
-                cloud_url_input.value.strip() or "https://tuido.vercel.app/api"
-            )
+            self.settings.cloud_sync_url = "https://tuido.dev/api"  # Fixed URL
+
+            # Save encryption password to keyring if provided
+            encryption_password = cloud_encryption_password_input.value.strip()
+            if encryption_password:
+                from ..encryption import set_encryption_password
+
+                set_encryption_password(encryption_password)
 
             self.dismiss(self.settings)
 
@@ -1978,4 +2023,346 @@ class EditSnippetDialog(ModalScreen):
         """Handle keyboard shortcuts."""
         if event.key == "escape":
             self.dismiss(None)
+            event.prevent_default()
+
+
+class DeviceLinkDialog(ModalScreen):
+    """Modal dialog for device authorization flow.
+
+    This dialog handles the device linking process:
+    1. Requests a device code from the server
+    2. Displays the user code and verification URL
+    3. Polls for authorization while user confirms on the web
+    4. Saves credentials on success
+    """
+
+    DEFAULT_CSS = """
+    DeviceLinkDialog {
+        align: center middle;
+    }
+
+    DeviceLinkDialog > #dialog-container {
+        width: 60;
+        height: auto;
+        border: round $primary;
+        padding: 1 2;
+    }
+
+    DeviceLinkDialog .header {
+        text-style: bold;
+        color: $primary;
+        text-align: center;
+        margin-bottom: 1;
+    }
+
+    DeviceLinkDialog .section-description {
+        color: $text-muted;
+        text-align: center;
+    }
+
+    DeviceLinkDialog #code-display {
+        background: $panel;
+        padding: 1 2;
+        margin: 1 0;
+        text-align: center;
+        border: round $accent;
+        height: auto;
+    }
+
+    DeviceLinkDialog #user-code {
+        text-style: bold;
+        color: $accent;
+        text-align: center;
+    }
+
+    DeviceLinkDialog #verification-url {
+        color: $primary;
+        text-align: center;
+        margin-top: 1;
+    }
+
+    DeviceLinkDialog #status-container {
+        height: auto;
+        margin: 1 0;
+    }
+
+    DeviceLinkDialog #status-text {
+        text-align: center;
+    }
+
+    DeviceLinkDialog .status-pending {
+        color: $warning;
+    }
+
+    DeviceLinkDialog .status-success {
+        color: $success;
+    }
+
+    DeviceLinkDialog .status-error {
+        color: $error;
+    }
+
+    DeviceLinkDialog #dialog-buttons {
+        height: auto;
+        layout: horizontal;
+        align: center middle;
+        margin-top: 1;
+    }
+
+    DeviceLinkDialog LoadingIndicator {
+        height: 3;
+    }
+
+    DeviceLinkDialog #loading-container {
+        height: auto;
+    }
+
+    DeviceLinkDialog .user-info {
+        color: $success;
+        text-align: center;
+        margin: 1 0;
+    }
+    """
+
+    def __init__(self, api_url: str = "https://tuido.dev/api"):
+        super().__init__()
+        self.api_url = api_url
+        self.device_code: Optional[str] = None
+        self.authorization_task = None
+        self._cancelled = False
+
+    def compose(self) -> ComposeResult:
+        """Compose the device link dialog."""
+        with Container(id="dialog-container"):
+            yield Label(f"{Icons.LINK} Link Device", classes="header")
+            yield Static(
+                "Link this device to your Tuido account",
+                classes="section-description",
+            )
+
+            # Loading state (shown initially)
+            with Container(id="loading-container"):
+                yield LoadingIndicator(id="loading-indicator")
+                yield Static("Requesting device code...", id="status-text")
+
+            # Code display (hidden initially, shown after code received)
+            with Container(id="code-display"):
+                yield Static("", id="user-code")
+                yield Static("", id="verification-url")
+
+            # Status container for polling updates
+            with Container(id="status-container"):
+                yield Static("", id="auth-status")
+
+            with Horizontal(id="dialog-buttons"):
+                yield Button("Cancel", id="btn-cancel", variant="default")
+                yield Button(
+                    f"{Icons.LINK} Open Browser",
+                    id="btn-open-browser",
+                    variant="primary",
+                    disabled=True,
+                )
+
+    def on_mount(self) -> None:
+        """Start the device authorization flow when dialog mounts."""
+        # Hide code display initially
+        self.query_one("#code-display", Container).display = False
+        self.query_one("#status-container", Container).display = False
+
+        # Start authorization flow
+        self.authorization_task = self.run_worker(
+            self._run_authorization_flow(), exclusive=True
+        )
+
+    async def _run_authorization_flow(self) -> None:
+        """Run the device authorization flow."""
+        client = CloudSyncClient(api_url=self.api_url, api_token="")
+
+        try:
+            async for result in client.authorize_device():
+                if self._cancelled:
+                    return
+
+                if isinstance(result, DeviceCodeResponse):
+                    # Show the device code to the user
+                    self._show_device_code(result)
+                elif isinstance(result, AuthorizationResult):
+                    self._update_auth_status(result)
+                    if result.status in ("authorized", "expired", "denied", "error"):
+                        break
+        except Exception as e:
+            self._show_error(str(e))
+
+    def _show_device_code(self, code_response: DeviceCodeResponse) -> None:
+        """Display the device code to the user."""
+        self.device_code = code_response.device_code
+
+        # Hide loading, show code display
+        self.query_one("#loading-container", Container).display = False
+        self.query_one("#code-display", Container).display = True
+        self.query_one("#status-container", Container).display = True
+
+        # Update code display
+        user_code = self.query_one("#user-code", Static)
+        user_code.update(f"  {code_response.user_code}  ")
+
+        verification_url = self.query_one("#verification-url", Static)
+        verification_url.update(f"Go to: {code_response.verification_url}")
+
+        # Update status
+        status = self.query_one("#auth-status", Static)
+        status.update("Waiting for you to confirm in browser...")
+        status.remove_class("status-success", "status-error")
+        status.add_class("status-pending")
+
+        # Enable browser button and store URL
+        browser_btn = self.query_one("#btn-open-browser", Button)
+        browser_btn.disabled = False
+        self._verification_url = code_response.verification_url
+
+    def _update_auth_status(self, result: AuthorizationResult) -> None:
+        """Update the authorization status display."""
+        status = self.query_one("#auth-status", Static)
+
+        if result.status == "pending":
+            status.update("Waiting for you to confirm in browser...")
+            status.remove_class("status-success", "status-error")
+            status.add_class("status-pending")
+
+        elif result.status == "authorized":
+            # Success!
+            status.update(f"{Icons.CHECK} Device linked successfully!")
+            status.remove_class("status-pending", "status-error")
+            status.add_class("status-success")
+
+            # Show user info if available
+            if result.user_email:
+                user_info = f"Linked to: {result.user_email}"
+                if result.user_name:
+                    user_info = f"Linked to: {result.user_name} ({result.user_email})"
+                auth_status_container = self.query_one("#status-container", Container)
+                auth_status_container.mount(Static(user_info, classes="user-info"))
+
+            # Change Cancel to Done
+            cancel_btn = self.query_one("#btn-cancel", Button)
+            cancel_btn.label = "Done"
+            cancel_btn.variant = "success"
+
+            # Hide browser button
+            self.query_one("#btn-open-browser", Button).display = False
+
+        elif result.status == "expired":
+            status.update(f"{Icons.TIMES} Code expired. Please try again.")
+            status.remove_class("status-pending", "status-success")
+            status.add_class("status-error")
+
+        elif result.status == "denied":
+            status.update(f"{Icons.TIMES} Authorization denied.")
+            status.remove_class("status-pending", "status-success")
+            status.add_class("status-error")
+
+        elif result.status == "error":
+            error_msg = result.error or "Unknown error"
+            status.update(f"{Icons.WARNING} Error: {error_msg}")
+            status.remove_class("status-pending", "status-success")
+            status.add_class("status-error")
+
+    def _show_error(self, error: str) -> None:
+        """Show an error message."""
+        self.query_one("#loading-container", Container).display = False
+        self.query_one("#code-display", Container).display = False
+        self.query_one("#status-container", Container).display = True
+
+        status = self.query_one("#auth-status", Static)
+        status.update(f"{Icons.WARNING} {error}")
+        status.remove_class("status-pending", "status-success")
+        status.add_class("status-error")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button press."""
+        if event.button.id == "btn-cancel":
+            self._cancelled = True
+            if self.authorization_task:
+                self.authorization_task.cancel()
+            # Return True if device was successfully linked
+            is_linked = has_device_token()
+            self.dismiss(is_linked)
+
+        elif event.button.id == "btn-open-browser":
+            if hasattr(self, "_verification_url"):
+                webbrowser.open(self._verification_url)
+
+    def on_key(self, event) -> None:
+        """Handle keyboard shortcuts."""
+        if event.key == "escape":
+            self._cancelled = True
+            if self.authorization_task:
+                self.authorization_task.cancel()
+            self.dismiss(False)
+            event.prevent_default()
+
+
+class UnlinkDeviceDialog(ModalScreen):
+    """Modal dialog for unlinking the current device."""
+
+    DEFAULT_CSS = """
+    UnlinkDeviceDialog {
+        align: center middle;
+    }
+
+    UnlinkDeviceDialog > #dialog-container {
+        width: 55;
+        height: auto;
+        border: round $warning;
+        padding: 1 2;
+    }
+
+    UnlinkDeviceDialog .header {
+        text-style: bold;
+        color: $warning;
+        margin-bottom: 1;
+    }
+
+    UnlinkDeviceDialog .section-description {
+        color: $text-muted;
+        margin-bottom: 1;
+    }
+
+    UnlinkDeviceDialog #dialog-buttons {
+        height: auto;
+        layout: horizontal;
+        align: center middle;
+        margin-top: 1;
+    }
+    """
+
+    def compose(self) -> ComposeResult:
+        """Compose the unlink device dialog."""
+        with Container(id="dialog-container"):
+            yield Label(f"{Icons.WARNING} Unlink Device", classes="header")
+            yield Static(
+                "Are you sure you want to unlink this device?",
+                classes="section-description",
+            )
+            yield Static(
+                "You will need to link again to use cloud sync.",
+                classes="section-description",
+            )
+            with Horizontal(id="dialog-buttons"):
+                yield Button("Cancel", id="btn-cancel", variant="default")
+                yield Button("Unlink", id="btn-unlink", variant="warning")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button press."""
+        if event.button.id == "btn-cancel":
+            self.dismiss(False)
+        elif event.button.id == "btn-unlink":
+            # Delete device credentials from keyring
+            delete_device_credentials()
+            self.dismiss(True)
+
+    def on_key(self, event) -> None:
+        """Handle keyboard shortcuts."""
+        if event.key == "escape":
+            self.dismiss(False)
             event.prevent_default()

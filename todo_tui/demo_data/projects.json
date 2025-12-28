@@ -1,0 +1,17 @@
+[
+  {
+    "id": "demo-personal-001",
+    "name": "Personal",
+    "created_at": "2025-11-01T09:00:00.000000"
+  },
+  {
+    "id": "demo-work-002",
+    "name": "Work",
+    "created_at": "2025-11-01T09:00:00.000000"
+  },
+  {
+    "id": "demo-side-003",
+    "name": "Side Project",
+    "created_at": "2025-11-15T14:30:00.000000"
+  }
+]
