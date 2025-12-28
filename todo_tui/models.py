@@ -239,10 +239,11 @@ class Settings:
         weather_api_key: OpenWeatherMap API key for weather data
         show_weather_widget: Whether to show weather/forecast tabs (True) or just Pomodoro (False)
         onboarding_complete: Whether the user has completed the first-run onboarding
-        cloud_sync_enabled: Whether cloud sync is enabled
-        cloud_sync_token: API token for cloud sync service
+        cloud_sync_enabled: Whether cloud sync is enabled (device must be linked)
         cloud_sync_url: Base URL for cloud sync API
         last_cloud_sync: ISO timestamp of last successful cloud sync
+
+    Note: Device token is stored securely in system keyring, not in settings file.
     """
 
     theme: str = "catppuccin-mocha"  # Default startup theme
@@ -256,8 +257,7 @@ class Settings:
     show_weather_widget: bool = True  # Toggle weather/forecast tabs visibility
     onboarding_complete: bool = False  # Track first-run status
     cloud_sync_enabled: bool = False  # Cloud sync disabled by default
-    cloud_sync_token: str = ""  # API token from tuido.vercel.app
-    cloud_sync_url: str = "https://tuido.vercel.app/api"  # Cloud API base URL
+    cloud_sync_url: str = "https://tuido.dev/api"  # Cloud API base URL
     last_cloud_sync: str = ""  # ISO timestamp of last sync
 
     def to_dict(self) -> dict:
@@ -274,7 +274,6 @@ class Settings:
             "show_weather_widget": self.show_weather_widget,
             "onboarding_complete": self.onboarding_complete,
             "cloud_sync_enabled": self.cloud_sync_enabled,
-            "cloud_sync_token": self.cloud_sync_token,
             "cloud_sync_url": self.cloud_sync_url,
             "last_cloud_sync": self.last_cloud_sync,
         }
@@ -294,7 +293,6 @@ class Settings:
             show_weather_widget=data.get("show_weather_widget", True),
             onboarding_complete=data.get("onboarding_complete", False),
             cloud_sync_enabled=data.get("cloud_sync_enabled", False),
-            cloud_sync_token=data.get("cloud_sync_token", ""),
-            cloud_sync_url=data.get("cloud_sync_url", "https://tuido.vercel.app/api"),
+            cloud_sync_url=data.get("cloud_sync_url", "https://tuido.dev/api"),
             last_cloud_sync=data.get("last_cloud_sync", ""),
         )

@@ -20,6 +20,7 @@ from .widgets.dialogs import (
     AddProjectDialog,
     AddTaskDialog,
     ConfirmDialog,
+    DeviceLinkDialog,
     EditProjectDialog,
     EditTaskDialog,
     ErrorDialog,
@@ -28,6 +29,7 @@ from .widgets.dialogs import (
     MoveTaskDialog,
     OnboardingDialog,
     SettingsDialog,
+    UnlinkDeviceDialog,
 )
 from .widgets.pomodoro_widget import PomodoroWidget
 from .widgets.project_list import (
@@ -117,8 +119,10 @@ class TodoApp(App):
         # Load all tasks initially
         self._load_all_tasks()
 
-        # Startup cloud sync (if enabled)
-        if self.settings.cloud_sync_enabled and self.settings.cloud_sync_token:
+        # Startup cloud sync (if enabled and device is linked)
+        from .encryption import has_device_token
+
+        if self.settings.cloud_sync_enabled and has_device_token():
             self.run_worker(self._startup_sync(), exclusive=True)
 
         # Show onboarding dialog on first run
@@ -142,6 +146,35 @@ class TodoApp(App):
                 StorageManager.save_settings(self.settings)
 
         self.push_screen(OnboardingDialog(self.settings), check_onboarding)
+
+    def _show_device_link(self) -> None:
+        """Show the device link dialog for cloud sync authorization."""
+
+        def check_device_link(result) -> None:
+            """Callback when device link dialog is dismissed."""
+            if result:
+                # Device was successfully linked
+                self.notify("Device linked successfully!", severity="information")
+            # Re-open settings to show updated status
+            self.call_after_refresh(self.action_settings)
+
+        self.push_screen(
+            DeviceLinkDialog(api_url=self.settings.cloud_sync_url),
+            check_device_link,
+        )
+
+    def _show_unlink_device(self) -> None:
+        """Show the unlink device confirmation dialog."""
+
+        def check_unlink(result) -> None:
+            """Callback when unlink dialog is dismissed."""
+            if result:
+                # Device was unlinked
+                self.notify("Device unlinked.", severity="information")
+            # Re-open settings to show updated status
+            self.call_after_refresh(self.action_settings)
+
+        self.push_screen(UnlinkDeviceDialog(), check_unlink)
 
     def action_setup_wizard(self) -> None:
         """Show the setup wizard (onboarding) dialog."""
@@ -558,6 +591,12 @@ class TodoApp(App):
             if result == "open_wizard":
                 # User wants to open the setup wizard
                 self.call_after_refresh(self._show_onboarding)
+            elif result == "link_device":
+                # User wants to link a device
+                self.call_after_refresh(self._show_device_link)
+            elif result == "unlink_device":
+                # User wants to unlink the device
+                self.call_after_refresh(self._show_unlink_device)
             elif result and isinstance(result, Settings):
                 # Save settings (using static method)
                 StorageManager.save_settings(result)
@@ -590,8 +629,10 @@ class TodoApp(App):
 
     async def action_quit(self) -> None:
         """Quit the application with cloud sync on exit."""
+        from .encryption import has_device_token
+
         # If cloud sync enabled, upload on exit
-        if self.settings.cloud_sync_enabled and self.settings.cloud_sync_token:
+        if self.settings.cloud_sync_enabled and has_device_token():
             # Await sync before exit
             await self._exit_sync()
 
@@ -600,15 +641,17 @@ class TodoApp(App):
 
     def action_cloud_sync(self) -> None:
         """Manually trigger cloud sync."""
+        from .encryption import has_device_token
+
         if not self.settings.cloud_sync_enabled:
             self.notify(
                 "Cloud sync is disabled. Enable it in Settings.", severity="warning"
             )
             return
 
-        if not self.settings.cloud_sync_token:
+        if not has_device_token():
             self.notify(
-                "No API token set. Configure cloud sync in Settings.", severity="error"
+                "Device not linked. Link your device in Settings.", severity="error"
             )
             return
 
@@ -618,12 +661,14 @@ class TodoApp(App):
     async def _startup_sync(self) -> None:
         """Sync on app startup - asks user before downloading from cloud."""
         from .cloud_sync import CloudSyncClient
+        from .encryption import get_device_token, get_encryption_password
         from .widgets.dialogs import StartupSyncDialog
 
         try:
             client = CloudSyncClient(
                 api_url=self.settings.cloud_sync_url,
-                api_token=self.settings.cloud_sync_token,
+                api_token=get_device_token() or "",
+                encryption_password=get_encryption_password(),
             )
 
             # Check if cloud has data
@@ -672,14 +717,16 @@ class TodoApp(App):
     async def _manual_sync(self) -> None:
         """Manual sync triggered by user."""
         from .cloud_sync import CloudSyncClient
+        from .encryption import get_device_token, get_encryption_password
         from .widgets.dialogs import SyncDirectionDialog
 
         try:
-            self.notify("☁️  Checking sync status...", severity="information")
+            self.notify("Checking sync status...", severity="information")
 
             client = CloudSyncClient(
                 api_url=self.settings.cloud_sync_url,
-                api_token=self.settings.cloud_sync_token,
+                api_token=get_device_token() or "",
+                encryption_password=get_encryption_password(),
             )
 
             # Check sync status first
@@ -741,13 +788,16 @@ class TodoApp(App):
 
     async def _exit_sync(self) -> None:
         """Sync on app exit (upload to cloud)."""
-        from .cloud_sync import CloudSyncClient
         import sys
+
+        from .cloud_sync import CloudSyncClient
+        from .encryption import get_device_token, get_encryption_password
 
         try:
             client = CloudSyncClient(
                 api_url=self.settings.cloud_sync_url,
-                api_token=self.settings.cloud_sync_token,
+                api_token=get_device_token() or "",
+                encryption_password=get_encryption_password(),
             )
 
             # Upload to cloud
