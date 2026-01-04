@@ -1,0 +1,3 @@
+# Scratchpad
+
+Start writing your notes here...

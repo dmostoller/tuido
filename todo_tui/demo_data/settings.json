@@ -1,0 +1,15 @@
+{
+  "theme": "catppuccin-mocha",
+  "show_completed_tasks": true,
+  "pomodoro_work_minutes": 25,
+  "pomodoro_short_break_minutes": 5,
+  "pomodoro_long_break_minutes": 15,
+  "weather_location": "San Francisco, US",
+  "weather_use_fahrenheit": true,
+  "weather_api_key": "",
+  "show_weather_widget": true,
+  "onboarding_complete": true,
+  "cloud_sync_enabled": false,
+  "cloud_sync_url": "https://tuido.dev/api",
+  "last_cloud_sync": ""
+}

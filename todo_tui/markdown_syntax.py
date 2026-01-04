@@ -67,8 +67,8 @@ def get_markdown_highlight_query() -> str:
 # Catppuccin Mocha TextAreaTheme
 catppuccin_mocha_markdown = TextAreaTheme(
     name="catppuccin-mocha",
-    base_style=Style(color="#cdd6f4", bgcolor="#1e1e2e"),  # Text on Base
-    gutter_style=Style(color="#6c7086", bgcolor="#1e1e2e"),  # Overlay0 on Base
+    base_style=Style(color="#cdd6f4"),  # Text color only - CSS handles background
+    gutter_style=Style(color="#6c7086"),  # Overlay0 - CSS handles background
     cursor_style=Style(color="#1e1e2e", bgcolor="#89b4fa"),  # Base on Blue
     cursor_line_style=Style(bgcolor="#313244"),  # Surface0
     selection_style=Style(bgcolor="#45475a"),  # Surface1
@@ -91,11 +91,74 @@ catppuccin_mocha_markdown = TextAreaTheme(
     },
 )
 
+# Catppuccin Latte TextAreaTheme (light theme)
+catppuccin_latte_markdown = TextAreaTheme(
+    name="catppuccin-latte",
+    base_style=Style(color="#4c4f69"),  # Text - CSS handles background
+    gutter_style=Style(color="#9ca0b0"),  # Overlay0 - CSS handles background
+    cursor_style=Style(color="#eff1f5", bgcolor="#1e66f5"),  # Base on Blue
+    cursor_line_style=Style(bgcolor="#ccd0da"),  # Surface0
+    selection_style=Style(bgcolor="#bcc0cc"),  # Surface1
+    syntax_styles={
+        "heading": Style(color="#1e66f5", bold=True),  # Blue
+        "heading.marker": Style(color="#1e66f5", dim=True),
+        "text.literal": Style(color="#40a02b", bgcolor="#ccd0da"),  # Green
+        "link.uri": Style(color="#8839ef", underline=True),  # Mauve
+        "link.label": Style(color="#ea76cb"),  # Pink
+        "list.marker": Style(color="#fe640b"),  # Peach
+        "punctuation.delimiter": Style(color="#8c8fa1"),  # Overlay1
+        "punctuation.special": Style(color="#8c8fa1"),
+        "string.escape": Style(color="#df8e1d"),  # Yellow
+    },
+)
+
+# Catppuccin Frappé TextAreaTheme
+catppuccin_frappe_markdown = TextAreaTheme(
+    name="catppuccin-frappe",
+    base_style=Style(color="#c6d0f5"),  # Text - CSS handles background
+    gutter_style=Style(color="#737994"),  # Overlay0 - CSS handles background
+    cursor_style=Style(color="#303446", bgcolor="#8caaee"),  # Base on Blue
+    cursor_line_style=Style(bgcolor="#414559"),  # Surface0
+    selection_style=Style(bgcolor="#51576d"),  # Surface1
+    syntax_styles={
+        "heading": Style(color="#8caaee", bold=True),  # Blue
+        "heading.marker": Style(color="#8caaee", dim=True),
+        "text.literal": Style(color="#a6d189", bgcolor="#414559"),  # Green
+        "link.uri": Style(color="#ca9ee6", underline=True),  # Mauve
+        "link.label": Style(color="#f4b8e4"),  # Pink
+        "list.marker": Style(color="#ef9f76"),  # Peach
+        "punctuation.delimiter": Style(color="#838ba7"),  # Overlay1
+        "punctuation.special": Style(color="#838ba7"),
+        "string.escape": Style(color="#e5c890"),  # Yellow
+    },
+)
+
+# Catppuccin Macchiato TextAreaTheme
+catppuccin_macchiato_markdown = TextAreaTheme(
+    name="catppuccin-macchiato",
+    base_style=Style(color="#cad3f5"),  # Text - CSS handles background
+    gutter_style=Style(color="#6e738d"),  # Overlay0 - CSS handles background
+    cursor_style=Style(color="#24273a", bgcolor="#8aadf4"),  # Base on Blue
+    cursor_line_style=Style(bgcolor="#363a4f"),  # Surface0
+    selection_style=Style(bgcolor="#494d64"),  # Surface1
+    syntax_styles={
+        "heading": Style(color="#8aadf4", bold=True),  # Blue
+        "heading.marker": Style(color="#8aadf4", dim=True),
+        "text.literal": Style(color="#a6da95", bgcolor="#363a4f"),  # Green
+        "link.uri": Style(color="#c6a0f6", underline=True),  # Mauve
+        "link.label": Style(color="#f5bde6"),  # Pink
+        "list.marker": Style(color="#f5a97f"),  # Peach
+        "punctuation.delimiter": Style(color="#8087a2"),  # Overlay1
+        "punctuation.special": Style(color="#8087a2"),
+        "string.escape": Style(color="#eed49f"),  # Yellow
+    },
+)
+
 # Nord TextAreaTheme
 nord_markdown = TextAreaTheme(
     name="nord",
-    base_style=Style(color="#eceff4", bgcolor="#2e3440"),  # Snow Storm on Polar Night
-    gutter_style=Style(color="#4c566a", bgcolor="#2e3440"),
+    base_style=Style(color="#eceff4"),  # Snow Storm - CSS handles background
+    gutter_style=Style(color="#4c566a"),  # CSS handles background
     cursor_style=Style(color="#2e3440", bgcolor="#88c0d0"),  # Frost
     cursor_line_style=Style(bgcolor="#3b4252"),
     selection_style=Style(bgcolor="#434c5e"),
@@ -115,8 +178,8 @@ nord_markdown = TextAreaTheme(
 # Gruvbox Dark TextAreaTheme
 gruvbox_markdown = TextAreaTheme(
     name="gruvbox",
-    base_style=Style(color="#ebdbb2", bgcolor="#282828"),
-    gutter_style=Style(color="#665c54", bgcolor="#282828"),
+    base_style=Style(color="#ebdbb2"),  # CSS handles background
+    gutter_style=Style(color="#665c54"),  # CSS handles background
     cursor_style=Style(color="#282828", bgcolor="#83a598"),  # Bright Blue
     cursor_line_style=Style(bgcolor="#3c3836"),
     selection_style=Style(bgcolor="#504945"),
@@ -136,8 +199,8 @@ gruvbox_markdown = TextAreaTheme(
 # Tokyo Night TextAreaTheme
 tokyo_night_markdown = TextAreaTheme(
     name="tokyo-night",
-    base_style=Style(color="#c0caf5", bgcolor="#1a1b26"),
-    gutter_style=Style(color="#565f89", bgcolor="#1a1b26"),
+    base_style=Style(color="#c0caf5"),  # CSS handles background
+    gutter_style=Style(color="#565f89"),  # CSS handles background
     cursor_style=Style(color="#1a1b26", bgcolor="#7aa2f7"),  # Blue
     cursor_line_style=Style(bgcolor="#24283b"),
     selection_style=Style(bgcolor="#414868"),
@@ -157,8 +220,8 @@ tokyo_night_markdown = TextAreaTheme(
 # Solarized Light TextAreaTheme
 solarized_light_markdown = TextAreaTheme(
     name="solarized-light",
-    base_style=Style(color="#657b83", bgcolor="#fdf6e3"),
-    gutter_style=Style(color="#93a1a1", bgcolor="#fdf6e3"),
+    base_style=Style(color="#657b83"),  # CSS handles background
+    gutter_style=Style(color="#93a1a1"),  # CSS handles background
     cursor_style=Style(color="#fdf6e3", bgcolor="#268bd2"),  # Blue
     cursor_line_style=Style(bgcolor="#eee8d5"),
     selection_style=Style(bgcolor="#eee8d5"),
@@ -178,8 +241,8 @@ solarized_light_markdown = TextAreaTheme(
 # Tailwind Dark TextAreaTheme
 tailwind_dark_markdown = TextAreaTheme(
     name="tailwind-dark",
-    base_style=Style(color="#f9fafb", bgcolor="#101828"),
-    gutter_style=Style(color="#6a7282", bgcolor="#101828"),
+    base_style=Style(color="#f9fafb"),  # CSS handles background
+    gutter_style=Style(color="#6a7282"),  # CSS handles background
     cursor_style=Style(color="#101828", bgcolor="#00a6f4"),  # Bright Blue
     cursor_line_style=Style(bgcolor="#1e2939"),
     selection_style=Style(bgcolor="#364153"),
@@ -199,8 +262,8 @@ tailwind_dark_markdown = TextAreaTheme(
 # Tailwind Light TextAreaTheme
 tailwind_light_markdown = TextAreaTheme(
     name="tailwind-light",
-    base_style=Style(color="#1d293d", bgcolor="#ffffff"),
-    gutter_style=Style(color="#90a1b9", bgcolor="#ffffff"),
+    base_style=Style(color="#1d293d"),  # CSS handles background
+    gutter_style=Style(color="#90a1b9"),  # CSS handles background
     cursor_style=Style(color="#ffffff", bgcolor="#00a6f4"),  # Bright Blue
     cursor_line_style=Style(bgcolor="#f8fafc"),
     selection_style=Style(bgcolor="#f1f5f9"),
@@ -220,8 +283,8 @@ tailwind_light_markdown = TextAreaTheme(
 # Textual Dark (Default) TextAreaTheme
 textual_dark_markdown = TextAreaTheme(
     name="textual-dark",
-    base_style=Style(color="#e0e0e0", bgcolor="#0d1117"),
-    gutter_style=Style(color="#7d8590", bgcolor="#0d1117"),
+    base_style=Style(color="#e0e0e0"),  # CSS handles background
+    gutter_style=Style(color="#7d8590"),  # CSS handles background
     cursor_style=Style(color="#0d1117", bgcolor="#0178D4"),  # Textual primary
     cursor_line_style=Style(bgcolor="#161b22"),
     selection_style=Style(bgcolor="#264466"),
@@ -241,8 +304,8 @@ textual_dark_markdown = TextAreaTheme(
 # Textual Light TextAreaTheme
 textual_light_markdown = TextAreaTheme(
     name="textual-light",
-    base_style=Style(color="#24292e", bgcolor="#ffffff"),
-    gutter_style=Style(color="#6a737d", bgcolor="#ffffff"),
+    base_style=Style(color="#24292e"),  # CSS handles background
+    gutter_style=Style(color="#6a737d"),  # CSS handles background
     cursor_style=Style(color="#ffffff", bgcolor="#0178D4"),  # Textual primary
     cursor_line_style=Style(bgcolor="#f6f8fa"),
     selection_style=Style(bgcolor="#c8e1ff"),
@@ -262,8 +325,8 @@ textual_light_markdown = TextAreaTheme(
 # Textual Ansi (Terminal colors) TextAreaTheme
 textual_ansi_markdown = TextAreaTheme(
     name="textual-ansi",
-    base_style=Style(color="bright_white", bgcolor="black"),
-    gutter_style=Style(color="bright_black", bgcolor="black"),
+    base_style=Style(color="bright_white"),  # CSS handles background
+    gutter_style=Style(color="bright_black"),  # CSS handles background
     cursor_style=Style(color="black", bgcolor="bright_blue"),
     cursor_line_style=Style(bgcolor="rgb(20,20,20)"),
     selection_style=Style(bgcolor="blue"),
@@ -282,8 +345,12 @@ textual_ansi_markdown = TextAreaTheme(
 
 # Map theme names to TextAreaTheme objects
 MARKDOWN_THEMES = {
-    # Custom app themes
+    # Catppuccin variants
     "catppuccin-mocha": catppuccin_mocha_markdown,
+    "catppuccin-latte": catppuccin_latte_markdown,
+    "catppuccin-frappe": catppuccin_frappe_markdown,
+    "catppuccin-macchiato": catppuccin_macchiato_markdown,
+    # Other custom app themes
     "nord": nord_markdown,
     "gruvbox": gruvbox_markdown,
     "tokyo-night": tokyo_night_markdown,

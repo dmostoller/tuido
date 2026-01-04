@@ -1,0 +1,65 @@
+[
+  {
+    "id": "snip-001",
+    "name": "Docker compose up",
+    "command": "docker compose up -d --build",
+    "tags": ["docker", "dev"],
+    "uses": 47,
+    "last_used": "2026-01-03T14:30:00.000000",
+    "created_at": "2025-10-15T10:00:00.000000"
+  },
+  {
+    "id": "snip-002",
+    "name": "Git stash and pull",
+    "command": "git stash && git pull --rebase && git stash pop",
+    "tags": ["git"],
+    "uses": 32,
+    "last_used": "2026-01-02T09:15:00.000000",
+    "created_at": "2025-10-20T14:00:00.000000"
+  },
+  {
+    "id": "snip-003",
+    "name": "SSH tunnel to prod DB",
+    "command": "ssh -L 5432:db.internal:5432 bastion.example.com",
+    "tags": ["ssh", "database"],
+    "uses": 18,
+    "last_used": "2025-12-28T11:00:00.000000",
+    "created_at": "2025-11-01T09:00:00.000000"
+  },
+  {
+    "id": "snip-004",
+    "name": "Watch deploy logs",
+    "command": "kubectl logs -f deployment/api -n production",
+    "tags": ["kubernetes", "deploy"],
+    "uses": 56,
+    "last_used": "2026-01-04T10:00:00.000000",
+    "created_at": "2025-09-20T16:00:00.000000"
+  },
+  {
+    "id": "snip-005",
+    "name": "Run tests with coverage",
+    "command": "pytest --cov=src --cov-report=html -v",
+    "tags": ["testing", "python"],
+    "uses": 24,
+    "last_used": "2026-01-03T16:45:00.000000",
+    "created_at": "2025-10-05T11:00:00.000000"
+  },
+  {
+    "id": "snip-006",
+    "name": "Reset local database",
+    "command": "dropdb myapp_dev && createdb myapp_dev && python manage.py migrate",
+    "tags": ["database", "dev"],
+    "uses": 8,
+    "last_used": "2025-12-20T14:00:00.000000",
+    "created_at": "2025-11-10T10:00:00.000000"
+  },
+  {
+    "id": "snip-007",
+    "name": "Generate API docs",
+    "command": "python -m mkdocs serve --dev-addr 0.0.0.0:8080",
+    "tags": ["docs"],
+    "uses": 12,
+    "last_used": "2025-12-15T09:30:00.000000",
+    "created_at": "2025-11-25T15:00:00.000000"
+  }
+]

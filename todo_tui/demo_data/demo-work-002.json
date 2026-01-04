@@ -1,0 +1,87 @@
+[
+  {
+    "id": "task-w1-001",
+    "title": "Review Q1 roadmap proposal",
+    "description": "Provide feedback before Friday standup",
+    "notes": "Focus on API versioning strategy",
+    "completed": false,
+    "created_at": "2026-01-02T09:00:00.000000",
+    "completed_at": null,
+    "subtasks": [
+      {"id": "st-w1-001-1", "title": "Read proposal document", "completed": true},
+      {"id": "st-w1-001-2", "title": "Add comments to shared doc", "completed": false},
+      {"id": "st-w1-001-3", "title": "Schedule follow-up meeting", "completed": false}
+    ],
+    "project_id": "demo-work-002",
+    "priority": "high"
+  },
+  {
+    "id": "task-w1-002",
+    "title": "Fix authentication timeout bug",
+    "description": "Users getting logged out after 5 minutes",
+    "notes": "Check token refresh logic in auth middleware",
+    "completed": false,
+    "created_at": "2026-01-03T11:00:00.000000",
+    "completed_at": null,
+    "subtasks": [],
+    "project_id": "demo-work-002",
+    "priority": "high"
+  },
+  {
+    "id": "task-w1-003",
+    "title": "Update team documentation",
+    "description": "Add onboarding guide for new developers",
+    "notes": "",
+    "completed": false,
+    "created_at": "2025-12-20T14:00:00.000000",
+    "completed_at": null,
+    "subtasks": [
+      {"id": "st-w1-003-1", "title": "Document local dev setup", "completed": true},
+      {"id": "st-w1-003-2", "title": "Add architecture overview", "completed": true},
+      {"id": "st-w1-003-3", "title": "Include debugging tips", "completed": false},
+      {"id": "st-w1-003-4", "title": "Review with team lead", "completed": false}
+    ],
+    "project_id": "demo-work-002",
+    "priority": "medium"
+  },
+  {
+    "id": "task-w1-004",
+    "title": "Deploy v2.4.0 to staging",
+    "description": "New dashboard features ready for QA",
+    "notes": "",
+    "completed": true,
+    "created_at": "2025-12-28T10:00:00.000000",
+    "completed_at": "2025-12-29T16:45:00.000000",
+    "subtasks": [],
+    "project_id": "demo-work-002",
+    "priority": "high"
+  },
+  {
+    "id": "task-w1-005",
+    "title": "Refactor database queries",
+    "description": "Optimize slow queries in reporting module",
+    "notes": "Consider adding indexes on user_id columns",
+    "completed": true,
+    "created_at": "2025-12-15T09:00:00.000000",
+    "completed_at": "2025-12-27T14:00:00.000000",
+    "subtasks": [
+      {"id": "st-w1-005-1", "title": "Profile slow queries", "completed": true},
+      {"id": "st-w1-005-2", "title": "Add missing indexes", "completed": true},
+      {"id": "st-w1-005-3", "title": "Update ORM queries", "completed": true}
+    ],
+    "project_id": "demo-work-002",
+    "priority": "medium"
+  },
+  {
+    "id": "task-w1-006",
+    "title": "Code review: PR #342",
+    "description": "Feature branch for user notifications",
+    "notes": "",
+    "completed": true,
+    "created_at": "2025-12-30T11:00:00.000000",
+    "completed_at": "2025-12-30T15:30:00.000000",
+    "subtasks": [],
+    "project_id": "demo-work-002",
+    "priority": "medium"
+  }
+]

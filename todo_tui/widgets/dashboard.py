@@ -17,7 +17,7 @@ from ..models import Task
 from ..themes import ALL_THEMES
 from .clock_widget import ClockWidget
 from .productivity_tabs import ProductivityTabs
-from .stats_card import StatsCard
+from .quotes_card import QuotesCard
 
 
 class Dashboard(Container):
@@ -90,7 +90,7 @@ class Dashboard(Container):
             yield ProductivityTabs(
                 id="productivity-quadrant", show_weather=self.show_weather
             )
-            yield StatsCard(id="stats-quadrant")
+            yield QuotesCard(id="quotes-quadrant")
 
     def on_mount(self) -> None:
         """Set up border title for sparkline container."""
@@ -129,9 +129,9 @@ class Dashboard(Container):
             and datetime.fromisoformat(t.completed_at).date() == today
         )
 
-        # Update stats card
-        stats_card = self.query_one("#stats-quadrant", StatsCard)
-        stats_card.update_stats(total, rate, today_completed)
+        # Update quotes card
+        quotes_card = self.query_one("#quotes-quadrant", QuotesCard)
+        quotes_card.update_stats(total, rate, today_completed)
 
         # Update sparkline with completion data and subtle animation
         sparkline_data = self._calculate_sparkline_data(tasks)

@@ -9,6 +9,7 @@ import pyperclip
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal, Vertical
+from textual.css.query import NoMatches
 from textual.message import Message
 from textual.timer import Timer
 from textual.widgets import (
@@ -258,7 +259,9 @@ class ScratchpadPanel(Container):
         # Set up markdown syntax highlighting after widget is fully initialized
         def setup_markdown():
             textarea = self.query_one("#scratchpad-textarea", TextArea)
-            register_markdown_language(textarea, "catppuccin-mocha")
+            # Use current app theme instead of hardcoded value
+            current_theme = self.app.theme or "catppuccin-mocha"
+            register_markdown_language(textarea, current_theme)
 
         # Defer markdown setup until after refresh
         self.call_after_refresh(setup_markdown)
@@ -270,6 +273,29 @@ class ScratchpadPanel(Container):
         # Select first note if available
         if self.notes:
             self._select_note(self.notes[0])
+
+    def watch_app_theme(self) -> None:
+        """Watch for app theme changes and update TextArea theme."""
+        # This is called via app's theme watcher
+        self._update_textarea_theme()
+
+    def _update_textarea_theme(self) -> None:
+        """Update the TextArea theme to match the current app theme."""
+        try:
+            textarea = self.query_one("#scratchpad-textarea", TextArea)
+            current_theme = self.app.theme or "catppuccin-mocha"
+
+            # Import the theme mapping
+            from ..markdown_syntax import MARKDOWN_THEMES, catppuccin_mocha_markdown
+
+            # Get the matching TextArea theme
+            theme = MARKDOWN_THEMES.get(current_theme, catppuccin_mocha_markdown)
+
+            # Register and apply the theme
+            textarea.register_theme(theme)
+            textarea.theme = theme.name
+        except NoMatches:
+            pass  # Widget might not be mounted yet
 
     def _update_note_list(self) -> None:
         """Update the note list view."""

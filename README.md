@@ -158,6 +158,7 @@ Your data is stored in `~/.local/share/tuido/` - run `tuido` from any directory 
 |----------|--------|
 | `Ctrl+N` | Create new task |
 | `Ctrl+P` | Create new project |
+| `Ctrl+Shift+S` | Sync with cloud |
 | `n` | Open notes/scratchpad |
 | `s` | Open settings |
 | `Enter` | Edit selected task |
@@ -223,6 +224,23 @@ Notes are stored in `~/.local/share/tuido/notes.json` and sync automatically as 
 - Brainstorming ideas
 - Code snippets or commands
 - Project planning drafts
+
+### Cloud Sync (Optional)
+
+Sync your tasks across devices with end-to-end encryption:
+
+1. **Link Your Device**: Press `s` to open Settings, go to the Cloud Sync tab, and click **Link Device**
+2. **Authorize in Browser**: Visit the URL shown in Tuido, sign in with Google, and enter the verification code displayed in the app
+3. **Set Encryption Password**: Enter a password for end-to-end encryption - your data is encrypted before upload
+4. **Sync**: Press `Ctrl+Shift+S` to manually sync, or data syncs automatically on exit
+
+**Privacy & Security:**
+
+- All data is encrypted on your device using AES-256-GCM before upload
+- Keys are derived using Argon2id from your encryption password
+- The server only stores encrypted blobs that cannot be decrypted without your password
+- Your encryption password is stored securely in your system keyring (macOS Keychain, etc.)
+- **Important**: There is no password recovery - if you forget your password, your cloud data cannot be recovered
 
 ## Development
 

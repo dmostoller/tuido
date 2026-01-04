@@ -1,0 +1,87 @@
+[
+  {
+    "id": "task-s1-001",
+    "title": "Design landing page mockup",
+    "description": "Create wireframes for the marketing site",
+    "notes": "Use Figma for collaboration",
+    "completed": true,
+    "created_at": "2025-12-25T10:00:00.000000",
+    "completed_at": "2026-01-04T14:00:27.936951",
+    "subtasks": [
+      {
+        "id": "st-s1-001-1",
+        "title": "Research competitor designs",
+        "completed": true
+      },
+      {
+        "id": "st-s1-001-2",
+        "title": "Sketch initial layout",
+        "completed": false
+      },
+      {
+        "id": "st-s1-001-3",
+        "title": "Create high-fidelity mockup",
+        "completed": false
+      },
+      {
+        "id": "st-s1-001-4",
+        "title": "Get feedback from friends",
+        "completed": false
+      }
+    ],
+    "project_id": "demo-side-003",
+    "priority": "medium"
+  },
+  {
+    "id": "task-s1-002",
+    "title": "Set up CI/CD pipeline",
+    "description": "Automate testing and deployment",
+    "notes": "Use GitHub Actions",
+    "completed": false,
+    "created_at": "2025-12-28T14:00:00.000000",
+    "completed_at": null,
+    "subtasks": [],
+    "project_id": "demo-side-003",
+    "priority": "low"
+  },
+  {
+    "id": "task-s1-003",
+    "title": "Write README documentation",
+    "description": "Installation, usage, and contribution guide",
+    "notes": "",
+    "completed": true,
+    "created_at": "2025-12-20T09:00:00.000000",
+    "completed_at": "2025-12-23T18:00:00.000000",
+    "subtasks": [],
+    "project_id": "demo-side-003",
+    "priority": "medium"
+  },
+  {
+    "id": "task-s1-004",
+    "title": "Add dark mode support",
+    "description": "Implement theme toggle with CSS variables",
+    "notes": "Store preference in localStorage",
+    "completed": true,
+    "created_at": "2025-12-10T11:00:00.000000",
+    "completed_at": "2025-12-18T20:00:00.000000",
+    "subtasks": [
+      {
+        "id": "st-s1-004-1",
+        "title": "Define color palette",
+        "completed": true
+      },
+      {
+        "id": "st-s1-004-2",
+        "title": "Create CSS variables",
+        "completed": true
+      },
+      {
+        "id": "st-s1-004-3",
+        "title": "Add toggle component",
+        "completed": true
+      }
+    ],
+    "project_id": "demo-side-003",
+    "priority": "low"
+  }
+]

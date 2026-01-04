@@ -109,6 +109,9 @@ _ICONS_NERD = {
     "WIND": "\ue34b",
     "THERMOMETER": "\uf2c7",
     "DROPLET": "\uf043",
+    # Security & Privacy
+    "EYE": "\uf06e",
+    "EYE_SLASH": "\uf070",
 }
 
 _ICONS_ASCII = {
@@ -188,6 +191,9 @@ _ICONS_ASCII = {
     "WIND": "[>>]",
     "THERMOMETER": "[T]",
     "DROPLET": "[~]",
+    # Security & Privacy
+    "EYE": "[o]",
+    "EYE_SLASH": "[-]",
 }
 
 
