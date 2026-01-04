@@ -164,7 +164,8 @@ class TodoApp(App):
         def check_device_link(result) -> None:
             """Callback when device link dialog is dismissed."""
             if result:
-                # Device was successfully linked
+                # Device was successfully linked - reload settings from disk
+                self.settings = StorageManager.load_settings()
                 self.notify("Device linked successfully!", severity="information")
             # Re-open settings to show updated status
             self.call_after_refresh(self.action_settings)
@@ -180,7 +181,8 @@ class TodoApp(App):
         def check_unlink(result) -> None:
             """Callback when unlink dialog is dismissed."""
             if result:
-                # Device was unlinked
+                # Device was unlinked - reload settings from disk
+                self.settings = StorageManager.load_settings()
                 self.notify("Device unlinked.", severity="information")
             # Re-open settings to show updated status
             self.call_after_refresh(self.action_settings)

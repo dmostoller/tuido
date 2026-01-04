@@ -1487,12 +1487,14 @@ class SettingsDialog(ModalScreen):
             self.settings.cloud_sync_enabled = cloud_sync_enabled.value
             self.settings.cloud_sync_url = "https://tuido.dev/api"  # Fixed URL
 
-            # Save encryption password to keyring if provided
+            # Save encryption password if provided
             encryption_password = cloud_encryption_password_input.value.strip()
             if encryption_password:
                 from ..encryption import set_encryption_password
 
                 set_encryption_password(encryption_password)
+                # Update self.settings so it doesn't get overwritten
+                self.settings.encryption_password = encryption_password
 
             self.dismiss(self.settings)
 

@@ -2,28 +2,26 @@
 
 This module provides AES-256-GCM encryption with Argon2id key derivation
 for securing sync data before upload to the cloud.
+
+Note: Keyring storage is DISABLED to avoid macOS Keychain password prompts.
+Credentials are not persisted - user must re-enter each session.
 """
 
 from __future__ import annotations
 
 import base64
-import logging
 import os
 from dataclasses import dataclass
 from typing import Optional
 
-import keyring
-
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.argon2 import Argon2id
 
-logger = logging.getLogger(__name__)
-
-# Keyring service name for storing credentials
-KEYRING_SERVICE = "tuido"
-KEYRING_KEY = "encryption_password"
-KEYRING_DEVICE_TOKEN = "device_token"
-KEYRING_DEVICE_ID = "device_id"
+# Keyring is DISABLED - these are kept for reference only
+# KEYRING_SERVICE = "tuido"
+# KEYRING_KEY = "encryption_password"
+# KEYRING_DEVICE_TOKEN = "device_token"
+# KEYRING_DEVICE_ID = "device_id"
 
 
 @dataclass
@@ -163,131 +161,124 @@ def decrypt_data(payload: EncryptedPayload, password: str) -> str:
 
 
 def get_encryption_password() -> Optional[str]:
-    """Get encryption password from system keyring.
+    """Get encryption password from settings file.
 
     Returns:
         Password string if set, None otherwise
     """
-    try:
-        return keyring.get_password(KEYRING_SERVICE, KEYRING_KEY)
-    except Exception as e:
-        logger.warning("Failed to get encryption password from keyring: %s: %s", type(e).__name__, e)
-        return None
+    from .storage import StorageManager
+
+    settings = StorageManager.load_settings()
+    return settings.encryption_password if settings.encryption_password else None
 
 
 def set_encryption_password(password: str) -> bool:
-    """Store encryption password in system keyring.
+    """Store encryption password in settings file.
 
     Args:
         password: Password to store
 
     Returns:
-        True if successful, False otherwise
+        True if successful
     """
-    try:
-        keyring.set_password(KEYRING_SERVICE, KEYRING_KEY, password)
-        return True
-    except Exception as e:
-        logger.warning("Failed to set encryption password in keyring: %s: %s", type(e).__name__, e)
-        return False
+    from .storage import StorageManager
+
+    settings = StorageManager.load_settings()
+    settings.encryption_password = password
+    StorageManager.save_settings(settings)
+    return True
 
 
 def delete_encryption_password() -> bool:
-    """Remove encryption password from system keyring.
+    """Remove encryption password from settings.
 
     Returns:
-        True if successful, False otherwise
+        True if successful
     """
-    try:
-        keyring.delete_password(KEYRING_SERVICE, KEYRING_KEY)
-        return True
-    except Exception as e:
-        logger.warning("Failed to delete encryption password from keyring: %s: %s", type(e).__name__, e)
-        return False
+    from .storage import StorageManager
+
+    settings = StorageManager.load_settings()
+    settings.encryption_password = ""
+    StorageManager.save_settings(settings)
+    return True
 
 
 def has_encryption_password() -> bool:
     """Check if encryption password is set.
 
     Returns:
-        True if password exists in keyring
+        True if password exists in settings
     """
     return get_encryption_password() is not None
 
 
 # =============================================================================
-# Device Token Storage (for device authorization flow)
+# Device Token Storage (stored in settings file, no keyring)
 # =============================================================================
 
 
 def get_device_token() -> Optional[str]:
-    """Get device token from system keyring.
+    """Get device token from settings file.
 
     Returns:
         Token string if set, None otherwise
     """
-    try:
-        return keyring.get_password(KEYRING_SERVICE, KEYRING_DEVICE_TOKEN)
-    except Exception as e:
-        logger.warning("Failed to get device token from keyring: %s: %s", type(e).__name__, e)
-        return None
+    from .storage import StorageManager
+
+    settings = StorageManager.load_settings()
+    return settings.device_token if settings.device_token else None
 
 
 def get_device_id() -> Optional[str]:
-    """Get device ID from system keyring.
+    """Get device ID from settings file.
 
     Returns:
         Device ID if set, None otherwise
     """
-    try:
-        return keyring.get_password(KEYRING_SERVICE, KEYRING_DEVICE_ID)
-    except Exception as e:
-        logger.warning("Failed to get device ID from keyring: %s: %s", type(e).__name__, e)
-        return None
+    from .storage import StorageManager
+
+    settings = StorageManager.load_settings()
+    return settings.device_id if settings.device_id else None
 
 
 def save_device_credentials(token: str, device_id: str) -> bool:
-    """Store device token and ID in system keyring.
+    """Store device token and ID in settings file.
 
     Args:
         token: Device token from authorization
         device_id: Device ID from authorization
 
     Returns:
-        True if successful, False otherwise
+        True if successful
     """
-    try:
-        keyring.set_password(KEYRING_SERVICE, KEYRING_DEVICE_TOKEN, token)
-        keyring.set_password(KEYRING_SERVICE, KEYRING_DEVICE_ID, device_id)
-        return True
-    except Exception as e:
-        logger.warning("Failed to save device credentials to keyring: %s: %s", type(e).__name__, e)
-        return False
+    from .storage import StorageManager
+
+    settings = StorageManager.load_settings()
+    settings.device_token = token
+    settings.device_id = device_id
+    StorageManager.save_settings(settings)
+    return True
 
 
 def delete_device_credentials() -> bool:
-    """Remove device credentials from system keyring.
+    """Remove device credentials from settings.
 
     Returns:
-        True if both credentials were deleted successfully, False otherwise
+        True if successful
     """
-    token_deleted = True
-    device_id_deleted = True
-    try:
-        keyring.delete_password(KEYRING_SERVICE, KEYRING_DEVICE_TOKEN)
-    except Exception:
-        token_deleted = False
-    try:
-        keyring.delete_password(KEYRING_SERVICE, KEYRING_DEVICE_ID)
-    except Exception:
-        device_id_deleted = False
-    return token_deleted and device_id_deleted
+    from .storage import StorageManager
+
+    settings = StorageManager.load_settings()
+    settings.device_token = ""
+    settings.device_id = ""
+    StorageManager.save_settings(settings)
+    return True
 
 
 def has_device_token() -> bool:
     """Check if device is linked (has token).
 
     Returns:
-        True if device token exists in keyring
+        True if device token exists in settings
     """
     return get_device_token() is not None

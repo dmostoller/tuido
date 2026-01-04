@@ -259,6 +259,9 @@ class Settings:
     cloud_sync_enabled: bool = False  # Cloud sync disabled by default
     cloud_sync_url: str = "https://tuido.dev/api"  # Cloud API base URL
     last_cloud_sync: str = ""  # ISO timestamp of last sync
+    encryption_password: str = ""  # Stored locally (keyring disabled)
+    device_token: str = ""  # Stored locally (keyring disabled)
+    device_id: str = ""  # Stored locally (keyring disabled)
 
     def to_dict(self) -> dict:
         """Convert settings to dictionary for JSON serialization."""
@@ -276,6 +279,9 @@ class Settings:
             "cloud_sync_enabled": self.cloud_sync_enabled,
             "cloud_sync_url": self.cloud_sync_url,
             "last_cloud_sync": self.last_cloud_sync,
+            "encryption_password": self.encryption_password,
+            "device_token": self.device_token,
+            "device_id": self.device_id,
         }
 
     @classmethod
@@ -295,4 +301,7 @@ class Settings:
             cloud_sync_enabled=data.get("cloud_sync_enabled", False),
             cloud_sync_url=data.get("cloud_sync_url", "https://tuido.dev/api"),
             last_cloud_sync=data.get("last_cloud_sync", ""),
+            encryption_password=data.get("encryption_password", ""),
+            device_token=data.get("device_token", ""),
+            device_id=data.get("device_id", ""),
         )
