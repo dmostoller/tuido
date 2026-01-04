@@ -1,6 +1,6 @@
 [project]
 name = "tuido-tui"
-version = "0.2.0"
+version = "0.3.0"
 description = "A beautiful Terminal User Interface (TUI) todo application built with Textual, featuring multiple themes, Pomodoro timer, and markdown notes"
 readme = "README.md"
 license = { text = "MIT" }
